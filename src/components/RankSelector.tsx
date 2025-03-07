@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { ranks, Rank, getRankPlaceholderImage } from "@/data/ranks";
-import { ChevronRight, ChevronDown } from "lucide-react";
+import { ChevronRight, ChevronDown, Star } from "lucide-react";
 import RankTierInfo from "./RankTierInfo";
 
 interface RankSelectorProps {

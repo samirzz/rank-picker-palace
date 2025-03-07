@@ -11,7 +11,8 @@ export interface Rank {
 
 export interface RankSubdivision {
   name: string;
-  stars: number;
+  stars?: number;
+  points?: PointsRange;
 }
 
 export interface PointsRange {
