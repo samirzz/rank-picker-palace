@@ -20,45 +20,45 @@ const NavBar: React.FC = () => {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-black/80 backdrop-blur-lg py-3 shadow-lg"
-          : "bg-transparent py-5"
+          ? "bg-black/80 backdrop-blur-lg py-2 md:py-3 shadow-lg"
+          : "bg-transparent py-3 md:py-5"
       }`}
     >
       <div className="container px-4 mx-auto flex items-center justify-between">
         <div className="flex items-center">
-          <span className="text-xl md:text-2xl font-bold text-white">
+          <span className="text-lg md:text-xl lg:text-2xl font-bold text-white">
             <span className="text-mlbb-purple">ML</span>Booster
           </span>
         </div>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center space-x-8">
+        <div className="hidden md:flex items-center space-x-4 lg:space-x-8">
           <a
             href="#home"
-            className="text-gray-300 hover:text-white transition-colors"
+            className="text-gray-300 hover:text-white transition-colors text-sm lg:text-base"
           >
             Home
           </a>
           <a
             href="#ranks"
-            className="text-gray-300 hover:text-white transition-colors"
+            className="text-gray-300 hover:text-white transition-colors text-sm lg:text-base"
           >
             Rank Boost
           </a>
           <a
             href="#about"
-            className="text-gray-300 hover:text-white transition-colors"
+            className="text-gray-300 hover:text-white transition-colors text-sm lg:text-base"
           >
             About
           </a>
           <a
             href="#contact"
-            className="text-gray-300 hover:text-white transition-colors"
+            className="text-gray-300 hover:text-white transition-colors text-sm lg:text-base"
           >
             Contact
           </a>
           <Button
-            className="bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple hover:opacity-90 text-white px-6 transition-all"
+            className="bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple hover:opacity-90 text-white px-4 lg:px-6 text-sm lg:text-base transition-all"
           >
             Login
           </Button>
@@ -69,11 +69,12 @@ const NavBar: React.FC = () => {
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="text-white focus:outline-none"
+            aria-label="Toggle mobile menu"
           >
             {isMobileMenuOpen ? (
-              <X className="h-6 w-6" />
+              <X className="h-5 w-5" />
             ) : (
-              <Menu className="h-6 w-6" />
+              <Menu className="h-5 w-5" />
             )}
           </button>
         </div>

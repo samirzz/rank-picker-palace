@@ -61,8 +61,8 @@ const RankSelector: React.FC<RankSelectorProps> = ({
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"
       }`}
     >
-      <div className="text-center mb-3">
-        <h3 className="text-lg font-semibold text-white">{label}</h3>
+      <div className="text-center mb-2 md:mb-3">
+        <h3 className="text-base md:text-lg font-semibold text-white">{label}</h3>
       </div>
       
       <div 
@@ -74,7 +74,7 @@ const RankSelector: React.FC<RankSelectorProps> = ({
       >
         {/* Selected Rank (or placeholder) */}
         <div 
-          className="glass-panel p-4 cursor-pointer relative overflow-hidden hover:shadow-lg hover:shadow-mlbb-purple/10 transition-all duration-300"
+          className="glass-panel p-3 md:p-4 cursor-pointer relative overflow-hidden hover:shadow-lg hover:shadow-mlbb-purple/10 transition-all duration-300"
           onClick={() => setIsExpanded(!isExpanded)}
         >
           <div 
@@ -82,27 +82,27 @@ const RankSelector: React.FC<RankSelectorProps> = ({
             style={{ pointerEvents: 'none' }}
           ></div>
           
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 overflow-hidden flex items-center justify-center">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 overflow-hidden flex items-center justify-center">
               {selectedRank ? (
                 <img 
                   src={selectedRank.image} 
                   alt={selectedRank.name} 
-                  className="w-10 h-10 object-contain"
+                  className="w-8 h-8 md:w-10 md:h-10 object-contain"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = getRankPlaceholderImage();
                   }}
                 />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-mlbb-purple/20 flex items-center justify-center text-sm text-mlbb-lightpurple">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-mlbb-purple/20 flex items-center justify-center text-xs md:text-sm text-mlbb-lightpurple">
                   Select
                 </div>
               )}
             </div>
             
             <div className="flex-1">
-              <div className="font-semibold text-white">
+              <div className="font-semibold text-white text-sm md:text-base">
                 {selectedRank 
                   ? (selectedRank.subdivisions 
                     ? selectedRank.subdivisions[selectedSubdivision]?.name 
@@ -118,32 +118,32 @@ const RankSelector: React.FC<RankSelectorProps> = ({
               )}
             </div>
             
-            <ChevronRight className={`h-5 w-5 text-mlbb-purple transition-transform duration-300 ${isExpanded ? "rotate-90" : ""}`} />
+            <ChevronRight className={`h-4 w-4 md:h-5 md:w-5 text-mlbb-purple transition-transform duration-300 ${isExpanded ? "rotate-90" : ""}`} />
           </div>
         </div>
         
         {/* Rank Selection Dropdown */}
         {isExpanded && !showSubdivisions && (
-          <div className="absolute top-full left-0 right-0 mt-2 glass-panel rounded-xl overflow-hidden z-20 animate-scale-up max-h-64 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-2 glass-panel rounded-xl overflow-hidden z-20 animate-scale-up max-h-48 md:max-h-64 overflow-y-auto">
             <div className="grid grid-cols-1 divide-y divide-white/5">
-              {ranks.map((rank, index) => {
+              {ranks.map((rank) => {
                 const isDisabled = disabledRanks.some(disabled => disabled.id === rank.id);
                 
                 return (
                   <div
                     key={rank.id}
-                    className={`flex items-center gap-3 p-3 transition-all duration-200 cursor-pointer ${
+                    className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 transition-all duration-200 cursor-pointer ${
                       isDisabled 
                         ? "opacity-50 bg-black/60 cursor-not-allowed" 
                         : "hover:bg-mlbb-purple/20"
                     }`}
                     onClick={() => handleRankClick(rank)}
                   >
-                    <div className="w-10 h-10 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 overflow-hidden flex items-center justify-center">
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 overflow-hidden flex items-center justify-center">
                       <img 
                         src={rank.image} 
                         alt={rank.name} 
-                        className="w-8 h-8 object-contain"
+                        className="w-6 h-6 md:w-8 md:h-8 object-contain"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = getRankPlaceholderImage();
@@ -152,7 +152,7 @@ const RankSelector: React.FC<RankSelectorProps> = ({
                     </div>
                     
                     <div className="flex-1">
-                      <div className="font-medium text-white">{rank.name}</div>
+                      <div className="font-medium text-white text-xs md:text-sm">{rank.name}</div>
                       <div className="flex items-center">
                         {rank.points && (
                           <span className="text-xs text-mlbb-gold">
@@ -160,9 +160,9 @@ const RankSelector: React.FC<RankSelectorProps> = ({
                           </span>
                         )}
                         {rank.subdivisions && (
-                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                          <span className="text-2xs md:text-xs text-gray-400 flex items-center gap-1">
                             {rank.subdivisions.length} tiers
-                            <ChevronRight className="h-3 w-3 text-mlbb-purple" />
+                            <ChevronRight className="h-2 w-2 md:h-3 md:w-3 text-mlbb-purple" />
                           </span>
                         )}
                       </div>
@@ -180,34 +180,34 @@ const RankSelector: React.FC<RankSelectorProps> = ({
         
         {/* Subdivision Selection Dropdown */}
         {isExpanded && showSubdivisions && selectedRank && selectedRank.subdivisions && (
-          <div className="absolute top-full left-0 right-0 mt-2 glass-panel rounded-xl overflow-hidden z-20 animate-scale-up max-h-64 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-2 glass-panel rounded-xl overflow-hidden z-20 animate-scale-up max-h-48 md:max-h-64 overflow-y-auto">
             <div className="p-2 border-b border-white/10 flex items-center gap-2">
               <ChevronDown 
-                className="h-4 w-4 text-mlbb-purple cursor-pointer" 
+                className="h-3 w-3 md:h-4 md:w-4 text-mlbb-purple cursor-pointer" 
                 onClick={() => setShowSubdivisions(false)}
               />
-              <span className="text-sm text-white">{selectedRank.name} Tiers</span>
+              <span className="text-xs md:text-sm text-white">{selectedRank.name} Tiers</span>
             </div>
             <div className="grid grid-cols-1 divide-y divide-white/5">
               {selectedRank.subdivisions.map((subdivision, subIndex) => (
                 <div
                   key={subdivision.name}
-                  className="flex items-center gap-3 p-3 transition-all duration-200 cursor-pointer hover:bg-mlbb-purple/20"
+                  className="flex items-center gap-2 md:gap-3 p-2 md:p-3 transition-all duration-200 cursor-pointer hover:bg-mlbb-purple/20"
                   onClick={() => handleSubdivisionClick(selectedRank, subIndex)}
                 >
-                  <div className="w-10 h-10 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 overflow-hidden flex items-center justify-center">
-                    <span className="text-sm font-medium text-white">
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 overflow-hidden flex items-center justify-center">
+                    <span className="text-xs md:text-sm font-medium text-white">
                       {subdivision.name.split(' ').pop()}
                     </span>
                   </div>
                   
                   <div className="flex-1">
-                    <div className="font-medium text-white">{subdivision.name}</div>
-                    <div className="flex items-center gap-1">
+                    <div className="font-medium text-white text-xs md:text-sm">{subdivision.name}</div>
+                    <div className="flex items-center gap-0.5 md:gap-1">
                       {Array.from({ length: subdivision.stars || 0 }).map((_, starIndex) => (
                         <Star 
                           key={starIndex} 
-                          className="h-3 w-3 text-mlbb-gold fill-mlbb-gold" 
+                          className="h-2 w-2 md:h-3 md:w-3 text-mlbb-gold fill-mlbb-gold" 
                         />
                       ))}
                     </div>

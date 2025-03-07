@@ -20,7 +20,7 @@ const HeroSection: React.FC = () => {
   return (
     <section
       id="home"
-      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden py-20 px-4"
+      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden py-16 md:py-20 px-4"
     >
       {/* Background with overlay */}
       <div className="absolute inset-0 z-0">
@@ -41,13 +41,13 @@ const HeroSection: React.FC = () => {
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
           }`}
         >
-          <span className="inline-block text-sm md:text-base px-4 py-2 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 text-mlbb-lightpurple mb-4 animate-pulse-subtle">
+          <span className="inline-block text-xs md:text-sm px-3 py-2 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 text-mlbb-lightpurple mb-4">
             #1 Mobile Legends Boosting Service
           </span>
         </div>
 
         <h1 
-          className={`text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-white leading-tight transition-all duration-1000 delay-300 transform ${
+          className={`text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-white leading-tight transition-all duration-1000 delay-300 transform ${
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
           }`}
         >
@@ -57,7 +57,7 @@ const HeroSection: React.FC = () => {
         </h1>
 
         <p 
-          className={`text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-10 transition-all duration-1000 delay-500 transform ${
+          className={`text-base sm:text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8 md:mb-10 px-2 transition-all duration-1000 delay-500 transform ${
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
           }`}
         >
@@ -72,13 +72,13 @@ const HeroSection: React.FC = () => {
         >
           <Button 
             onClick={scrollToRanks}
-            className="bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple text-white px-8 py-6 text-lg rounded-lg hover:shadow-lg hover:shadow-mlbb-purple/50 transition-all duration-300 button-glow"
+            className="bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple text-white w-full sm:w-auto px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-lg hover:shadow-lg hover:shadow-mlbb-purple/50 transition-all duration-300 button-glow"
           >
             Boost Now
           </Button>
           <Button 
             variant="outline" 
-            className="border-mlbb-purple/50 text-mlbb-lightpurple hover:bg-mlbb-purple/10 px-8 py-6 text-lg rounded-lg transition-all duration-300"
+            className="border-mlbb-purple/50 text-mlbb-lightpurple hover:bg-mlbb-purple/10 w-full sm:w-auto px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-lg transition-all duration-300 mt-3 sm:mt-0"
           >
             View Pricing
           </Button>
@@ -91,9 +91,9 @@ const HeroSection: React.FC = () => {
           variant="ghost" 
           size="icon" 
           onClick={scrollToRanks}
-          className="text-mlbb-purple hover:text-mlbb-lightpurple hover:bg-transparent rounded-full h-12 w-12 flex items-center justify-center border border-mlbb-purple/30"
+          className="text-mlbb-purple hover:text-mlbb-lightpurple hover:bg-transparent rounded-full h-10 w-10 md:h-12 md:w-12 flex items-center justify-center border border-mlbb-purple/30"
         >
-          <ArrowDown className="h-6 w-6" />
+          <ArrowDown className="h-5 w-5 md:h-6 md:w-6" />
         </Button>
       </div>
     </section>

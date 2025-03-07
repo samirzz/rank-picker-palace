@@ -92,10 +92,16 @@
     animation: shimmer 2s infinite linear;
   }
   
+  /* Responsive text sizes */
+  .text-2xs {
+    font-size: 0.65rem;
+    line-height: 1rem;
+  }
+  
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
   
   ::-webkit-scrollbar-track {
@@ -111,4 +117,16 @@
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-mlbb-purple/70;
   }
+  
+  @media (max-width: 640px) {
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
 }
