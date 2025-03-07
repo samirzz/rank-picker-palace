@@ -1,16 +1,16 @@
 
-import React from "react";
+import React, { useState } from "react";
 import RankSelector from "@/components/RankSelector";
 import PricingCard from "@/components/PricingCard";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 import { Rank, ranks } from "@/data/ranks";
 
 interface RankSelectionSectionProps {
   isIntersecting: boolean;
   currentRank: Rank | null;
-  setCurrentRank: (rank: Rank) => void;
+  setCurrentRank: (rank: Rank, subdivisionIndex?: number) => void;
   targetRank: Rank | null;
-  setTargetRank: (rank: Rank) => void;
+  setTargetRank: (rank: Rank, subdivisionIndex?: number) => void;
 }
 
 const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
@@ -20,6 +20,41 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
   targetRank,
   setTargetRank
 }) => {
+  const [currentSubdivision, setCurrentSubdivision] = useState(0);
+  const [targetSubdivision, setTargetSubdivision] = useState(0);
+
+  const handleCurrentRankSelect = (rank: Rank, subdivisionIndex: number = 0) => {
+    setCurrentRank(rank);
+    setCurrentSubdivision(subdivisionIndex);
+  };
+
+  const handleTargetRankSelect = (rank: Rank, subdivisionIndex: number = 0) => {
+    setTargetRank(rank);
+    setTargetSubdivision(subdivisionIndex);
+  };
+
+  // Determine which ranks should be disabled for target selection
+  const getDisabledTargetRanks = () => {
+    if (!currentRank) return [];
+    
+    // If current rank has subdivisions selected, we need to disable:
+    // 1. All ranks with lower tier than current rank
+    // 2. Current rank's subdivisions that are lower than or equal to selected subdivision
+    return ranks.filter(rank => {
+      // Filter out lower tier ranks
+      if (rank.tier < currentRank.tier) return true;
+      
+      // If same rank, filter out same or lower subdivisions
+      if (rank.id === currentRank.id) {
+        if (!rank.subdivisions) return true;
+        // This rank would be completely disabled if not using subdivisions
+        return true;
+      }
+      
+      return false;
+    });
+  };
+
   return (
     <section
       id="ranks"
@@ -52,7 +87,7 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
             <RankSelector
               label="Current Rank"
               selectedRank={currentRank}
-              onRankSelect={setCurrentRank}
+              onRankSelect={handleCurrentRankSelect}
               disabledRanks={[]}
               animationDelay={200}
             />
@@ -70,8 +105,8 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
             <RankSelector
               label="Desired Rank"
               selectedRank={targetRank}
-              onRankSelect={setTargetRank}
-              disabledRanks={currentRank ? ranks.filter(rank => rank.tier! <= currentRank.tier!) : []}
+              onRankSelect={handleTargetRankSelect}
+              disabledRanks={getDisabledTargetRanks()}
               animationDelay={400}
             />
           </div>
@@ -82,6 +117,8 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
           <PricingCard
             currentRank={currentRank}
             targetRank={targetRank}
+            currentSubdivision={currentSubdivision}
+            targetSubdivision={targetSubdivision}
             animationDelay={600}
           />
         </div>

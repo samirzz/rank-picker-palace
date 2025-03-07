@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from "react";
 import { ranks, Rank, getRankPlaceholderImage } from "@/data/ranks";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ChevronDown } from "lucide-react";
+import RankTierInfo from "./RankTierInfo";
 
 interface RankSelectorProps {
   label: string;
   selectedRank: Rank | null;
-  onRankSelect: (rank: Rank) => void;
+  onRankSelect: (rank: Rank, subdivisionIndex?: number) => void;
   disabledRanks?: Rank[];
   animationDelay?: number;
 }
@@ -20,6 +21,8 @@ const RankSelector: React.FC<RankSelectorProps> = ({
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [selectedSubdivision, setSelectedSubdivision] = useState(0);
+  const [showSubdivisions, setShowSubdivisions] = useState(false);
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -33,7 +36,22 @@ const RankSelector: React.FC<RankSelectorProps> = ({
     if (disabledRanks.some(disabled => disabled.id === rank.id)) {
       return;
     }
-    onRankSelect(rank);
+    
+    setSelectedSubdivision(0);
+    onRankSelect(rank, 0);
+    
+    // If the rank has subdivisions, show them
+    if (rank.subdivisions && rank.subdivisions.length > 0) {
+      setShowSubdivisions(true);
+    } else {
+      setIsExpanded(false);
+    }
+  };
+  
+  const handleSubdivisionClick = (rank: Rank, subdivisionIndex: number) => {
+    setSelectedSubdivision(subdivisionIndex);
+    onRankSelect(rank, subdivisionIndex);
+    setShowSubdivisions(false);
     setIsExpanded(false);
   };
 
@@ -49,7 +67,10 @@ const RankSelector: React.FC<RankSelectorProps> = ({
       
       <div 
         className="relative"
-        onMouseLeave={() => setIsExpanded(false)}
+        onMouseLeave={() => {
+          setIsExpanded(false);
+          setShowSubdivisions(false);
+        }}
       >
         {/* Selected Rank (or placeholder) */}
         <div 
@@ -82,12 +103,18 @@ const RankSelector: React.FC<RankSelectorProps> = ({
             
             <div className="flex-1">
               <div className="font-semibold text-white">
-                {selectedRank ? selectedRank.name : "Select Rank"}
+                {selectedRank 
+                  ? (selectedRank.subdivisions 
+                    ? selectedRank.subdivisions[selectedSubdivision]?.name 
+                    : selectedRank.name)
+                  : "Select Rank"
+                }
               </div>
               {selectedRank && (
-                <div className="text-sm text-gray-400">
-                  Tier {selectedRank.tier}
-                </div>
+                <RankTierInfo 
+                  rank={selectedRank} 
+                  selectedSubdivision={selectedSubdivision} 
+                />
               )}
             </div>
             
@@ -96,7 +123,7 @@ const RankSelector: React.FC<RankSelectorProps> = ({
         </div>
         
         {/* Rank Selection Dropdown */}
-        {isExpanded && (
+        {isExpanded && !showSubdivisions && (
           <div className="absolute top-full left-0 right-0 mt-2 glass-panel rounded-xl overflow-hidden z-20 animate-scale-up max-h-64 overflow-y-auto">
             <div className="grid grid-cols-1 divide-y divide-white/5">
               {ranks.map((rank, index) => {
@@ -126,7 +153,19 @@ const RankSelector: React.FC<RankSelectorProps> = ({
                     
                     <div className="flex-1">
                       <div className="font-medium text-white">{rank.name}</div>
-                      <div className="text-xs text-gray-400">Tier {rank.tier}</div>
+                      <div className="flex items-center">
+                        {rank.points && (
+                          <span className="text-xs text-mlbb-gold">
+                            Points: {rank.points.min}-{rank.points.max}
+                          </span>
+                        )}
+                        {rank.subdivisions && (
+                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                            {rank.subdivisions.length} tiers
+                            <ChevronRight className="h-3 w-3 text-mlbb-purple" />
+                          </span>
+                        )}
+                      </div>
                     </div>
                     
                     {selectedRank && selectedRank.id === rank.id && (
@@ -135,6 +174,50 @@ const RankSelector: React.FC<RankSelectorProps> = ({
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+        
+        {/* Subdivision Selection Dropdown */}
+        {isExpanded && showSubdivisions && selectedRank && selectedRank.subdivisions && (
+          <div className="absolute top-full left-0 right-0 mt-2 glass-panel rounded-xl overflow-hidden z-20 animate-scale-up max-h-64 overflow-y-auto">
+            <div className="p-2 border-b border-white/10 flex items-center gap-2">
+              <ChevronDown 
+                className="h-4 w-4 text-mlbb-purple cursor-pointer" 
+                onClick={() => setShowSubdivisions(false)}
+              />
+              <span className="text-sm text-white">{selectedRank.name} Tiers</span>
+            </div>
+            <div className="grid grid-cols-1 divide-y divide-white/5">
+              {selectedRank.subdivisions.map((subdivision, subIndex) => (
+                <div
+                  key={subdivision.name}
+                  className="flex items-center gap-3 p-3 transition-all duration-200 cursor-pointer hover:bg-mlbb-purple/20"
+                  onClick={() => handleSubdivisionClick(selectedRank, subIndex)}
+                >
+                  <div className="w-10 h-10 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 overflow-hidden flex items-center justify-center">
+                    <span className="text-sm font-medium text-white">
+                      {subdivision.name.split(' ').pop()}
+                    </span>
+                  </div>
+                  
+                  <div className="flex-1">
+                    <div className="font-medium text-white">{subdivision.name}</div>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: subdivision.stars || 0 }).map((_, starIndex) => (
+                        <Star 
+                          key={starIndex} 
+                          className="h-3 w-3 text-mlbb-gold fill-mlbb-gold" 
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {selectedSubdivision === subIndex && (
+                    <div className="w-2 h-2 rounded-full bg-mlbb-purple"></div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         )}

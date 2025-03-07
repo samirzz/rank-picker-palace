@@ -3,17 +3,21 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { calculatePrice } from "@/data/ranks";
 import type { Rank } from "@/data/ranks";
-import { CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { CheckCircle, ChevronDown, ChevronUp, Star } from "lucide-react";
 
 interface PricingCardProps {
   currentRank: Rank | null;
   targetRank: Rank | null;
+  currentSubdivision?: number;
+  targetSubdivision?: number;
   animationDelay?: number;
 }
 
 const PricingCard: React.FC<PricingCardProps> = ({
   currentRank,
   targetRank,
+  currentSubdivision = 0,
+  targetSubdivision = 0,
   animationDelay = 0,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -31,11 +35,30 @@ const PricingCard: React.FC<PricingCardProps> = ({
   useEffect(() => {
     if (currentRank && targetRank) {
       const calculatedPrice = calculatePrice(currentRank, targetRank);
-      setPrice(calculatedPrice);
+      
+      // Apply additional pricing based on subdivisions
+      let finalPrice = calculatedPrice;
+      
+      // Add subdivision modifier if same tier but different subdivision
+      if (currentRank.tier === targetRank.tier && 
+          currentRank.subdivisions && 
+          targetRank.subdivisions &&
+          currentSubdivision !== undefined &&
+          targetSubdivision !== undefined) {
+        
+        // Only if target subdivision is higher than current subdivision
+        if (targetSubdivision < currentSubdivision) {
+          const subdivisionDiff = currentSubdivision - targetSubdivision;
+          const subdivisionPrice = 5 * subdivisionDiff; // $5 per subdivision
+          finalPrice = subdivisionPrice;
+        }
+      }
+      
+      setPrice(finalPrice);
     } else {
       setPrice(null);
     }
-  }, [currentRank, targetRank]);
+  }, [currentRank, targetRank, currentSubdivision, targetSubdivision]);
   
   const canCalculatePrice = currentRank && targetRank && price !== null && price > 0;
   
@@ -51,11 +74,26 @@ const PricingCard: React.FC<PricingCardProps> = ({
   const getEstimatedTime = (): string => {
     if (!currentRank || !targetRank || price === 0) return "N/A";
     
-    const tierDifference = targetRank.tier! - currentRank.tier!;
+    const tierDifference = targetRank.tier - currentRank.tier;
     
     if (tierDifference <= 1) return "1-2 days";
     if (tierDifference <= 3) return "3-5 days";
     return "5-7 days";
+  };
+
+  // Format the rank name with subdivision if available
+  const formatRankName = (rank: Rank, subdivisionIndex: number = 0): string => {
+    if (!rank) return '';
+    
+    if (rank.subdivisions && rank.subdivisions[subdivisionIndex]) {
+      return rank.subdivisions[subdivisionIndex].name;
+    }
+    
+    if (rank.points) {
+      return `${rank.name} (${rank.points.min}-${rank.points.max} points)`;
+    }
+    
+    return rank.name;
   };
 
   return (
@@ -93,15 +131,19 @@ const PricingCard: React.FC<PricingCardProps> = ({
               <div className="mb-6">
                 <div className="flex justify-between items-center border-b border-white/10 pb-3 mb-3">
                   <span className="text-gray-300">From Rank</span>
-                  <span className="font-semibold text-white">{currentRank.name}</span>
+                  <span className="font-semibold text-white">{formatRankName(currentRank, currentSubdivision)}</span>
                 </div>
                 <div className="flex justify-between items-center border-b border-white/10 pb-3 mb-3">
                   <span className="text-gray-300">To Rank</span>
-                  <span className="font-semibold text-white">{targetRank.name}</span>
+                  <span className="font-semibold text-white">{formatRankName(targetRank, targetSubdivision)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-300">Tier Difference</span>
-                  <span className="font-semibold text-white">{targetRank.tier! - currentRank.tier!}</span>
+                  <span className="font-semibold text-white">
+                    {currentRank.tier === targetRank.tier 
+                      ? "Same Tier" 
+                      : Math.abs(targetRank.tier - currentRank.tier)}
+                  </span>
                 </div>
               </div>
               
