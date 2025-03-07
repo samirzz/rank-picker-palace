@@ -118,6 +118,11 @@
     @apply bg-mlbb-purple/70;
   }
   
+  /* Animation for dropdown scaling up */
+  .animate-scale-up {
+    animation: scaleUp 0.2s ease-out forwards;
+  }
+  
   @media (max-width: 640px) {
     ::-webkit-scrollbar {
       width: 4px;
@@ -129,4 +134,15 @@
 @keyframes shimmer {
   0% { background-position: -1000px 0; }
   100% { background-position: 1000px 0; }
+}
+
+@keyframes scaleUp {
+  0% { 
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% { 
+    opacity: 1;
+    transform: scale(1);
+  }
 }

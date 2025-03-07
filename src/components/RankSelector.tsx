@@ -32,6 +32,24 @@ const RankSelector: React.FC<RankSelectorProps> = ({
     return () => clearTimeout(timer);
   }, [animationDelay]);
 
+  // Handle clicks outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      const dropdownContainer = document.getElementById('rank-selector-dropdown');
+      
+      if (dropdownContainer && !dropdownContainer.contains(target) && isExpanded) {
+        setIsExpanded(false);
+        setShowSubdivisions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isExpanded]);
+
   const handleRankClick = (rank: Rank) => {
     if (disabledRanks.some(disabled => disabled.id === rank.id)) {
       return;
@@ -66,11 +84,8 @@ const RankSelector: React.FC<RankSelectorProps> = ({
       </div>
       
       <div 
+        id="rank-selector-dropdown"
         className="relative"
-        onMouseLeave={() => {
-          setIsExpanded(false);
-          setShowSubdivisions(false);
-        }}
       >
         {/* Selected Rank (or placeholder) */}
         <div 
@@ -124,7 +139,7 @@ const RankSelector: React.FC<RankSelectorProps> = ({
         
         {/* Rank Selection Dropdown */}
         {isExpanded && !showSubdivisions && (
-          <div className="absolute top-full left-0 right-0 mt-2 glass-panel rounded-xl overflow-hidden z-20 animate-scale-up max-h-48 md:max-h-64 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-2 glass-panel rounded-xl overflow-hidden z-50 animate-scale-up max-h-48 md:max-h-64 overflow-y-auto">
             <div className="grid grid-cols-1 divide-y divide-white/5">
               {ranks.map((rank) => {
                 const isDisabled = disabledRanks.some(disabled => disabled.id === rank.id);
@@ -137,7 +152,10 @@ const RankSelector: React.FC<RankSelectorProps> = ({
                         ? "opacity-50 bg-black/60 cursor-not-allowed" 
                         : "hover:bg-mlbb-purple/20"
                     }`}
-                    onClick={() => handleRankClick(rank)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!isDisabled) handleRankClick(rank);
+                    }}
                   >
                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 overflow-hidden flex items-center justify-center">
                       <img 
@@ -180,11 +198,14 @@ const RankSelector: React.FC<RankSelectorProps> = ({
         
         {/* Subdivision Selection Dropdown */}
         {isExpanded && showSubdivisions && selectedRank && selectedRank.subdivisions && (
-          <div className="absolute top-full left-0 right-0 mt-2 glass-panel rounded-xl overflow-hidden z-20 animate-scale-up max-h-48 md:max-h-64 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-2 glass-panel rounded-xl overflow-hidden z-50 animate-scale-up max-h-48 md:max-h-64 overflow-y-auto">
             <div className="p-2 border-b border-white/10 flex items-center gap-2">
               <ChevronDown 
                 className="h-3 w-3 md:h-4 md:w-4 text-mlbb-purple cursor-pointer" 
-                onClick={() => setShowSubdivisions(false)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowSubdivisions(false);
+                }}
               />
               <span className="text-xs md:text-sm text-white">{selectedRank.name} Tiers</span>
             </div>
@@ -193,7 +214,10 @@ const RankSelector: React.FC<RankSelectorProps> = ({
                 <div
                   key={subdivision.name}
                   className="flex items-center gap-2 md:gap-3 p-2 md:p-3 transition-all duration-200 cursor-pointer hover:bg-mlbb-purple/20"
-                  onClick={() => handleSubdivisionClick(selectedRank, subIndex)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSubdivisionClick(selectedRank, subIndex);
+                  }}
                 >
                   <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 overflow-hidden flex items-center justify-center">
                     <span className="text-xs md:text-sm font-medium text-white">
