@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import NavBar from "@/components/NavBar";
 import HeroSection from "@/components/HeroSection";
@@ -6,7 +5,7 @@ import RankSelector from "@/components/RankSelector";
 import PricingCard from "@/components/PricingCard";
 import Footer from "@/components/Footer";
 import { Rank, ranks } from "@/data/ranks";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Mail, MessageSquare } from "lucide-react";
 
 const Index = () => {
   const [currentRank, setCurrentRank] = useState<Rank | null>(null);
