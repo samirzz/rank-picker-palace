@@ -38,10 +38,11 @@ const PayPalPayment: React.FC<PayPalPaymentProps> = ({ amount, onSuccess, onCanc
             }}
             createOrder={(data, actions) => {
               return actions.order.create({
+                intent: "CAPTURE", // Add the required intent property
                 purchase_units: [
                   {
                     amount: {
-                      currency_code: "USD", // Add the required currency_code property
+                      currency_code: "USD",
                       value: formattedAmount,
                     },
                   },
