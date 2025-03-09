@@ -143,9 +143,24 @@ export const calculatePrice = (currentRank: Rank, targetRank: Rank): number => {
     return 0; // Can't boost to a lower or same rank
   }
   
-  const basePricePerTier = 10; // Base price of $10 per tier
+  // Get base price from localStorage (admin setting) or use default
+  const storedBasePrice = localStorage.getItem("basePricePerTier");
+  const basePricePerTier = storedBasePrice ? parseFloat(storedBasePrice) : 10;
+  
+  // Get ranks from localStorage (if admin updated them) or use default
+  const storedRanks = localStorage.getItem("adminRanks");
+  let updatedTargetRank = targetRank;
+  
+  if (storedRanks) {
+    const adminRanks = JSON.parse(storedRanks);
+    const foundRank = adminRanks.find((rank: Rank) => rank.id === targetRank.id);
+    if (foundRank) {
+      updatedTargetRank = foundRank;
+    }
+  }
+  
   const tierDifference = targetRank.tier - currentRank.tier;
-  const priceMultiplier = targetRank.priceModifier;
+  const priceMultiplier = updatedTargetRank.priceModifier;
   
   return Math.round(basePricePerTier * tierDifference * priceMultiplier);
 };
