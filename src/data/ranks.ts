@@ -1,4 +1,3 @@
-
 export interface Rank {
   id: string;
   name: string;
@@ -20,8 +19,8 @@ export interface PointsRange {
   max: number;
 }
 
-// Define rank tiers with subdivisions
-export const ranks: Rank[] = [
+// Original ranks data
+const originalRanks: Rank[] = [
   {
     id: "warrior",
     name: "Warrior",
@@ -137,29 +136,45 @@ export const ranks: Rank[] = [
   }
 ];
 
+// Get ranks with admin modifications applied
+export const getAdminRanks = (): Rank[] => {
+  const savedRanks = localStorage.getItem("adminRanks");
+  if (savedRanks) {
+    return JSON.parse(savedRanks);
+  }
+  return originalRanks;
+};
+
+// Get base price from localStorage or use default
+export const getBasePrice = (): number => {
+  const storedBasePrice = localStorage.getItem("basePricePerTier");
+  return storedBasePrice ? parseFloat(storedBasePrice) : 10;
+};
+
+// Export ranks with potential admin modifications
+export const ranks = getAdminRanks();
+
 // Calculate price based on current and target ranks
 export const calculatePrice = (currentRank: Rank, targetRank: Rank): number => {
   if (currentRank.tier >= targetRank.tier) {
     return 0; // Can't boost to a lower or same rank
   }
   
-  // Get base price from localStorage (admin setting) or use default
-  const storedBasePrice = localStorage.getItem("basePricePerTier");
-  const basePricePerTier = storedBasePrice ? parseFloat(storedBasePrice) : 10;
+  // Get base price and latest admin ranks
+  const basePricePerTier = getBasePrice();
+  const adminRanks = getAdminRanks();
   
-  // Get ranks from localStorage (if admin updated them) or use default
-  const storedRanks = localStorage.getItem("adminRanks");
+  // Find the current ranks with potential admin modifications
+  let updatedCurrentRank = currentRank;
   let updatedTargetRank = targetRank;
   
-  if (storedRanks) {
-    const adminRanks = JSON.parse(storedRanks);
-    const foundRank = adminRanks.find((rank: Rank) => rank.id === targetRank.id);
-    if (foundRank) {
-      updatedTargetRank = foundRank;
-    }
-  }
+  const foundCurrentRank = adminRanks.find((rank: Rank) => rank.id === currentRank.id);
+  const foundTargetRank = adminRanks.find((rank: Rank) => rank.id === targetRank.id);
   
-  const tierDifference = targetRank.tier - currentRank.tier;
+  if (foundCurrentRank) updatedCurrentRank = foundCurrentRank;
+  if (foundTargetRank) updatedTargetRank = foundTargetRank;
+  
+  const tierDifference = updatedTargetRank.tier - updatedCurrentRank.tier;
   const priceMultiplier = updatedTargetRank.priceModifier;
   
   return Math.round(basePricePerTier * tierDifference * priceMultiplier);

@@ -1,7 +1,7 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { getRankPlaceholderImage } from "@/data/ranks";
+import { getRankPlaceholderImage, getBasePrice } from "@/data/ranks";
 import { useToast } from "@/hooks/use-toast";
 
 interface PriceEditorProps {
@@ -11,6 +11,7 @@ interface PriceEditorProps {
 
 const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
   const [editedRanks, setEditedRanks] = useState([...ranks]);
+  const [basePrice, setBasePrice] = useState(getBasePrice());
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -26,30 +27,36 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
   };
 
   const handleBasePriceChange = (value: string) => {
-    const basePrice = parseFloat(value);
-    if (isNaN(basePrice) || basePrice <= 0) return;
+    const newBasePrice = parseFloat(value);
+    if (isNaN(newBasePrice) || newBasePrice <= 0) return;
     
-    localStorage.setItem("basePricePerTier", basePrice.toString());
+    setBasePrice(newBasePrice);
   };
 
   const handleSave = () => {
     setLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      onSave(editedRanks);
-      toast({
-        title: "Changes saved",
-        description: "Rank price modifications have been saved successfully.",
-      });
-      setLoading(false);
-    }, 1000);
-  };
-
-  // Get base price from localStorage or use default
-  const getBasePrice = () => {
-    const savedPrice = localStorage.getItem("basePricePerTier");
-    return savedPrice ? parseFloat(savedPrice) : 10;
+    // Save base price to localStorage
+    localStorage.setItem("basePricePerTier", basePrice.toString());
+    
+    // Save ranks to localStorage
+    localStorage.setItem("adminRanks", JSON.stringify(editedRanks));
+    
+    // Trigger a custom event to notify other components of the price change
+    const priceChangeEvent = new CustomEvent('adminPriceChange', {
+      detail: { ranks: editedRanks, basePrice }
+    });
+    window.dispatchEvent(priceChangeEvent);
+    
+    // Call the onSave prop
+    onSave(editedRanks);
+    
+    toast({
+      title: "Changes saved",
+      description: "Rank price modifications have been saved successfully.",
+    });
+    
+    setLoading(false);
   };
 
   return (
@@ -66,7 +73,7 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
               type="number"
               min="1"
               step="0.5"
-              defaultValue={getBasePrice()}
+              value={basePrice}
               onChange={(e) => handleBasePriceChange(e.target.value)}
               className="w-full px-3 py-2 bg-black/60 border border-mlbb-purple/30 rounded-md text-white"
             />

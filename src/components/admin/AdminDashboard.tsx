@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import PriceEditor from "./PriceEditor";
-import { ranks as initialRanks } from "@/data/ranks";
+import { ranks as initialRanks, getAdminRanks } from "@/data/ranks";
 import { useToast } from "@/hooks/use-toast";
 
 const AdminDashboard: React.FC = () => {
@@ -14,15 +14,12 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     // Load ranks from localStorage if available
-    const savedRanks = localStorage.getItem("adminRanks");
-    if (savedRanks) {
-      setRanks(JSON.parse(savedRanks));
-    }
+    setRanks(getAdminRanks());
   }, []);
 
   const handleSaveRanks = (updatedRanks: any[]) => {
     setRanks(updatedRanks);
-    localStorage.setItem("adminRanks", JSON.stringify(updatedRanks));
+    // Note: The actual localStorage save happens in the PriceEditor component
   };
 
   const handleLogout = () => {
@@ -69,6 +66,9 @@ const AdminDashboard: React.FC = () => {
             </p>
             <p>
               <span className="font-medium text-mlbb-lightpurple">Formula:</span> Final Price = Base Price × Tier Difference × Target Rank Modifier
+            </p>
+            <p className="mt-4 text-green-400">
+              Changes you make here will be immediately visible to clients on the main page.
             </p>
           </div>
         </div>

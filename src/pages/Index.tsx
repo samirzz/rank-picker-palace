@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import RankSelectionSection from "@/components/RankSelectionSection";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import ContactSection from "@/components/ContactSection";
-import { Rank } from "@/data/ranks";
+import { Rank, getAdminRanks } from "@/data/ranks";
 
 const Index = () => {
   const [currentRank, setCurrentRank] = useState<Rank | null>(null);

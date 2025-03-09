@@ -1,9 +1,9 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import RankSelector from "@/components/RankSelector";
 import PricingCard from "@/components/PricingCard";
 import { ArrowRight, ArrowDown } from "lucide-react";
-import { Rank, ranks } from "@/data/ranks";
+import { Rank, ranks, getAdminRanks } from "@/data/ranks";
 
 interface RankSelectionSectionProps {
   isIntersecting: boolean;
@@ -22,6 +22,38 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
 }) => {
   const [currentSubdivision, setCurrentSubdivision] = useState(0);
   const [targetSubdivision, setTargetSubdivision] = useState(0);
+  const [availableRanks, setAvailableRanks] = useState(ranks);
+
+  // Update ranks when admin changes prices
+  useEffect(() => {
+    const handleAdminPriceChange = () => {
+      const updatedRanks = getAdminRanks();
+      setAvailableRanks(updatedRanks);
+      
+      // Update current and target ranks with new price modifiers if they exist
+      if (currentRank) {
+        const updatedCurrentRank = updatedRanks.find(rank => rank.id === currentRank.id);
+        if (updatedCurrentRank) {
+          setCurrentRank(updatedCurrentRank, currentSubdivision);
+        }
+      }
+      
+      if (targetRank) {
+        const updatedTargetRank = updatedRanks.find(rank => rank.id === targetRank.id);
+        if (updatedTargetRank) {
+          setTargetRank(updatedTargetRank, targetSubdivision);
+        }
+      }
+    };
+
+    // Listen for the custom event
+    window.addEventListener('adminPriceChange', handleAdminPriceChange);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('adminPriceChange', handleAdminPriceChange);
+    };
+  }, [currentRank, targetRank, currentSubdivision, targetSubdivision, setCurrentRank, setTargetRank]);
 
   const handleCurrentRankSelect = (rank: Rank, subdivisionIndex: number = 0) => {
     setCurrentRank(rank);
@@ -40,7 +72,7 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
     // If current rank has subdivisions selected, we need to disable:
     // 1. All ranks with lower tier than current rank
     // 2. Current rank's subdivisions that are lower than or equal to selected subdivision
-    return ranks.filter(rank => {
+    return availableRanks.filter(rank => {
       // Filter out lower tier ranks
       if (rank.tier < currentRank.tier) return true;
       
@@ -90,6 +122,7 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
               onRankSelect={handleCurrentRankSelect}
               disabledRanks={[]}
               animationDelay={200}
+              ranks={availableRanks}
             />
           </div>
           
@@ -109,6 +142,7 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
               onRankSelect={handleTargetRankSelect}
               disabledRanks={getDisabledTargetRanks()}
               animationDelay={400}
+              ranks={availableRanks}
             />
           </div>
         </div>
