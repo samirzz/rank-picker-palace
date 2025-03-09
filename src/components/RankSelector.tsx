@@ -36,7 +36,7 @@ const RankSelector: React.FC<RankSelectorProps> = ({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
-      const dropdownContainer = document.getElementById('rank-selector-dropdown');
+      const dropdownContainer = document.getElementById('rank-selector-dropdown-' + label.replace(/\s+/g, '-').toLowerCase());
       
       if (dropdownContainer && !dropdownContainer.contains(target) && isExpanded) {
         setIsExpanded(false);
@@ -48,9 +48,11 @@ const RankSelector: React.FC<RankSelectorProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isExpanded]);
+  }, [isExpanded, label]);
 
-  const handleRankClick = (rank: Rank) => {
+  const handleRankClick = (rank: Rank, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
     if (disabledRanks.some(disabled => disabled.id === rank.id)) {
       return;
     }
@@ -66,11 +68,21 @@ const RankSelector: React.FC<RankSelectorProps> = ({
     }
   };
   
-  const handleSubdivisionClick = (rank: Rank, subdivisionIndex: number) => {
+  const handleSubdivisionClick = (rank: Rank, subdivisionIndex: number, e: React.MouseEvent) => {
+    e.stopPropagation();
     setSelectedSubdivision(subdivisionIndex);
     onRankSelect(rank, subdivisionIndex);
     setShowSubdivisions(false);
     setIsExpanded(false);
+  };
+
+  const toggleDropdown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsExpanded(!isExpanded);
+    if (!isExpanded) {
+      setShowSubdivisions(false);
+    }
   };
 
   return (
@@ -84,13 +96,13 @@ const RankSelector: React.FC<RankSelectorProps> = ({
       </div>
       
       <div 
-        id="rank-selector-dropdown"
+        id={`rank-selector-dropdown-${label.replace(/\s+/g, '-').toLowerCase()}`}
         className="relative"
       >
         {/* Selected Rank (or placeholder) */}
         <div 
           className="glass-panel p-3 md:p-4 cursor-pointer relative overflow-hidden hover:shadow-lg hover:shadow-mlbb-purple/10 transition-all duration-300"
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={toggleDropdown}
         >
           <div 
             className="absolute inset-0 opacity-0 hover:opacity-100 shimmer-bg transition-opacity duration-500" 
@@ -152,10 +164,7 @@ const RankSelector: React.FC<RankSelectorProps> = ({
                         ? "opacity-50 bg-black/60 cursor-not-allowed" 
                         : "hover:bg-mlbb-purple/20"
                     }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!isDisabled) handleRankClick(rank);
-                    }}
+                    onClick={(e) => handleRankClick(rank, e)}
                   >
                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 overflow-hidden flex items-center justify-center">
                       <img 
@@ -214,10 +223,7 @@ const RankSelector: React.FC<RankSelectorProps> = ({
                 <div
                   key={subdivision.name}
                   className="flex items-center gap-2 md:gap-3 p-2 md:p-3 transition-all duration-200 cursor-pointer hover:bg-mlbb-purple/20"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSubdivisionClick(selectedRank, subIndex);
-                  }}
+                  onClick={(e) => handleSubdivisionClick(selectedRank, subIndex, e)}
                 >
                   <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 overflow-hidden flex items-center justify-center">
                     <span className="text-xs md:text-sm font-medium text-white">
@@ -228,7 +234,7 @@ const RankSelector: React.FC<RankSelectorProps> = ({
                   <div className="flex-1">
                     <div className="font-medium text-white text-xs md:text-sm">{subdivision.name}</div>
                     <div className="flex items-center gap-0.5 md:gap-1">
-                      {Array.from({ length: subdivision.stars || 0 }).map((_, starIndex) => (
+                      {subdivision.stars && Array.from({ length: subdivision.stars }).map((_, starIndex) => (
                         <Star 
                           key={starIndex} 
                           className="h-2 w-2 md:h-3 md:w-3 text-mlbb-gold fill-mlbb-gold" 

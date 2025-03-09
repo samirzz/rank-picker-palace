@@ -77,7 +77,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
     return rank.name;
   };
 
-  return <div className={`transition-all duration-700 transform ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
+  return (
+    <div className={`transition-all duration-700 transform ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
       <div className="glass-panel overflow-hidden relative">
         {/* Background effects */}
         <div className="absolute top-0 right-0 w-24 md:w-32 h-24 md:h-32 bg-mlbb-purple/30 rounded-full filter blur-3xl opacity-20"></div>
@@ -90,7 +91,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
             <p className="text-gray-400 text-xs md:text-sm">Select ranks to calculate your price</p>
           </div>
           
-          {canCalculatePrice ? <>
+          {canCalculatePrice ? (
+            <>
               {/* Pricing information */}
               <div className="bg-gradient-to-r from-mlbb-purple/10 to-mlbb-purple/20 rounded-lg p-3 md:p-4 text-center mb-4 md:mb-6">
                 <div className="text-xs md:text-sm text-mlbb-lightpurple mb-1">Total Price</div>
@@ -122,33 +124,53 @@ const PricingCard: React.FC<PricingCardProps> = ({
               
               {/* Benefits */}
               <div className="mb-4 md:mb-6">
-                <button onClick={() => setShowDetails(!showDetails)} className="flex items-center justify-between w-full text-mlbb-lightpurple text-xs md:text-sm mb-2 md:mb-3">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDetails(!showDetails);
+                  }} 
+                  className="flex items-center justify-between w-full text-mlbb-lightpurple text-xs md:text-sm mb-2 md:mb-3"
+                >
                   <span>Service Details</span>
                   {showDetails ? <ChevronUp className="h-3 w-3 md:h-4 md:w-4" /> : <ChevronDown className="h-3 w-3 md:h-4 md:w-4" />}
                 </button>
                 
-                {showDetails && <div className="animate-slide-down">
+                {showDetails && (
+                  <div className="animate-slide-down">
                     <ul className="space-y-1 md:space-y-2 text-xs md:text-sm text-gray-300">
-                      {benefits.map((benefit, index) => <li key={index} className="flex items-start">
+                      {benefits.map((benefit, index) => (
+                        <li key={index} className="flex items-start">
                           <CheckCircle className="h-3 w-3 md:h-4 md:w-4 text-mlbb-purple mr-1 md:mr-2 mt-0.5 flex-shrink-0" />
                           <span>{benefit}</span>
-                        </li>)}
+                        </li>
+                      ))}
                     </ul>
-                  </div>}
+                  </div>
+                )}
               </div>
               
               {/* CTA Button */}
               <Button className="w-full bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple hover:opacity-90 text-white py-4 text-sm md:text-base transition-all duration-300">
                 Proceed to Checkout
               </Button>
-            </> : <div className="text-center py-4 md:py-6">
-              {!currentRank || !targetRank ? <p className="text-gray-400 text-xs md:text-sm">Please select both current and target ranks</p> : price === 0 ? <p className="text-amber-400 text-xs md:text-sm">
+            </>
+          ) : (
+            <div className="text-center py-4 md:py-6">
+              {!currentRank || !targetRank ? (
+                <p className="text-gray-400 text-xs md:text-sm">Please select both current and target ranks</p>
+              ) : price === 0 ? (
+                <p className="text-amber-400 text-xs md:text-sm">
                   Target rank must be higher than current rank
-                </p> : <p className="text-gray-400 text-xs md:text-sm">Calculating price...</p>}
-            </div>}
+                </p>
+              ) : (
+                <p className="text-gray-400 text-xs md:text-sm">Calculating price...</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default PricingCard;
