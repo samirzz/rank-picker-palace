@@ -24,7 +24,7 @@ const PayPalPayment: React.FC<PayPalPaymentProps> = ({ amount, onSuccess, onCanc
       </div>
 
       <PayPalScriptProvider options={{ 
-        "client-id": "test", // Replace with your actual client ID
+        clientId: "test", // Replace with your actual client ID
         currency: "USD",
         intent: "capture"
       }}>
@@ -41,6 +41,7 @@ const PayPalPayment: React.FC<PayPalPaymentProps> = ({ amount, onSuccess, onCanc
                 purchase_units: [
                   {
                     amount: {
+                      currency_code: "USD", // Add the required currency_code property
                       value: formattedAmount,
                     },
                   },
