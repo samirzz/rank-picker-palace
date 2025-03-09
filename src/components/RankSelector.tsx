@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from "react";
-import { ranks, Rank, getRankPlaceholderImage } from "@/data/ranks";
+import { Rank, getRankPlaceholderImage } from "@/data/ranks";
 import { ChevronRight, ChevronDown, Star } from "lucide-react";
 import RankTierInfo from "./RankTierInfo";
 
@@ -10,6 +9,7 @@ interface RankSelectorProps {
   onRankSelect: (rank: Rank, subdivisionIndex?: number) => void;
   disabledRanks?: Rank[];
   animationDelay?: number;
+  ranks: Rank[];
 }
 
 const RankSelector: React.FC<RankSelectorProps> = ({
@@ -18,6 +18,7 @@ const RankSelector: React.FC<RankSelectorProps> = ({
   onRankSelect,
   disabledRanks = [],
   animationDelay = 0,
+  ranks
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -32,7 +33,6 @@ const RankSelector: React.FC<RankSelectorProps> = ({
     return () => clearTimeout(timer);
   }, [animationDelay]);
 
-  // Handle clicks outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -60,7 +60,6 @@ const RankSelector: React.FC<RankSelectorProps> = ({
     setSelectedSubdivision(0);
     onRankSelect(rank, 0);
     
-    // If the rank has subdivisions, show them
     if (rank.subdivisions && rank.subdivisions.length > 0) {
       setShowSubdivisions(true);
     } else {
@@ -99,7 +98,6 @@ const RankSelector: React.FC<RankSelectorProps> = ({
         id={`rank-selector-dropdown-${label.replace(/\s+/g, '-').toLowerCase()}`}
         className="relative"
       >
-        {/* Selected Rank (or placeholder) */}
         <div 
           className="glass-panel p-3 md:p-4 cursor-pointer relative overflow-hidden hover:shadow-lg hover:shadow-mlbb-purple/10 transition-all duration-300"
           onClick={toggleDropdown}
@@ -149,7 +147,6 @@ const RankSelector: React.FC<RankSelectorProps> = ({
           </div>
         </div>
         
-        {/* Rank Selection Dropdown */}
         {isExpanded && !showSubdivisions && (
           <div className="absolute top-full left-0 right-0 mt-2 glass-panel rounded-xl overflow-hidden z-50 animate-scale-up max-h-48 md:max-h-64 overflow-y-auto">
             <div className="grid grid-cols-1 divide-y divide-white/5">
@@ -205,7 +202,6 @@ const RankSelector: React.FC<RankSelectorProps> = ({
           </div>
         )}
         
-        {/* Subdivision Selection Dropdown */}
         {isExpanded && showSubdivisions && selectedRank && selectedRank.subdivisions && (
           <div className="absolute top-full left-0 right-0 mt-2 glass-panel rounded-xl overflow-hidden z-50 animate-scale-up max-h-48 md:max-h-64 overflow-y-auto">
             <div className="p-2 border-b border-white/10 flex items-center gap-2">
