@@ -1,3 +1,4 @@
+
 export interface Rank {
   id: string;
   name: string;
@@ -17,6 +18,15 @@ export interface RankSubdivision {
 export interface PointsRange {
   min: number;
   max: number;
+}
+
+// Define a new interface for rank combinations
+export interface RankCombination {
+  fromRankId: string;
+  fromSubdivision?: number;
+  toRankId: string;
+  toSubdivision?: number;
+  price: number;
 }
 
 // Original ranks data
@@ -136,6 +146,9 @@ const originalRanks: Rank[] = [
   }
 ];
 
+// Initialize default combinations list
+const defaultRankCombinations: RankCombination[] = [];
+
 // Get ranks with admin modifications applied
 export const getAdminRanks = (): Rank[] => {
   const savedRanks = localStorage.getItem("adminRanks");
@@ -151,20 +164,48 @@ export const getBasePrice = (): number => {
   return storedBasePrice ? parseFloat(storedBasePrice) : 10;
 };
 
+// Get custom rank combinations or return empty array
+export const getRankCombinations = (): RankCombination[] => {
+  const storedCombinations = localStorage.getItem("rankCombinations");
+  return storedCombinations ? JSON.parse(storedCombinations) : defaultRankCombinations;
+};
+
+// Save rank combinations to localStorage
+export const saveRankCombinations = (combinations: RankCombination[]): void => {
+  localStorage.setItem("rankCombinations", JSON.stringify(combinations));
+};
+
 // Export ranks with potential admin modifications
 export const ranks = getAdminRanks();
 
 // Calculate price based on current and target ranks
-export const calculatePrice = (currentRank: Rank, targetRank: Rank): number => {
-  if (currentRank.tier >= targetRank.tier) {
-    return 0; // Can't boost to a lower or same rank
+export const calculatePrice = (
+  currentRank: Rank, 
+  targetRank: Rank, 
+  currentSubdivision: number = 0,
+  targetSubdivision: number = 0
+): number => {
+  if (currentRank.tier >= targetRank.tier && currentRank.id === targetRank.id && currentSubdivision <= targetSubdivision) {
+    return 0; // Can't boost to a lower or same rank/subdivision
   }
   
-  // Get base price and latest admin ranks
+  // Check if there's a custom price for this specific combination
+  const combinations = getRankCombinations();
+  const customCombination = combinations.find(combo => 
+    combo.fromRankId === currentRank.id && 
+    combo.toRankId === targetRank.id &&
+    (combo.fromSubdivision === undefined || combo.fromSubdivision === currentSubdivision) &&
+    (combo.toSubdivision === undefined || combo.toSubdivision === targetSubdivision)
+  );
+  
+  if (customCombination) {
+    return customCombination.price;
+  }
+  
+  // If no custom price is set, use the formula calculation
   const basePricePerTier = getBasePrice();
   const adminRanks = getAdminRanks();
   
-  // Find the current ranks with potential admin modifications
   let updatedCurrentRank = currentRank;
   let updatedTargetRank = targetRank;
   
@@ -177,7 +218,22 @@ export const calculatePrice = (currentRank: Rank, targetRank: Rank): number => {
   const tierDifference = updatedTargetRank.tier - updatedCurrentRank.tier;
   const priceMultiplier = updatedTargetRank.priceModifier;
   
-  return Math.round(basePricePerTier * tierDifference * priceMultiplier);
+  let price = Math.round(basePricePerTier * tierDifference * priceMultiplier);
+  
+  // Add subdivision modifier if same tier but different subdivision
+  if (currentRank.tier === targetRank.tier && 
+      currentRank.subdivisions && 
+      targetRank.subdivisions && 
+      currentSubdivision !== undefined && 
+      targetSubdivision !== undefined) {
+    // Only if target subdivision is higher than current subdivision
+    if (targetSubdivision < currentSubdivision) {
+      const subdivisionDiff = currentSubdivision - targetSubdivision;
+      price = 5 * subdivisionDiff; // $5 per subdivision
+    }
+  }
+  
+  return price;
 };
 
 // Get placeholder rank images
