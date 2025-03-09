@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { calculatePrice } from "@/data/ranks";
 import type { Rank } from "@/data/ranks";
 import { CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
+import PaymentMethods from "./payments/PaymentMethods";
+import { useToast } from "@/hooks/use-toast";
 
 interface PricingCardProps {
   currentRank: Rank | null;
@@ -23,6 +25,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [price, setPrice] = useState<number | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -52,6 +56,22 @@ const PricingCard: React.FC<PricingCardProps> = ({
       setPrice(null);
     }
   }, [currentRank, targetRank, currentSubdivision, targetSubdivision]);
+
+  const handleProceedToCheckout = () => {
+    setShowPayment(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    setShowPayment(false);
+    toast({
+      title: "Order Confirmed",
+      description: "Thank you for your order! Our boosters will start working on it shortly.",
+    });
+  };
+
+  const handlePaymentCancel = () => {
+    setShowPayment(false);
+  };
 
   const canCalculatePrice = currentRank && targetRank && price !== null && price > 0;
   const benefits = ["Top 1% boosters", "24/7 Customer support", "Stream enabled", "Guaranteed secure account handling", "100% boosting completion rate"];
@@ -93,66 +113,79 @@ const PricingCard: React.FC<PricingCardProps> = ({
           
           {canCalculatePrice ? (
             <>
-              {/* Pricing information */}
-              <div className="bg-gradient-to-r from-mlbb-purple/10 to-mlbb-purple/20 rounded-lg p-3 md:p-4 text-center mb-4 md:mb-6">
-                <div className="text-xs md:text-sm text-mlbb-lightpurple mb-1">Total Price</div>
-                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white">
-                  ${price.toFixed(2)}
-                </div>
-                <div className="text-2xs md:text-xs text-gray-400 mt-1">
-                  Est. Completion: {getEstimatedTime()}
-                </div>
-              </div>
-              
-              {/* Order summary */}
-              <div className="mb-4 md:mb-6">
-                <div className="flex justify-between items-center border-b border-white/10 pb-2 md:pb-3 mb-2 md:mb-3">
-                  <span className="text-gray-300 text-xs md:text-sm">From Rank</span>
-                  <span className="font-semibold text-white text-xs md:text-sm">{formatRankName(currentRank, currentSubdivision)}</span>
-                </div>
-                <div className="flex justify-between items-center border-b border-white/10 pb-2 md:pb-3 mb-2 md:mb-3">
-                  <span className="text-gray-300 text-xs md:text-sm">To Rank</span>
-                  <span className="font-semibold text-white text-xs md:text-sm">{formatRankName(targetRank, targetSubdivision)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-300 text-xs md:text-sm">Tier Difference</span>
-                  <span className="font-semibold text-white text-xs md:text-sm">
-                    {currentRank.tier === targetRank.tier ? "Same Tier" : Math.abs(targetRank.tier - currentRank.tier)}
-                  </span>
-                </div>
-              </div>
-              
-              {/* Benefits */}
-              <div className="mb-4 md:mb-6">
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowDetails(!showDetails);
-                  }} 
-                  className="flex items-center justify-between w-full text-mlbb-lightpurple text-xs md:text-sm mb-2 md:mb-3"
-                >
-                  <span>Service Details</span>
-                  {showDetails ? <ChevronUp className="h-3 w-3 md:h-4 md:w-4" /> : <ChevronDown className="h-3 w-3 md:h-4 md:w-4" />}
-                </button>
-                
-                {showDetails && (
-                  <div className="animate-slide-down">
-                    <ul className="space-y-1 md:space-y-2 text-xs md:text-sm text-gray-300">
-                      {benefits.map((benefit, index) => (
-                        <li key={index} className="flex items-start">
-                          <CheckCircle className="h-3 w-3 md:h-4 md:w-4 text-mlbb-purple mr-1 md:mr-2 mt-0.5 flex-shrink-0" />
-                          <span>{benefit}</span>
-                        </li>
-                      ))}
-                    </ul>
+              {showPayment ? (
+                <PaymentMethods 
+                  amount={price} 
+                  onPaymentSuccess={handlePaymentSuccess}
+                  onPaymentCancel={handlePaymentCancel}
+                />
+              ) : (
+                <>
+                  {/* Pricing information */}
+                  <div className="bg-gradient-to-r from-mlbb-purple/10 to-mlbb-purple/20 rounded-lg p-3 md:p-4 text-center mb-4 md:mb-6">
+                    <div className="text-xs md:text-sm text-mlbb-lightpurple mb-1">Total Price</div>
+                    <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white">
+                      ${price.toFixed(2)}
+                    </div>
+                    <div className="text-2xs md:text-xs text-gray-400 mt-1">
+                      Est. Completion: {getEstimatedTime()}
+                    </div>
                   </div>
-                )}
-              </div>
-              
-              {/* CTA Button */}
-              <Button className="w-full bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple hover:opacity-90 text-white py-4 text-sm md:text-base transition-all duration-300">
-                Proceed to Checkout
-              </Button>
+                  
+                  {/* Order summary */}
+                  <div className="mb-4 md:mb-6">
+                    <div className="flex justify-between items-center border-b border-white/10 pb-2 md:pb-3 mb-2 md:mb-3">
+                      <span className="text-gray-300 text-xs md:text-sm">From Rank</span>
+                      <span className="font-semibold text-white text-xs md:text-sm">{formatRankName(currentRank, currentSubdivision)}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-white/10 pb-2 md:pb-3 mb-2 md:mb-3">
+                      <span className="text-gray-300 text-xs md:text-sm">To Rank</span>
+                      <span className="font-semibold text-white text-xs md:text-sm">{formatRankName(targetRank, targetSubdivision)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-300 text-xs md:text-sm">Tier Difference</span>
+                      <span className="font-semibold text-white text-xs md:text-sm">
+                        {currentRank.tier === targetRank.tier ? "Same Tier" : Math.abs(targetRank.tier - currentRank.tier)}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Benefits */}
+                  <div className="mb-4 md:mb-6">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowDetails(!showDetails);
+                      }} 
+                      className="flex items-center justify-between w-full text-mlbb-lightpurple text-xs md:text-sm mb-2 md:mb-3"
+                    >
+                      <span>Service Details</span>
+                      {showDetails ? <ChevronUp className="h-3 w-3 md:h-4 md:w-4" /> : <ChevronDown className="h-3 w-3 md:h-4 md:w-4" />}
+                    </button>
+                    
+                    {showDetails && (
+                      <div className="animate-slide-down">
+                        <ul className="space-y-1 md:space-y-2 text-xs md:text-sm text-gray-300">
+                          {benefits.map((benefit, index) => (
+                            <li key={index} className="flex items-start">
+                              <CheckCircle className="h-3 w-3 md:h-4 md:w-4 text-mlbb-purple mr-1 md:mr-2 mt-0.5 flex-shrink-0" />
+                              <span>{benefit}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* CTA Button */}
+                  <Button 
+                    onClick={handleProceedToCheckout}
+                    className="w-full bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple hover:opacity-90 text-white py-4 text-sm md:text-base transition-all duration-300"
+                  >
+                    Proceed to Checkout
+                  </Button>
+                </>
+              )}
             </>
           ) : (
             <div className="text-center py-4 md:py-6">
