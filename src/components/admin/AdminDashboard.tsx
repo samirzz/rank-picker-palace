@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
-import { LogOut, Package, LayoutDashboard } from "lucide-react";
+import { LogOut, Package, LayoutDashboard, Users, BarChart } from "lucide-react";
 import PriceEditor from "./PriceEditor";
 import CombinationPriceEditor from "./CombinationPriceEditor";
 import { ranks as initialRanks, getAdminRanks } from "@/data/ranks";
