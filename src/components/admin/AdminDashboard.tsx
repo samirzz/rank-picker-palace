@@ -8,9 +8,12 @@ import CombinationPriceEditor from "./CombinationPriceEditor";
 import { ranks as initialRanks, getAdminRanks } from "@/data/ranks";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 const AdminDashboard: React.FC = () => {
   const [ranks, setRanks] = useState(initialRanks);
+  const [selectedGame, setSelectedGame] = useState("mlbb");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -43,9 +46,9 @@ const AdminDashboard: React.FC = () => {
   ];
 
   useEffect(() => {
-    // Load ranks from localStorage if available
-    setRanks(getAdminRanks());
-  }, []);
+    // Load ranks from localStorage based on selected game
+    setRanks(getAdminRanks(selectedGame));
+  }, [selectedGame]);
 
   const handleSaveRanks = (updatedRanks: any[]) => {
     setRanks(updatedRanks);
@@ -189,7 +192,31 @@ const AdminDashboard: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="tier-pricing">
-            <PriceEditor ranks={ranks} onSave={handleSaveRanks} />
+            <div className="mb-6 flex justify-between items-center">
+              <div>
+                <h2 className="text-xl md:text-2xl font-bold text-white mb-2">Rank Pricing</h2>
+                <p className="text-gray-400 text-sm">Configure pricing for different games and ranks.</p>
+              </div>
+              <div className="w-64">
+                <Select 
+                  value={selectedGame} 
+                  onValueChange={setSelectedGame}
+                >
+                  <SelectTrigger className="bg-black/40 border-mlbb-purple/30 text-white">
+                    <SelectValue placeholder="Select Game" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/90 border-mlbb-purple/50 text-white">
+                    {games.map(game => (
+                      <SelectItem key={game.id} value={game.id} className="hover:bg-mlbb-purple/20">
+                        {game.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <PriceEditor ranks={ranks} onSave={handleSaveRanks} gameId={selectedGame} />
             
             <div className="mt-8 glass-panel p-4 md:p-6">
               <h3 className="text-lg font-semibold text-white mb-4">Tier Pricing Information</h3>
@@ -208,7 +235,7 @@ const AdminDashboard: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="custom-combinations">
-            <CombinationPriceEditor onSave={handleCombinationsSave} />
+            <CombinationPriceEditor onSave={handleCombinationsSave} gameId={selectedGame} />
             
             <div className="mt-8 glass-panel p-4 md:p-6">
               <h3 className="text-lg font-semibold text-white mb-4">Custom Combinations Information</h3>
