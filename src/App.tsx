@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminGameOrdersPage from "./pages/AdminGameOrdersPage";
+import AdminGameDashboardPage from "./pages/AdminGameDashboardPage";
 import GameSelectionDashboard from "./pages/GameSelectionDashboard";
 import GameDetailPage from "./pages/GameDetailPage";
 
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
           <Route path="/admin/orders" element={<AdminGameOrdersPage />} />
           <Route path="/admin/orders/:gameId" element={<AdminGameOrdersPage />} />
+          <Route path="/admin/games/:gameId" element={<AdminGameDashboardPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
