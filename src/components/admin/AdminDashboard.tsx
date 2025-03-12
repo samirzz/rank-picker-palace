@@ -1,54 +1,23 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useNavigate, Link } from "react-router-dom";
-import { LogOut, Package, LayoutDashboard, Users, BarChart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { LogOut } from "lucide-react";
 import PriceEditor from "./PriceEditor";
 import CombinationPriceEditor from "./CombinationPriceEditor";
 import { ranks as initialRanks, getAdminRanks } from "@/data/ranks";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 
 const AdminDashboard: React.FC = () => {
   const [ranks, setRanks] = useState(initialRanks);
-  const [selectedGame, setSelectedGame] = useState("mlbb");
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Games data
-  const games = [
-    {
-      id: "mlbb",
-      name: "Mobile Legends",
-      image: "https://images.unsplash.com/photo-1627396184389-b4414ae2062a?q=80&w=1000&auto=format&fit=crop",
-      pendingOrders: 5,
-    },
-    {
-      id: "pubg",
-      name: "PUBG Mobile",
-      image: "https://images.unsplash.com/photo-1614294149528-cc5eff90511a?q=80&w=1000&auto=format&fit=crop",
-      pendingOrders: 12,
-    },
-    {
-      id: "coc",
-      name: "Clash of Clans",
-      image: "https://images.unsplash.com/photo-1640245539773-4c1a4a3a5be7?q=80&w=1000&auto=format&fit=crop",
-      pendingOrders: 3,
-    },
-    {
-      id: "codm",
-      name: "Call of Duty Mobile",
-      image: "https://images.unsplash.com/photo-1606167668584-78701c57f13d?q=80&w=1000&auto=format&fit=crop",
-      pendingOrders: 8,
-    },
-  ];
-
   useEffect(() => {
-    // Load ranks from localStorage based on selected game
-    setRanks(getAdminRanks(selectedGame));
-  }, [selectedGame]);
+    // Load ranks from localStorage if available
+    setRanks(getAdminRanks());
+  }, []);
 
   const handleSaveRanks = (updatedRanks: any[]) => {
     setRanks(updatedRanks);
@@ -89,134 +58,19 @@ const AdminDashboard: React.FC = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6 md:py-8">
-        <Tabs defaultValue="games" className="w-full mb-6">
+        <div className="mb-6 md:mb-8">
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-2">Rank Price Management</h2>
+          <p className="text-gray-400 text-sm">Configure pricing for rank boosting services.</p>
+        </div>
+
+        <Tabs defaultValue="tier-pricing" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="games">Game Management</TabsTrigger>
-            <TabsTrigger value="tier-pricing">Pricing Settings</TabsTrigger>
+            <TabsTrigger value="tier-pricing">Tier Pricing</TabsTrigger>
+            <TabsTrigger value="custom-combinations">Custom Combinations</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="games">
-            <div className="mb-6 md:mb-8">
-              <h2 className="text-xl md:text-2xl font-bold text-white mb-2">Game Dashboards</h2>
-              <p className="text-gray-400 text-sm">Select a game to manage orders and settings.</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {games.map((game) => (
-                <Link 
-                  key={game.id}
-                  to={`/admin/games/${game.id}`}
-                  className="bg-black/20 border border-gray-700 rounded-lg overflow-hidden transition-all duration-300 hover:border-mlbb-purple hover:shadow-lg hover:shadow-mlbb-purple/20"
-                >
-                  <div className="aspect-video w-full relative">
-                    <img 
-                      src={game.image} 
-                      alt={game.name}
-                      className="w-full h-full object-cover"
-                    />
-                    {game.pendingOrders > 0 && (
-                      <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-                        {game.pendingOrders}
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-bold text-white text-lg mb-1">{game.name}</h3>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-400">
-                        {game.pendingOrders} pending orders
-                      </span>
-                      <div className="flex items-center text-mlbb-purple text-sm">
-                        <LayoutDashboard className="w-4 h-4 mr-1" />
-                        <span>Dashboard</span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-            
-            <div className="mt-8">
-              <div className="mb-6 md:mb-8">
-                <h2 className="text-xl md:text-2xl font-bold text-white mb-2">Quick Actions</h2>
-                <p className="text-gray-400 text-sm">Common management tasks across all games.</p>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Link 
-                  to="/admin/orders"
-                  className="bg-black/20 border border-gray-700 rounded-lg p-4 flex items-start gap-4 hover:border-mlbb-purple transition-all duration-200"
-                >
-                  <div className="bg-mlbb-purple/20 p-3 rounded-lg">
-                    <Package className="h-6 w-6 text-mlbb-purple" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-white text-lg mb-1">All Orders</h3>
-                    <p className="text-sm text-gray-400">View and manage orders across all games</p>
-                  </div>
-                </Link>
-                
-                <button 
-                  onClick={() => toast({
-                    title: "Coming Soon",
-                    description: "This feature will be available soon."
-                  })}
-                  className="bg-black/20 border border-gray-700 rounded-lg p-4 flex items-start gap-4 hover:border-mlbb-purple transition-all duration-200 text-left"
-                >
-                  <div className="bg-mlbb-purple/20 p-3 rounded-lg">
-                    <Users className="h-6 w-6 text-mlbb-purple" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-white text-lg mb-1">Booster Accounts</h3>
-                    <p className="text-sm text-gray-400">Manage your team of boosters</p>
-                  </div>
-                </button>
-                
-                <button 
-                  onClick={() => toast({
-                    title: "Coming Soon",
-                    description: "This feature will be available soon."
-                  })}
-                  className="bg-black/20 border border-gray-700 rounded-lg p-4 flex items-start gap-4 hover:border-mlbb-purple transition-all duration-200 text-left"
-                >
-                  <div className="bg-mlbb-purple/20 p-3 rounded-lg">
-                    <BarChart className="h-6 w-6 text-mlbb-purple" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-white text-lg mb-1">Analytics</h3>
-                    <p className="text-sm text-gray-400">View performance metrics and reports</p>
-                  </div>
-                </button>
-              </div>
-            </div>
-          </TabsContent>
-          
           <TabsContent value="tier-pricing">
-            <div className="mb-6 flex justify-between items-center">
-              <div>
-                <h2 className="text-xl md:text-2xl font-bold text-white mb-2">Rank Pricing</h2>
-                <p className="text-gray-400 text-sm">Configure pricing for different games and ranks.</p>
-              </div>
-              <div className="w-64">
-                <Select 
-                  value={selectedGame} 
-                  onValueChange={setSelectedGame}
-                >
-                  <SelectTrigger className="bg-black/40 border-mlbb-purple/30 text-white">
-                    <SelectValue placeholder="Select Game" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-black/90 border-mlbb-purple/50 text-white">
-                    {games.map(game => (
-                      <SelectItem key={game.id} value={game.id} className="hover:bg-mlbb-purple/20">
-                        {game.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <PriceEditor ranks={ranks} onSave={handleSaveRanks} gameId={selectedGame} />
+            <PriceEditor ranks={ranks} onSave={handleSaveRanks} />
             
             <div className="mt-8 glass-panel p-4 md:p-6">
               <h3 className="text-lg font-semibold text-white mb-4">Tier Pricing Information</h3>
@@ -235,7 +89,7 @@ const AdminDashboard: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="custom-combinations">
-            <CombinationPriceEditor onSave={handleCombinationsSave} gameId={selectedGame} />
+            <CombinationPriceEditor onSave={handleCombinationsSave} />
             
             <div className="mt-8 glass-panel p-4 md:p-6">
               <h3 className="text-lg font-semibold text-white mb-4">Custom Combinations Information</h3>
@@ -253,6 +107,10 @@ const AdminDashboard: React.FC = () => {
             </div>
           </TabsContent>
         </Tabs>
+        
+        <div className="mt-4 text-center text-green-400 text-sm">
+          Changes you make here will be immediately visible to clients on the main page.
+        </div>
       </main>
     </div>
   );

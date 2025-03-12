@@ -7,20 +7,13 @@ import { useToast } from "@/hooks/use-toast";
 interface PriceEditorProps {
   ranks: any[];
   onSave: (updatedRanks: any[]) => void;
-  gameId: string;
 }
 
-const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave, gameId }) => {
+const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
   const [editedRanks, setEditedRanks] = useState([...ranks]);
-  const [basePrice, setBasePrice] = useState(getBasePrice(gameId));
+  const [basePrice, setBasePrice] = useState(getBasePrice());
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-
-  // Update state when gameId or ranks change
-  useEffect(() => {
-    setEditedRanks([...ranks]);
-    setBasePrice(getBasePrice(gameId));
-  }, [ranks, gameId]);
 
   const handlePriceModifierChange = (rankId: string, value: string) => {
     const newValue = parseFloat(value);
@@ -43,15 +36,15 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave, gameId }) => {
   const handleSave = () => {
     setLoading(true);
     
-    // Save base price to localStorage with game ID
-    localStorage.setItem(`basePricePerTier_${gameId}`, basePrice.toString());
+    // Save base price to localStorage
+    localStorage.setItem("basePricePerTier", basePrice.toString());
     
-    // Save ranks to localStorage with game ID
-    localStorage.setItem(`adminRanks_${gameId}`, JSON.stringify(editedRanks));
+    // Save ranks to localStorage
+    localStorage.setItem("adminRanks", JSON.stringify(editedRanks));
     
     // Trigger a custom event to notify other components of the price change
     const priceChangeEvent = new CustomEvent('adminPriceChange', {
-      detail: { ranks: editedRanks, basePrice, gameId }
+      detail: { ranks: editedRanks, basePrice }
     });
     window.dispatchEvent(priceChangeEvent);
     
@@ -60,7 +53,7 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave, gameId }) => {
     
     toast({
       title: "Changes saved",
-      description: `Rank price modifications for ${gameId.toUpperCase()} have been saved successfully.`,
+      description: "Rank price modifications have been saved successfully.",
     });
     
     setLoading(false);

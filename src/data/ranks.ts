@@ -149,30 +149,30 @@ const originalRanks: Rank[] = [
 // Initialize default combinations list
 const defaultRankCombinations: RankCombination[] = [];
 
-// Get ranks with admin modifications applied for specific game
-export const getAdminRanks = (gameId: string = 'mlbb'): Rank[] => {
-  const savedRanks = localStorage.getItem(`adminRanks_${gameId}`);
+// Get ranks with admin modifications applied
+export const getAdminRanks = (): Rank[] => {
+  const savedRanks = localStorage.getItem("adminRanks");
   if (savedRanks) {
     return JSON.parse(savedRanks);
   }
   return originalRanks;
 };
 
-// Get base price from localStorage or use default for specific game
-export const getBasePrice = (gameId: string = 'mlbb'): number => {
-  const storedBasePrice = localStorage.getItem(`basePricePerTier_${gameId}`);
+// Get base price from localStorage or use default
+export const getBasePrice = (): number => {
+  const storedBasePrice = localStorage.getItem("basePricePerTier");
   return storedBasePrice ? parseFloat(storedBasePrice) : 10;
 };
 
-// Get custom rank combinations or return empty array for specific game
-export const getRankCombinations = (gameId: string = 'mlbb'): RankCombination[] => {
-  const storedCombinations = localStorage.getItem(`rankCombinations_${gameId}`);
+// Get custom rank combinations or return empty array
+export const getRankCombinations = (): RankCombination[] => {
+  const storedCombinations = localStorage.getItem("rankCombinations");
   return storedCombinations ? JSON.parse(storedCombinations) : defaultRankCombinations;
 };
 
-// Save rank combinations to localStorage for specific game
-export const saveRankCombinations = (combinations: RankCombination[], gameId: string = 'mlbb'): void => {
-  localStorage.setItem(`rankCombinations_${gameId}`, JSON.stringify(combinations));
+// Save rank combinations to localStorage
+export const saveRankCombinations = (combinations: RankCombination[]): void => {
+  localStorage.setItem("rankCombinations", JSON.stringify(combinations));
 };
 
 // Export ranks with potential admin modifications
@@ -183,15 +183,14 @@ export const calculatePrice = (
   currentRank: Rank, 
   targetRank: Rank, 
   currentSubdivision: number = 0,
-  targetSubdivision: number = 0,
-  gameId: string = 'mlbb'
+  targetSubdivision: number = 0
 ): number => {
   if (currentRank.tier >= targetRank.tier && currentRank.id === targetRank.id && currentSubdivision <= targetSubdivision) {
     return 0; // Can't boost to a lower or same rank/subdivision
   }
   
   // Check if there's a custom price for this specific combination
-  const combinations = getRankCombinations(gameId);
+  const combinations = getRankCombinations();
   const customCombination = combinations.find(combo => 
     combo.fromRankId === currentRank.id && 
     combo.toRankId === targetRank.id &&
@@ -204,8 +203,8 @@ export const calculatePrice = (
   }
   
   // If no custom price is set, use the formula calculation
-  const basePricePerTier = getBasePrice(gameId);
-  const adminRanks = getAdminRanks(gameId);
+  const basePricePerTier = getBasePrice();
+  const adminRanks = getAdminRanks();
   
   let updatedCurrentRank = currentRank;
   let updatedTargetRank = targetRank;
