@@ -1,10 +1,10 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { Check, ChevronRight } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface Game {
   id: string;
@@ -16,6 +16,7 @@ interface Game {
 
 const GameSelectionDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [games, setGames] = useState<Game[]>([
     {
       id: "mlbb",
@@ -58,16 +59,33 @@ const GameSelectionDashboard: React.FC = () => {
   const handleContinue = () => {
     const selectedGames = games.filter((game) => game.selected);
     if (selectedGames.length === 0) {
+      toast({
+        title: "No games selected",
+        description: "Please select at least one game to continue.",
+        variant: "destructive"
+      });
       return;
     }
     
-    // If Mobile Legends is selected, go to the main page
-    if (selectedGames.some(game => game.id === "mlbb")) {
-      navigate("/");
+    // If only one game is selected, go to the specific game page
+    if (selectedGames.length === 1) {
+      navigate(`/games/${selectedGames[0].id}`);
     } else {
-      // For now, we'll just navigate to the first selected game
-      // In a real implementation, you might navigate to different pages based on the game
-      navigate("/");
+      // If Mobile Legends is selected among multiple games, prioritize it
+      if (selectedGames.some(game => game.id === "mlbb")) {
+        navigate("/games/mlbb");
+      } else {
+        // Otherwise navigate to the first selected game
+        navigate(`/games/${selectedGames[0].id}`);
+      }
+      
+      // Show toast about multiple selections
+      if (selectedGames.length > 1) {
+        toast({
+          title: "Multiple games selected",
+          description: "You can switch between your selected games in the account dashboard.",
+        });
+      }
     }
   };
 
