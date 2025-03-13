@@ -4,6 +4,7 @@ import RankSelector from "@/components/RankSelector";
 import PricingCard from "@/components/PricingCard";
 import { ArrowRight, ArrowDown } from "lucide-react";
 import { Rank, ranks, getAdminRanks } from "@/data/ranks";
+import { Input } from "@/components/ui/input";
 
 interface RankSelectionSectionProps {
   isIntersecting: boolean;
@@ -23,6 +24,8 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
   const [currentSubdivision, setCurrentSubdivision] = useState(0);
   const [targetSubdivision, setTargetSubdivision] = useState(0);
   const [availableRanks, setAvailableRanks] = useState(ranks);
+  const [currentStars, setCurrentStars] = useState(0);
+  const [targetStars, setTargetStars] = useState(0);
 
   // Update ranks when admin changes prices
   useEffect(() => {
@@ -58,11 +61,25 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
   const handleCurrentRankSelect = (rank: Rank, subdivisionIndex: number = 0) => {
     setCurrentRank(rank);
     setCurrentSubdivision(subdivisionIndex);
+    setCurrentStars(0); // Reset stars when changing rank
   };
 
   const handleTargetRankSelect = (rank: Rank, subdivisionIndex: number = 0) => {
     setTargetRank(rank);
     setTargetSubdivision(subdivisionIndex);
+    setTargetStars(0); // Reset stars when changing rank
+  };
+
+  // Handle current stars input change
+  const handleCurrentStarsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value) || 0;
+    setCurrentStars(Math.min(Math.max(value, 0), 5)); // Limit between 0-5
+  };
+
+  // Handle target stars input change
+  const handleTargetStarsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value) || 0;
+    setTargetStars(Math.min(Math.max(value, 0), 5)); // Limit between 0-5
   };
 
   // Determine which ranks should be disabled for target selection
@@ -124,6 +141,33 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
               animationDelay={200}
               ranks={availableRanks}
             />
+            {/* Current Stars Input for Legend rank */}
+            {currentRank && currentRank.id === "legend" && (
+              <div className="mt-4 glass-panel p-4 animate-fade-in">
+                <label className="block text-sm text-mlbb-lightpurple mb-2">
+                  Current Stars
+                </label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="5"
+                  value={currentStars}
+                  onChange={handleCurrentStarsChange}
+                  className="bg-black/20 border-mlbb-purple/30 text-white"
+                />
+                <div className="flex items-center mt-2 text-xs text-gray-400">
+                  <div className="flex items-center">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <span 
+                        key={i} 
+                        className={`w-4 h-4 mx-0.5 rounded-full ${i < currentStars ? 'bg-mlbb-gold' : 'bg-gray-700'}`}
+                      />
+                    ))}
+                  </div>
+                  <span className="ml-2">{currentStars}/5</span>
+                </div>
+              </div>
+            )}
           </div>
           
           {/* Arrow - vertical on mobile, horizontal on desktop */}
@@ -144,6 +188,33 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
               animationDelay={400}
               ranks={availableRanks}
             />
+            {/* Target Stars Input for Legend rank */}
+            {targetRank && targetRank.id === "legend" && (
+              <div className="mt-4 glass-panel p-4 animate-fade-in">
+                <label className="block text-sm text-mlbb-lightpurple mb-2">
+                  Desired Stars
+                </label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="5"
+                  value={targetStars}
+                  onChange={handleTargetStarsChange}
+                  className="bg-black/20 border-mlbb-purple/30 text-white"
+                />
+                <div className="flex items-center mt-2 text-xs text-gray-400">
+                  <div className="flex items-center">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <span 
+                        key={i} 
+                        className={`w-4 h-4 mx-0.5 rounded-full ${i < targetStars ? 'bg-mlbb-gold' : 'bg-gray-700'}`}
+                      />
+                    ))}
+                  </div>
+                  <span className="ml-2">{targetStars}/5</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         
@@ -154,6 +225,8 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
             targetRank={targetRank}
             currentSubdivision={currentSubdivision}
             targetSubdivision={targetSubdivision}
+            currentStars={currentStars}
+            targetStars={targetStars}
             animationDelay={600}
           />
         </div>

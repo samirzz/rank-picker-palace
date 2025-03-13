@@ -11,6 +11,8 @@ interface PricingCardProps {
   targetRank: Rank | null;
   currentSubdivision?: number;
   targetSubdivision?: number;
+  currentStars?: number;
+  targetStars?: number;
   animationDelay?: number;
 }
 
@@ -19,6 +21,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
   targetRank,
   currentSubdivision = 0,
   targetSubdivision = 0,
+  currentStars = 0,
+  targetStars = 0,
   animationDelay = 0
 }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -41,7 +45,9 @@ const PricingCard: React.FC<PricingCardProps> = ({
           currentRank, 
           targetRank, 
           currentSubdivision, 
-          targetSubdivision
+          targetSubdivision,
+          currentStars,
+          targetStars
         );
         setPrice(calculatedPrice);
       }
@@ -52,7 +58,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
     return () => {
       window.removeEventListener('adminCombinationsChange', handleCombinationChange);
     };
-  }, [currentRank, targetRank, currentSubdivision, targetSubdivision]);
+  }, [currentRank, targetRank, currentSubdivision, targetSubdivision, currentStars, targetStars]);
 
   useEffect(() => {
     if (currentRank && targetRank) {
@@ -60,13 +66,15 @@ const PricingCard: React.FC<PricingCardProps> = ({
         currentRank, 
         targetRank, 
         currentSubdivision, 
-        targetSubdivision
+        targetSubdivision,
+        currentStars,
+        targetStars
       );
       setPrice(calculatedPrice);
     } else {
       setPrice(null);
     }
-  }, [currentRank, targetRank, currentSubdivision, targetSubdivision]);
+  }, [currentRank, targetRank, currentSubdivision, targetSubdivision, currentStars, targetStars]);
 
   const handleProceedToCheckout = () => {
     setShowPayment(true);
@@ -95,8 +103,15 @@ const PricingCard: React.FC<PricingCardProps> = ({
     return "5-7 days";
   };
 
-  const formatRankName = (rank: Rank, subdivisionIndex: number = 0): string => {
+  const formatRankName = (rank: Rank, subdivisionIndex: number = 0, stars: number = 0): string => {
     if (!rank) return '';
+    
+    if (rank.id === "legend" && stars > 0) {
+      if (rank.subdivisions && rank.subdivisions[subdivisionIndex]) {
+        return `${rank.subdivisions[subdivisionIndex].name} (${stars} stars)`;
+      }
+    }
+    
     if (rank.subdivisions && rank.subdivisions[subdivisionIndex]) {
       return rank.subdivisions[subdivisionIndex].name;
     }
@@ -141,11 +156,15 @@ const PricingCard: React.FC<PricingCardProps> = ({
                   <div className="mb-4 md:mb-6">
                     <div className="flex justify-between items-center border-b border-white/10 pb-2 md:pb-3 mb-2 md:mb-3">
                       <span className="text-gray-300 text-xs md:text-sm">From Rank</span>
-                      <span className="font-semibold text-white text-xs md:text-sm">{formatRankName(currentRank, currentSubdivision)}</span>
+                      <span className="font-semibold text-white text-xs md:text-sm">
+                        {formatRankName(currentRank, currentSubdivision, currentStars)}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center border-b border-white/10 pb-2 md:pb-3 mb-2 md:mb-3">
                       <span className="text-gray-300 text-xs md:text-sm">To Rank</span>
-                      <span className="font-semibold text-white text-xs md:text-sm">{formatRankName(targetRank, targetSubdivision)}</span>
+                      <span className="font-semibold text-white text-xs md:text-sm">
+                        {formatRankName(targetRank, targetSubdivision, targetStars)}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-300 text-xs md:text-sm">Tier Difference</span>

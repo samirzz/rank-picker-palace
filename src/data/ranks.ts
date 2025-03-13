@@ -1,4 +1,3 @@
-
 export interface Rank {
   id: string;
   name: string;
@@ -183,10 +182,28 @@ export const calculatePrice = (
   currentRank: Rank, 
   targetRank: Rank, 
   currentSubdivision: number = 0,
-  targetSubdivision: number = 0
+  targetSubdivision: number = 0,
+  currentStars: number = 0,
+  targetStars: number = 0
 ): number => {
-  if (currentRank.tier >= targetRank.tier && currentRank.id === targetRank.id && currentSubdivision <= targetSubdivision) {
-    return 0; // Can't boost to a lower or same rank/subdivision
+  if (currentRank.tier > targetRank.tier) {
+    return 0; // Can't boost to a lower rank
+  }
+  
+  // Same rank check including stars for Legend rank
+  if (currentRank.tier === targetRank.tier && currentRank.id === targetRank.id) {
+    // For Legend rank with stars
+    if (currentRank.id === "legend") {
+      if (currentSubdivision < targetSubdivision) {
+        return 0; // Can't boost to a lower subdivision
+      }
+      
+      if (currentSubdivision === targetSubdivision && currentStars >= targetStars) {
+        return 0; // Can't boost to same or lower stars
+      }
+    } else if (currentSubdivision <= targetSubdivision) {
+      return 0; // Can't boost to a lower or same subdivision for other ranks
+    }
   }
   
   // Check if there's a custom price for this specific combination
@@ -230,6 +247,15 @@ export const calculatePrice = (
     if (targetSubdivision < currentSubdivision) {
       const subdivisionDiff = currentSubdivision - targetSubdivision;
       price = 5 * subdivisionDiff; // $5 per subdivision
+    }
+  }
+  
+  // Add price for stars in Legend rank
+  if (currentRank.id === "legend" && targetRank.id === "legend" && 
+      currentSubdivision === targetSubdivision) {
+    const starDifference = targetStars - currentStars;
+    if (starDifference > 0) {
+      price = 2 * starDifference; // $2 per star
     }
   }
   
