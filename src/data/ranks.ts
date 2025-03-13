@@ -1,3 +1,4 @@
+
 export interface Rank {
   id: string;
   name: string;
@@ -177,6 +178,11 @@ export const saveRankCombinations = (combinations: RankCombination[]): void => {
 // Export ranks with potential admin modifications
 export const ranks = getAdminRanks();
 
+// Helper function to check if a rank has points system (Mythic and above)
+const rankHasPoints = (rank: Rank): boolean => {
+  return !!rank.points || (rank.id === "mythic" && rank.subdivisions?.[0]?.points);
+};
+
 // Calculate price based on current and target ranks
 export const calculatePrice = (
   currentRank: Rank, 
@@ -184,7 +190,9 @@ export const calculatePrice = (
   currentSubdivision: number = 0,
   targetSubdivision: number = 0,
   currentStars: number = 0,
-  targetStars: number = 0
+  targetStars: number = 0,
+  currentMythicPoints: number = 0,
+  targetMythicPoints: number = 0
 ): number => {
   if (currentRank.tier > targetRank.tier) {
     return 0; // Can't boost to a lower rank
@@ -201,7 +209,14 @@ export const calculatePrice = (
       if (currentSubdivision === targetSubdivision && currentStars >= targetStars) {
         return 0; // Can't boost to same or lower stars
       }
-    } else if (currentSubdivision <= targetSubdivision) {
+    } 
+    // For Mythic ranks with points
+    else if (rankHasPoints(currentRank) && rankHasPoints(targetRank)) {
+      if (currentMythicPoints >= targetMythicPoints) {
+        return 0; // Can't boost to same or lower points
+      }
+    }
+    else if (currentSubdivision <= targetSubdivision) {
       return 0; // Can't boost to a lower or same subdivision for other ranks
     }
   }
@@ -256,6 +271,37 @@ export const calculatePrice = (
     const starDifference = targetStars - currentStars;
     if (starDifference > 0) {
       price = 2 * starDifference; // $2 per star
+    }
+  }
+  
+  // Add price for Mythic points
+  if (rankHasPoints(currentRank) && rankHasPoints(targetRank)) {
+    // If both ranks are Mythic ranks with points
+    if (currentRank.tier === targetRank.tier) {
+      // Same tier, calculate based on points difference
+      const pointsDifference = targetMythicPoints - currentMythicPoints;
+      if (pointsDifference > 0) {
+        price = 3 * pointsDifference; // $3 per point
+      }
+    } else {
+      // Different tiers, add additional cost for specified target points
+      if (targetMythicPoints > 0) {
+        const minPoints = targetRank.points?.min || 0;
+        const pointsAboveMin = targetMythicPoints - minPoints;
+        if (pointsAboveMin > 0) {
+          // Add extra cost for points above minimum
+          price += 3 * pointsAboveMin; // $3 per point above minimum
+        }
+      }
+    }
+  }
+  // If moving from non-mythic to mythic and target points specified
+  else if (!rankHasPoints(currentRank) && rankHasPoints(targetRank) && targetMythicPoints > 0) {
+    const minPoints = targetRank.points?.min || 0;
+    const pointsAboveMin = targetMythicPoints - minPoints;
+    if (pointsAboveMin > 0) {
+      // Add extra cost for points above minimum
+      price += 3 * pointsAboveMin; // $3 per point above minimum
     }
   }
   

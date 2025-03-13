@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { calculatePrice } from "@/data/ranks";
@@ -13,6 +14,8 @@ interface PricingCardProps {
   targetSubdivision?: number;
   currentStars?: number;
   targetStars?: number;
+  currentMythicPoints?: number;
+  targetMythicPoints?: number;
   animationDelay?: number;
 }
 
@@ -23,6 +26,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
   targetSubdivision = 0,
   currentStars = 0,
   targetStars = 0,
+  currentMythicPoints = 0,
+  targetMythicPoints = 0,
   animationDelay = 0
 }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -47,7 +52,9 @@ const PricingCard: React.FC<PricingCardProps> = ({
           currentSubdivision, 
           targetSubdivision,
           currentStars,
-          targetStars
+          targetStars,
+          currentMythicPoints,
+          targetMythicPoints
         );
         setPrice(calculatedPrice);
       }
@@ -58,7 +65,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
     return () => {
       window.removeEventListener('adminCombinationsChange', handleCombinationChange);
     };
-  }, [currentRank, targetRank, currentSubdivision, targetSubdivision, currentStars, targetStars]);
+  }, [currentRank, targetRank, currentSubdivision, targetSubdivision, currentStars, targetStars, currentMythicPoints, targetMythicPoints]);
 
   useEffect(() => {
     if (currentRank && targetRank) {
@@ -68,13 +75,15 @@ const PricingCard: React.FC<PricingCardProps> = ({
         currentSubdivision, 
         targetSubdivision,
         currentStars,
-        targetStars
+        targetStars,
+        currentMythicPoints,
+        targetMythicPoints
       );
       setPrice(calculatedPrice);
     } else {
       setPrice(null);
     }
-  }, [currentRank, targetRank, currentSubdivision, targetSubdivision, currentStars, targetStars]);
+  }, [currentRank, targetRank, currentSubdivision, targetSubdivision, currentStars, targetStars, currentMythicPoints, targetMythicPoints]);
 
   const handleProceedToCheckout = () => {
     setShowPayment(true);
@@ -103,9 +112,20 @@ const PricingCard: React.FC<PricingCardProps> = ({
     return "5-7 days";
   };
 
-  const formatRankName = (rank: Rank, subdivisionIndex: number = 0, stars: number = 0): string => {
+  // Helper to check if rank is a Mythic rank with points
+  const rankHasPoints = (rank: Rank | null): boolean => {
+    return !!rank?.points || (rank?.id === "mythic" && rank?.subdivisions?.[0]?.points);
+  };
+
+  const formatRankName = (rank: Rank, subdivisionIndex: number = 0, stars: number = 0, mythicPoints: number = 0): string => {
     if (!rank) return '';
     
+    // For Mythic ranks with points
+    if (rankHasPoints(rank) && mythicPoints > 0) {
+      return `${rank.name} (${mythicPoints} points)`;
+    }
+    
+    // For Legend rank with stars
     if (rank.id === "legend" && stars > 0) {
       if (rank.subdivisions && rank.subdivisions[subdivisionIndex]) {
         return `${rank.subdivisions[subdivisionIndex].name} (${stars} stars)`;
@@ -157,13 +177,13 @@ const PricingCard: React.FC<PricingCardProps> = ({
                     <div className="flex justify-between items-center border-b border-white/10 pb-2 md:pb-3 mb-2 md:mb-3">
                       <span className="text-gray-300 text-xs md:text-sm">From Rank</span>
                       <span className="font-semibold text-white text-xs md:text-sm">
-                        {formatRankName(currentRank, currentSubdivision, currentStars)}
+                        {formatRankName(currentRank, currentSubdivision, currentStars, currentMythicPoints)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center border-b border-white/10 pb-2 md:pb-3 mb-2 md:mb-3">
                       <span className="text-gray-300 text-xs md:text-sm">To Rank</span>
                       <span className="font-semibold text-white text-xs md:text-sm">
-                        {formatRankName(targetRank, targetSubdivision, targetStars)}
+                        {formatRankName(targetRank, targetSubdivision, targetStars, targetMythicPoints)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
