@@ -1,4 +1,3 @@
-
 export interface Rank {
   id: string;
   name: string;
@@ -191,10 +190,10 @@ export const calculatePrice = (
     return 0; // Can't boost to a lower rank
   }
   
-  // Same rank check including stars
+  // Same rank check including stars for Legend rank
   if (currentRank.tier === targetRank.tier && currentRank.id === targetRank.id) {
-    // For ranks with star system
-    if (currentRank.subdivisions && currentRank.subdivisions[currentSubdivision]?.stars !== undefined) {
+    // For Legend rank with stars
+    if (currentRank.id === "legend") {
       if (currentSubdivision < targetSubdivision) {
         return 0; // Can't boost to a lower subdivision
       }
@@ -251,11 +250,9 @@ export const calculatePrice = (
     }
   }
   
-  // Add price for stars in any rank with stars (not just Legend rank)
-  if (currentRank.id === targetRank.id && 
-      currentSubdivision === targetSubdivision && 
-      currentRank.subdivisions && 
-      currentRank.subdivisions[currentSubdivision]?.stars !== undefined) {
+  // Add price for stars in Legend rank
+  if (currentRank.id === "legend" && targetRank.id === "legend" && 
+      currentSubdivision === targetSubdivision) {
     const starDifference = targetStars - currentStars;
     if (starDifference > 0) {
       price = 2 * starDifference; // $2 per star

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import RankSelector from "@/components/RankSelector";
 import PricingCard from "@/components/PricingCard";
@@ -26,11 +27,13 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
   const [currentStars, setCurrentStars] = useState(0);
   const [targetStars, setTargetStars] = useState(0);
 
+  // Update ranks when admin changes prices
   useEffect(() => {
     const handleAdminPriceChange = () => {
       const updatedRanks = getAdminRanks();
       setAvailableRanks(updatedRanks);
       
+      // Update current and target ranks with new price modifiers if they exist
       if (currentRank) {
         const updatedCurrentRank = updatedRanks.find(rank => rank.id === currentRank.id);
         if (updatedCurrentRank) {
@@ -46,8 +49,10 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
       }
     };
 
+    // Listen for the custom event
     window.addEventListener('adminPriceChange', handleAdminPriceChange);
     
+    // Cleanup
     return () => {
       window.removeEventListener('adminPriceChange', handleAdminPriceChange);
     };
@@ -56,40 +61,47 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
   const handleCurrentRankSelect = (rank: Rank, subdivisionIndex: number = 0) => {
     setCurrentRank(rank);
     setCurrentSubdivision(subdivisionIndex);
-    setCurrentStars(0);
+    setCurrentStars(0); // Reset stars when changing rank
   };
 
   const handleTargetRankSelect = (rank: Rank, subdivisionIndex: number = 0) => {
     setTargetRank(rank);
     setTargetSubdivision(subdivisionIndex);
-    setTargetStars(0);
+    setTargetStars(0); // Reset stars when changing rank
   };
 
+  // Handle current stars input change
   const handleCurrentStarsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value) || 0;
-    setCurrentStars(Math.min(Math.max(value, 0), 5));
+    setCurrentStars(Math.min(Math.max(value, 0), 5)); // Limit between 0-5
   };
 
+  // Handle target stars input change
   const handleTargetStarsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value) || 0;
-    setTargetStars(Math.min(Math.max(value, 0), 5));
+    setTargetStars(Math.min(Math.max(value, 0), 5)); // Limit between 0-5
   };
 
+  // Determine which ranks should be disabled for target selection
   const getDisabledTargetRanks = () => {
     if (!currentRank) return [];
     
+    // If current rank has subdivisions selected, we need to disable:
+    // 1. All ranks with lower tier than current rank
+    // 2. Current rank's subdivisions that are lower than or equal to selected subdivision
     return availableRanks.filter(rank => {
+      // Filter out lower tier ranks
       if (rank.tier < currentRank.tier) return true;
+      
+      // If same rank, filter out same or lower subdivisions
       if (rank.id === currentRank.id) {
         if (!rank.subdivisions) return true;
+        // This rank would be completely disabled if not using subdivisions
         return true;
       }
+      
       return false;
     });
-  };
-
-  const rankHasStars = (rank: Rank | null): boolean => {
-    return !!rank && rank.subdivisions && rank.subdivisions.some(sub => sub.stars !== undefined);
   };
 
   return (
@@ -97,6 +109,7 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
       id="ranks"
       className="relative py-16 md:py-24 lg:py-32 px-4 overflow-hidden"
     >
+      {/* Background effects */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(139,92,246,0.05)_0%,_transparent_70%)]"></div>
       <div className="absolute top-0 right-0 w-48 md:w-96 h-48 md:h-96 bg-mlbb-purple/10 rounded-full filter blur-[100px] opacity-30"></div>
       <div className="absolute bottom-0 left-0 w-48 md:w-96 h-48 md:h-96 bg-mlbb-gold/10 rounded-full filter blur-[100px] opacity-20"></div>
@@ -118,6 +131,7 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
+          {/* Current Rank Selector */}
           <div className="md:col-span-5">
             <RankSelector
               label="Current Rank"
@@ -127,7 +141,8 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
               animationDelay={200}
               ranks={availableRanks}
             />
-            {rankHasStars(currentRank) && (
+            {/* Current Stars Input for Legend rank */}
+            {currentRank && currentRank.id === "legend" && (
               <div className="mt-4 glass-panel p-4 animate-fade-in">
                 <label className="block text-sm text-mlbb-lightpurple mb-2">
                   Current Stars
@@ -155,6 +170,7 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
             )}
           </div>
           
+          {/* Arrow - vertical on mobile, horizontal on desktop */}
           <div className="md:col-span-2 flex items-center justify-center py-2 md:py-0">
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 flex items-center justify-center">
               <ArrowDown className="h-5 w-5 md:hidden text-mlbb-purple" />
@@ -162,6 +178,7 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
             </div>
           </div>
           
+          {/* Target Rank Selector */}
           <div className="md:col-span-5">
             <RankSelector
               label="Desired Rank"
@@ -171,7 +188,8 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
               animationDelay={400}
               ranks={availableRanks}
             />
-            {rankHasStars(targetRank) && (
+            {/* Target Stars Input for Legend rank */}
+            {targetRank && targetRank.id === "legend" && (
               <div className="mt-4 glass-panel p-4 animate-fade-in">
                 <label className="block text-sm text-mlbb-lightpurple mb-2">
                   Desired Stars
@@ -200,6 +218,7 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
           </div>
         </div>
         
+        {/* Pricing Card */}
         <div className="mt-8 md:mt-12 mx-auto max-w-full md:max-w-md">
           <PricingCard
             currentRank={currentRank}
