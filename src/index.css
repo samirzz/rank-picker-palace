@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
 
@@ -105,6 +106,46 @@
   .text-2xs {
     font-size: 0.65rem;
     line-height: 1rem;
+  }
+
+  /* Responsive padding utilities */
+  .p-responsive {
+    @apply p-3 sm:p-4 md:p-6;
+  }
+
+  .px-responsive {
+    @apply px-3 sm:px-4 md:px-6;
+  }
+
+  .py-responsive {
+    @apply py-3 sm:py-4 md:py-6;
+  }
+
+  /* Responsive gap utilities */
+  .gap-responsive {
+    @apply gap-2 sm:gap-3 md:gap-4;
+  }
+
+  /* Responsive margin utilities */
+  .m-responsive {
+    @apply m-3 sm:m-4 md:m-6;
+  }
+
+  .mt-responsive {
+    @apply mt-3 sm:mt-4 md:mt-6;
+  }
+
+  .mb-responsive {
+    @apply mb-3 sm:mb-4 md:mb-6;
+  }
+
+  /* Responsive grid utilities */
+  .grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4;
+  }
+
+  .grid-responsive-2 {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-4;
   }
   
   /* Custom scrollbar */
