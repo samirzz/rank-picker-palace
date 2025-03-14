@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { getRankPlaceholderImage, getBasePrice } from "@/data/ranks";
 import { useToast } from "@/hooks/use-toast";
+import { Save } from "lucide-react";
 
 interface PriceEditorProps {
   ranks: any[];
@@ -84,7 +85,7 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
               disabled={loading}
               className="w-full mt-7 bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple"
             >
-              {loading ? "Saving..." : "Save All"}
+              {loading ? "Saving..." : <><Save className="mr-2 h-4 w-4" />Save All</>}
             </Button>
           </div>
         </div>
