@@ -44,6 +44,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface HeroManagerProps {
   onSave: () => void;
@@ -56,12 +57,14 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
   const [deleteHeroId, setDeleteHeroId] = useState<string | null>(null);
   const [heroBasePrice, setHeroBasePrice] = useState<number>(0.1);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   // Form state
   const [heroName, setHeroName] = useState("");
   const [heroImage, setHeroImage] = useState("");
   const [heroDifficulty, setHeroDifficulty] = useState(1);
   const [heroPriceModifier, setHeroPriceModifier] = useState(1.0);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     const savedHeroes = getAdminHeroes();
@@ -81,12 +84,14 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
     setHeroImage(hero.image);
     setHeroDifficulty(hero.difficulty);
     setHeroPriceModifier(hero.priceModifier);
+    setIsDialogOpen(true);
   };
 
   const handleAddHero = () => {
     setEditingHero(null);
     setIsAddMode(true);
     resetForm();
+    setIsDialogOpen(true);
   };
 
   const resetForm = () => {
@@ -100,6 +105,7 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
     setEditingHero(null);
     setIsAddMode(false);
     resetForm();
+    setIsDialogOpen(false);
   };
 
   const handleDeleteHero = (id: string) => {
@@ -296,13 +302,19 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
         )}
       </div>
       
-      <DialogFooter className="mt-6">
-        <DialogClose asChild>
-          <Button variant="outline" className="mr-2">
-            Cancel
-          </Button>
-        </DialogClose>
-        <Button onClick={handleSaveHero} className="bg-mlbb-purple text-white">
+      <DialogFooter className="mt-6 flex flex-col sm:flex-row gap-2">
+        <Button 
+          variant="outline" 
+          className="w-full sm:w-auto" 
+          onClick={handleCloseDialog}
+        >
+          <X className="w-4 h-4 mr-2" />
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleSaveHero} 
+          className="w-full sm:w-auto bg-mlbb-purple text-white"
+        >
           <Save className="w-4 h-4 mr-2" />
           {isAddMode ? "Add Hero" : "Save Changes"}
         </Button>
@@ -312,7 +324,7 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h3 className="text-xl font-bold text-white">Hero Management</h3>
           <p className="text-sm text-gray-400 mt-1">
@@ -320,27 +332,17 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
           </p>
         </div>
         
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button onClick={handleAddHero} className="bg-mlbb-purple text-white">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Hero
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-black/95 border-mlbb-purple/30 text-white">
-            <DialogHeader>
-              <DialogTitle>{isAddMode ? "Add New Hero" : "Edit Hero"}</DialogTitle>
-            </DialogHeader>
-            {renderHeroForm()}
-          </DialogContent>
-        </Dialog>
+        <Button onClick={handleAddHero} className="w-full sm:w-auto bg-mlbb-purple text-white">
+          <Plus className="mr-2 h-4 w-4" />
+          Add Hero
+        </Button>
       </div>
       
       <div className="glass-panel p-4 md:p-6">
         <div className="mb-6">
           <h4 className="text-lg font-semibold text-white mb-3">Base MMR Price Settings</h4>
-          <div className="flex items-end space-x-4">
-            <div className="space-y-2 flex-1">
+          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
+            <div className="space-y-2 w-full sm:flex-1">
               <Label htmlFor="basePrice" className="text-white">Base Price per MMR Point ($)</Label>
               <Input
                 id="basePrice"
@@ -352,7 +354,11 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
                 className="bg-black/30 border-mlbb-purple/30 text-white"
               />
             </div>
-            <Button onClick={saveBaseHeroPrice} className="bg-mlbb-purple text-white">
+            <Button 
+              onClick={saveBaseHeroPrice} 
+              className="w-full sm:w-auto bg-mlbb-purple text-white"
+            >
+              <Save className="w-4 h-4 mr-2" />
               Save Base Price
             </Button>
           </div>
@@ -364,87 +370,79 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
         <div className="overflow-x-auto">
           <h4 className="text-lg font-semibold text-white mb-3">Hero List</h4>
           {heroes.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow className="border-b border-mlbb-purple/20">
-                  <TableHead className="text-mlbb-gold">Hero</TableHead>
-                  <TableHead className="text-mlbb-gold">Difficulty</TableHead>
-                  <TableHead className="text-mlbb-gold">Price Modifier</TableHead>
-                  <TableHead className="text-mlbb-gold text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {heroes.map((hero) => (
-                  <TableRow key={hero.id} className="border-b border-mlbb-purple/10">
-                    <TableCell className="font-medium text-white">
-                      <div className="flex items-center space-x-3">
-                        <div className="h-10 w-10 overflow-hidden rounded-md">
-                          <img
-                            src={hero.image || getHeroPlaceholderImage()}
-                            alt={hero.name}
-                            className="h-full w-full object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.onerror = null;
-                              target.src = getHeroPlaceholderImage();
-                            }}
-                          />
-                        </div>
-                        <span>{hero.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex">
-                        {Array.from({ length: 5 }).map((_, index) => (
-                          <Star
-                            key={index}
-                            className={`h-4 w-4 ${
-                              index < hero.difficulty
-                                ? "text-mlbb-gold fill-mlbb-gold"
-                                : "text-gray-600"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-mlbb-gold">
-                      {hero.priceModifier}x
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end space-x-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8 border-mlbb-purple/30 bg-transparent hover:bg-mlbb-purple/20"
-                              onClick={() => handleEditHero(hero)}
-                            >
-                              <Edit className="h-4 w-4 text-mlbb-gold" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="bg-black/95 border-mlbb-purple/30 text-white">
-                            <DialogHeader>
-                              <DialogTitle>Edit Hero</DialogTitle>
-                            </DialogHeader>
-                            {renderHeroForm()}
-                          </DialogContent>
-                        </Dialog>
-                        
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8 border-red-500/30 bg-transparent hover:bg-red-500/20"
-                          onClick={() => handleDeleteHero(hero.id)}
-                        >
-                          <Trash className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <div className="rounded-md border border-mlbb-purple/20 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b border-mlbb-purple/20">
+                    <TableHead className="text-mlbb-gold">Hero</TableHead>
+                    <TableHead className="text-mlbb-gold">Difficulty</TableHead>
+                    <TableHead className="text-mlbb-gold">Price Modifier</TableHead>
+                    <TableHead className="text-mlbb-gold text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {heroes.map((hero) => (
+                    <TableRow key={hero.id} className="border-b border-mlbb-purple/10">
+                      <TableCell className="font-medium text-white">
+                        <div className="flex items-center space-x-3">
+                          <div className="h-10 w-10 overflow-hidden rounded-md">
+                            <img
+                              src={hero.image || getHeroPlaceholderImage()}
+                              alt={hero.name}
+                              className="h-full w-full object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.onerror = null;
+                                target.src = getHeroPlaceholderImage();
+                              }}
+                            />
+                          </div>
+                          <span>{hero.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex">
+                          {Array.from({ length: 5 }).map((_, index) => (
+                            <Star
+                              key={index}
+                              className={`h-4 w-4 ${
+                                index < hero.difficulty
+                                  ? "text-mlbb-gold fill-mlbb-gold"
+                                  : "text-gray-600"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-mlbb-gold">
+                        {hero.priceModifier}x
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end space-x-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8 border-mlbb-purple/30 bg-transparent hover:bg-mlbb-purple/20"
+                            onClick={() => handleEditHero(hero)}
+                          >
+                            <Edit className="h-4 w-4 text-mlbb-gold" />
+                          </Button>
+                          
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8 border-red-500/30 bg-transparent hover:bg-red-500/20"
+                            onClick={() => handleDeleteHero(hero.id)}
+                          >
+                            <Trash className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           ) : (
             <div className="text-center py-10 border border-dashed border-mlbb-purple/30 rounded-lg">
               <ImagePlus className="h-10 w-10 text-mlbb-purple/40 mx-auto mb-3" />
@@ -454,6 +452,16 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
           )}
         </div>
       </div>
+      
+      {/* Hero Edit/Add Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="bg-black/95 border-mlbb-purple/30 text-white sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{isAddMode ? "Add New Hero" : "Edit Hero"}</DialogTitle>
+          </DialogHeader>
+          {renderHeroForm()}
+        </DialogContent>
+      </Dialog>
       
       {/* Delete Confirmation Alert Dialog */}
       <AlertDialog open={deleteHeroId !== null} onOpenChange={() => setDeleteHeroId(null)}>
@@ -467,14 +475,14 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
               Are you sure you want to delete this hero? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="border-mlbb-purple/30 bg-transparent text-white hover:bg-mlbb-purple/20">
+          <AlertDialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
+            <AlertDialogCancel className="w-full sm:w-auto border-mlbb-purple/30 bg-transparent text-white hover:bg-mlbb-purple/20">
               <X className="h-4 w-4 mr-2" />
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDeleteHero}
-              className="bg-red-500/80 hover:bg-red-500 text-white"
+              className="w-full sm:w-auto bg-red-500/80 hover:bg-red-500 text-white"
             >
               <Check className="h-4 w-4 mr-2" />
               Delete

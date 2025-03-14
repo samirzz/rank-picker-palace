@@ -7,10 +7,12 @@ import AdminNavigation from "@/components/admin/AdminNavigation";
 const AdminDashboardPage: React.FC = () => {
   return (
     <AdminRoute>
-      <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold text-white mb-4">Admin Dashboard</h1>
+      <div className="container mx-auto p-4 md:p-6">
+        <h1 className="text-2xl font-bold text-white mb-4 md:mb-6">Admin Dashboard</h1>
         <AdminNavigation />
-        <AdminDashboard />
+        <div className="mt-6">
+          <AdminDashboard />
+        </div>
       </div>
     </AdminRoute>
   );
