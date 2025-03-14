@@ -7,11 +7,13 @@ import RankSelectionSection from "@/components/RankSelectionSection";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import ContactSection from "@/components/ContactSection";
 import { Rank, getAdminRanks } from "@/data/ranks";
+import MMRBoostingSection from "@/components/MMRBoostingSection";
 
 const Index = () => {
   const [currentRank, setCurrentRank] = useState<Rank | null>(null);
   const [targetRank, setTargetRank] = useState<Rank | null>(null);
   const [isIntersecting, setIsIntersecting] = useState(false);
+  const [isMMRSectionVisible, setIsMMRSectionVisible] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -21,14 +23,29 @@ const Index = () => {
       { threshold: 0.1 }
     );
 
+    const mmrObserver = new IntersectionObserver(
+      ([entry]) => {
+        setIsMMRSectionVisible(entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+
     const element = document.getElementById("ranks");
     if (element) {
       observer.observe(element);
     }
 
+    const mmrElement = document.getElementById("mmrboost");
+    if (mmrElement) {
+      mmrObserver.observe(mmrElement);
+    }
+
     return () => {
       if (element) {
         observer.unobserve(element);
+      }
+      if (mmrElement) {
+        mmrObserver.unobserve(mmrElement);
       }
     };
   }, []);
@@ -46,6 +63,8 @@ const Index = () => {
         targetRank={targetRank}
         setTargetRank={setTargetRank}
       />
+      
+      <MMRBoostingSection isIntersecting={isMMRSectionVisible} />
       
       <WhyChooseUs isIntersecting={isIntersecting} />
       

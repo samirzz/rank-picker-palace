@@ -1,3 +1,4 @@
+
 export interface Rank {
   id: string;
   name: string;
@@ -169,8 +170,10 @@ export const saveRankCombinations = (combinations: RankCombination[]): void => {
 
 export const ranks = getAdminRanks();
 
-const rankHasPoints = (rank: Rank): boolean => {
-  return Boolean(rank.points) || Boolean(rank.id === "mythic" && rank.subdivisions?.[0]?.points);
+// Updated rankHasPoints function to properly return a boolean
+const rankHasPoints = (rank: Rank | null): boolean => {
+  if (!rank) return false;
+  return Boolean(rank.points) || Boolean(rank.id === "mythic" && rank.subdivisions && rank.subdivisions[0]?.points);
 };
 
 export const calculatePrice = (

@@ -22,7 +22,9 @@ const RankTierInfo: React.FC<RankTierInfoProps> = ({
   }
   
   // For Mythic rank with points in subdivision
-  if (rank.id === "mythic" && rank.subdivisions && rank.subdivisions[selectedSubdivision]?.points) {
+  if (rank.id === "mythic" && rank.subdivisions && 
+      rank.subdivisions[selectedSubdivision] && 
+      rank.subdivisions[selectedSubdivision].points) {
     const subdivision = rank.subdivisions[selectedSubdivision];
     if (subdivision.points) {
       return (
@@ -46,7 +48,7 @@ const RankTierInfo: React.FC<RankTierInfoProps> = ({
         {Array.from({ length: subdivision.stars || 0 }).map((_, index) => (
           <Star 
             key={index} 
-            className="h-3 w-3 text-mlbb-gold fill-mlbb-gold" 
+            className="h-3 w-3 md:h-4 md:w-4 text-mlbb-gold fill-mlbb-gold" 
           />
         ))}
       </div>
