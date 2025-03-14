@@ -31,7 +31,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ hero }) => {
             <div className="flex">
               {Array.from({ length: 5 }).map((_, index) => (
                 <Star
-                  key={index}
+                  key={`diff-${index}`}
                   className={`h-3 w-3 ${
                     index < hero.difficulty
                       ? "text-mlbb-gold fill-mlbb-gold"

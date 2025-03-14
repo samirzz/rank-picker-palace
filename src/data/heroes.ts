@@ -69,13 +69,18 @@ export const getHeroBasePrice = (): number => {
 
 export const saveHeroes = (heroes: Hero[]): void => {
   localStorage.setItem("adminHeroes", JSON.stringify(heroes));
+  // Dispatch an event to notify components that the hero list has changed
+  window.dispatchEvent(new Event('adminHeroesChange'));
 };
 
 export const saveHeroBasePrice = (price: number): void => {
   localStorage.setItem("heroBasePricePerMMR", price.toString());
+  // Dispatch an event to notify components that the base price has changed
+  window.dispatchEvent(new Event('adminBasePriceChange'));
 };
 
-export const heroes = getAdminHeroes();
+// This should always use the latest heroes from localStorage
+export const getHeroes = (): Hero[] => getAdminHeroes();
 
 export const getHeroPlaceholderImage = (): string => {
   return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='40' fill='%23F97316' fill-opacity='0.2'/%3E%3Cpath d='M50 20 L65 45 L85 50 L65 55 L50 80 L35 55 L15 50 L35 45 Z' fill='%23F97316' fill-opacity='0.3'/%3E%3C/svg%3E";

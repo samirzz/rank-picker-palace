@@ -28,7 +28,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Hero, heroes, calculateMMRBoostPrice, getHeroPlaceholderImage } from "@/data/heroes";
+import { Hero, getHeroes, calculateMMRBoostPrice, getHeroPlaceholderImage } from "@/data/heroes";
 import { Badge } from "@/components/ui/badge";
 import { Star, Trophy, User, DollarSign } from "lucide-react";
 import HeroCard from "./HeroCard";
@@ -53,6 +53,7 @@ const formSchema = z.object({
 const MMRBoostingSection: React.FC<MMRBoostingSectionProps> = ({ 
   isIntersecting = false 
 }) => {
+  const [heroes, setHeroes] = useState<Hero[]>([]);
   const [selectedHero, setSelectedHero] = useState<Hero | null>(null);
   const [price, setPrice] = useState<number>(0);
   const [showDetails, setShowDetails] = useState(false);
@@ -66,13 +67,50 @@ const MMRBoostingSection: React.FC<MMRBoostingSectionProps> = ({
     },
   });
 
-  const { watch, setValue, formState } = form;
+  const { watch, setValue, formState, reset } = form;
   const watchedValues = watch();
+  
+  // Load heroes on initial render and when they change
+  useEffect(() => {
+    const loadHeroes = () => {
+      const latestHeroes = getHeroes();
+      setHeroes(latestHeroes);
+      
+      // If the selected hero was deleted, reset selection
+      if (selectedHero && !latestHeroes.some(h => h.id === selectedHero.id)) {
+        setSelectedHero(null);
+        setValue("hero", "");
+      }
+    };
+    
+    loadHeroes();
+    
+    // Listen for hero list changes from admin panel
+    window.addEventListener('adminHeroesChange', loadHeroes);
+    window.addEventListener('adminBasePriceChange', () => {
+      // Recalculate price when base price changes
+      if (selectedHero) {
+        const newPrice = calculateMMRBoostPrice(
+          watchedValues.currentMMR,
+          watchedValues.targetMMR,
+          selectedHero
+        );
+        setPrice(newPrice);
+      }
+    });
+    
+    return () => {
+      window.removeEventListener('adminHeroesChange', loadHeroes);
+      window.removeEventListener('adminBasePriceChange', () => {});
+    };
+  }, [selectedHero, setValue, watchedValues.currentMMR, watchedValues.targetMMR]);
   
   useEffect(() => {
     if (watchedValues.hero) {
       const hero = heroes.find(h => h.id === watchedValues.hero) || null;
       setSelectedHero(hero);
+    } else {
+      setSelectedHero(null);
     }
     
     // Ensure target MMR is always >= current MMR
@@ -88,8 +126,10 @@ const MMRBoostingSection: React.FC<MMRBoostingSectionProps> = ({
         selectedHero
       );
       setPrice(newPrice);
+    } else {
+      setPrice(0);
     }
-  }, [watchedValues, selectedHero, setValue]);
+  }, [watchedValues, heroes, selectedHero, setValue]);
 
   return (
     <section 
@@ -132,7 +172,7 @@ const MMRBoostingSection: React.FC<MMRBoostingSectionProps> = ({
                             <FormLabel className="text-white">Hero</FormLabel>
                             <Select
                               onValueChange={field.onChange}
-                              defaultValue={field.value}
+                              value={field.value}
                             >
                               <FormControl>
                                 <SelectTrigger className="bg-black/30 border-mlbb-purple/30 text-white">

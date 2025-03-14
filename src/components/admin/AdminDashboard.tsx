@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import PriceEditor from "./PriceEditor";
 import CombinationPriceEditor from "./CombinationPriceEditor";
+import HeroManager from "./HeroManager";
 import { ranks as initialRanks, getAdminRanks } from "@/data/ranks";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -41,6 +42,13 @@ const AdminDashboard: React.FC = () => {
     });
   };
 
+  const handleHerosSave = () => {
+    toast({
+      title: "Heroes updated",
+      description: "Hero list has been updated successfully.",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-black to-mlbb-purple/20">
       <header className="bg-black/60 border-b border-mlbb-purple/20">
@@ -59,14 +67,15 @@ const AdminDashboard: React.FC = () => {
 
       <main className="container mx-auto px-4 py-6 md:py-8">
         <div className="mb-6 md:mb-8">
-          <h2 className="text-xl md:text-2xl font-bold text-white mb-2">Rank Price Management</h2>
-          <p className="text-gray-400 text-sm">Configure pricing for rank boosting services.</p>
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-2">Admin Management Panel</h2>
+          <p className="text-gray-400 text-sm">Configure pricing and heroes for boosting services.</p>
         </div>
 
         <Tabs defaultValue="tier-pricing" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="tier-pricing">Tier Pricing</TabsTrigger>
             <TabsTrigger value="custom-combinations">Custom Combinations</TabsTrigger>
+            <TabsTrigger value="hero-management">Hero Management</TabsTrigger>
           </TabsList>
           
           <TabsContent value="tier-pricing">
@@ -102,6 +111,25 @@ const AdminDashboard: React.FC = () => {
                 </p>
                 <p>
                   <span className="font-medium text-mlbb-lightpurple">Subdivisions:</span> You can set prices for rank subdivisions or leave them as "Any" to apply to all subdivisions.
+                </p>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="hero-management">
+            <HeroManager onSave={handleHerosSave} />
+            
+            <div className="mt-8 glass-panel p-4 md:p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Hero Management Information</h3>
+              <div className="text-sm text-gray-300 space-y-2">
+                <p>
+                  <span className="font-medium text-mlbb-lightpurple">Hero Settings:</span> Configure heroes available for MMR boosting.
+                </p>
+                <p>
+                  <span className="font-medium text-mlbb-lightpurple">Price Modifier:</span> Set a multiplier that affects the final MMR boosting price.
+                </p>
+                <p>
+                  <span className="font-medium text-mlbb-lightpurple">Difficulty:</span> Rate the hero's difficulty from 1-5 stars. This helps players understand the hero's complexity.
                 </p>
               </div>
             </div>
