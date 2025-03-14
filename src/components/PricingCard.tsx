@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { calculatePrice } from "@/data/ranks";
@@ -114,7 +113,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
   // Helper to check if rank is a Mythic rank with points
   const rankHasPoints = (rank: Rank | null): boolean => {
-    return !!rank?.points || (rank?.id === "mythic" && rank?.subdivisions?.[0]?.points);
+    if (!rank) return false;
+    return Boolean(rank.points) || Boolean(rank.id === "mythic" && rank.subdivisions?.[0]?.points);
   };
 
   const formatRankName = (rank: Rank, subdivisionIndex: number = 0, stars: number = 0, mythicPoints: number = 0): string => {

@@ -24,13 +24,15 @@ const RankTierInfo: React.FC<RankTierInfoProps> = ({
   // For Mythic rank with points in subdivision
   if (rank.id === "mythic" && rank.subdivisions && rank.subdivisions[selectedSubdivision]?.points) {
     const subdivision = rank.subdivisions[selectedSubdivision];
-    return (
-      <div className="mt-1 text-xs text-gray-400">
-        <span className="text-mlbb-gold">
-          Points: {subdivision.points?.min}-{subdivision.points?.max}
-        </span>
-      </div>
-    );
+    if (subdivision.points) {
+      return (
+        <div className="mt-1 text-xs text-gray-400">
+          <span className="text-mlbb-gold">
+            Points: {subdivision.points.min}-{subdivision.points.max}
+          </span>
+        </div>
+      );
+    }
   }
   
   // For ranks with subdivisions and stars

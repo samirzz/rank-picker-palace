@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import RankSelector from "@/components/RankSelector";
 import PricingCard from "@/components/PricingCard";
@@ -106,7 +105,8 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
 
   // Check if rank has points system (Mythic and above)
   const rankHasPoints = (rank: Rank | null): boolean => {
-    return !!rank?.points || (rank?.id === "mythic" && rank?.subdivisions?.[0]?.points);
+    if (!rank) return false;
+    return Boolean(rank.points) || Boolean(rank.id === "mythic" && rank.subdivisions?.[0]?.points);
   };
 
   // Determine which ranks should be disabled for target selection
