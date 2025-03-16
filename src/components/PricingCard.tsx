@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { calculatePrice } from "@/data/ranks";
@@ -6,7 +5,6 @@ import type { Rank } from "@/data/ranks";
 import { CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
 import PaymentMethods from "./payments/PaymentMethods";
 import { useToast } from "@/hooks/use-toast";
-import DiscordCommunity from "./DiscordCommunity";
 
 interface PricingCardProps {
   currentRank: Rank | null;
@@ -93,7 +91,6 @@ const PricingCard: React.FC<PricingCardProps> = ({
     return "5-7 days";
   };
 
-  // Helper to check if rank is a Mythic rank with points
   const rankHasPoints = (rank: Rank | null): boolean => {
     if (!rank) return false;
     return Boolean(rank.points) || Boolean(rank.id === "mythic" && rank.subdivisions?.[0]?.points);
@@ -102,12 +99,10 @@ const PricingCard: React.FC<PricingCardProps> = ({
   const formatRankName = (rank: Rank, subdivisionIndex: number = 0, stars: number = 0, mythicPoints: number = 0): string => {
     if (!rank) return '';
 
-    // For Mythic ranks with points
     if (rankHasPoints(rank) && mythicPoints > 0) {
       return `${rank.name} (${mythicPoints} points)`;
     }
 
-    // For Legend rank with stars
     if (rank.id === "legend" && stars > 0) {
       if (rank.subdivisions && rank.subdivisions[subdivisionIndex]) {
         return `${rank.subdivisions[subdivisionIndex].name} (${stars} stars)`;
@@ -207,11 +202,6 @@ const PricingCard: React.FC<PricingCardProps> = ({
             </div>
           </div>
         )}
-        
-        {/* Discord Community Section */}
-        <div className="mt-5 px-6 pb-6">
-          <DiscordCommunity />
-        </div>
       </div>
     </div>;
 };
