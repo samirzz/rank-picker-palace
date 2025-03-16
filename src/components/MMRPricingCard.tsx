@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Hero } from "@/data/heroes";
@@ -72,8 +71,8 @@ const MMRPricingCard: React.FC<MMRPricingCardProps> = ({
             {showPayment ? (
               <PaymentMethods 
                 amount={price} 
-                onPaymentSuccess={handlePaymentSuccess}
-                onPaymentCancel={handlePaymentCancel}
+                onSuccess={handlePaymentSuccess}
+                onCancel={handlePaymentCancel}
               />
             ) : (
               <>
