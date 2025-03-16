@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { calculatePrice } from "@/data/ranks";
@@ -183,7 +184,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
             </div>
           </div>
         ) : (
-          <div className="p-6 md:p-8 flex flex-col items-center justify-center text-center">
+          <div className="p-6 md:p-8 flex flex-col items-center justify-center text-center pointer-events-none">
             <h3 className="text-lg font-bold text-white mb-2">Select Your Ranks</h3>
             <p className="text-sm text-gray-400 mb-4">
               Please select your current rank and target rank to see pricing and options.
@@ -192,7 +193,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
         )}
         
         {showPayment && (
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <div className="w-full max-w-md">
               <PaymentMethods 
                 amount={price || 0} 
