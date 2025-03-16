@@ -24,7 +24,7 @@ const NavBar: React.FC = () => {
           : "bg-transparent py-3 md:py-5"
       }`}
     >
-      <div className="container px-4 mx-auto flex items-center justify-between">
+      <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center">
           <span className="text-lg md:text-xl lg:text-2xl font-bold text-white">
             <span className="text-mlbb-purple">ML</span>Booster
@@ -32,33 +32,41 @@ const NavBar: React.FC = () => {
         </div>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center space-x-4 lg:space-x-8">
+        <div className="hidden md:flex items-center space-x-2 lg:space-x-6">
           <a
             href="#home"
-            className="text-gray-300 hover:text-white transition-colors text-sm lg:text-base"
+            className="px-3 py-2 text-gray-300 hover:text-white transition-colors text-sm lg:text-base"
           >
             Home
           </a>
           <a
             href="#ranks"
-            className="text-gray-300 hover:text-white transition-colors text-sm lg:text-base"
+            className="px-3 py-2 text-gray-300 hover:text-white transition-colors text-sm lg:text-base"
           >
             Rank Boost
           </a>
           <a
+            href="#mmrboost"
+            className="px-3 py-2 text-gray-300 hover:text-white transition-colors text-sm lg:text-base"
+          >
+            MMR Boost
+          </a>
+          <a
             href="#about"
-            className="text-gray-300 hover:text-white transition-colors text-sm lg:text-base"
+            className="px-3 py-2 text-gray-300 hover:text-white transition-colors text-sm lg:text-base"
           >
             About
           </a>
           <a
             href="#contact"
-            className="text-gray-300 hover:text-white transition-colors text-sm lg:text-base"
+            className="px-3 py-2 text-gray-300 hover:text-white transition-colors text-sm lg:text-base"
           >
             Contact
           </a>
           <Button
-            className="bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple hover:opacity-90 text-white px-4 lg:px-6 text-sm lg:text-base transition-all"
+            variant="gradient"
+            rounded="lg"
+            className="ml-2"
           >
             Login
           </Button>
@@ -68,7 +76,7 @@ const NavBar: React.FC = () => {
         <div className="md:hidden flex items-center">
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="text-white focus:outline-none"
+            className="text-white focus:outline-none p-2"
             aria-label="Toggle mobile menu"
           >
             {isMobileMenuOpen ? (
@@ -83,37 +91,47 @@ const NavBar: React.FC = () => {
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-black/95 backdrop-blur-xl border-b border-gray-800 animate-slide-down">
-          <div className="container mx-auto py-4 px-4 flex flex-col space-y-4">
+          <div className="container mx-auto py-4 px-4 flex flex-col space-y-2">
             <a
               href="#home"
-              className="text-gray-300 hover:text-white py-2 transition-colors"
+              className="text-gray-300 hover:text-white py-3 px-4 rounded-md hover:bg-mlbb-purple/10 transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Home
             </a>
             <a
               href="#ranks"
-              className="text-gray-300 hover:text-white py-2 transition-colors"
+              className="text-gray-300 hover:text-white py-3 px-4 rounded-md hover:bg-mlbb-purple/10 transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Rank Boost
             </a>
             <a
+              href="#mmrboost"
+              className="text-gray-300 hover:text-white py-3 px-4 rounded-md hover:bg-mlbb-purple/10 transition-colors"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              MMR Boost
+            </a>
+            <a
               href="#about"
-              className="text-gray-300 hover:text-white py-2 transition-colors"
+              className="text-gray-300 hover:text-white py-3 px-4 rounded-md hover:bg-mlbb-purple/10 transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               About
             </a>
             <a
               href="#contact"
-              className="text-gray-300 hover:text-white py-2 transition-colors"
+              className="text-gray-300 hover:text-white py-3 px-4 rounded-md hover:bg-mlbb-purple/10 transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Contact
             </a>
             <Button
-              className="bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple hover:opacity-90 text-white transition-all w-full"
+              variant="gradient"
+              rounded="lg"
+              size="full"
+              className="mt-2"
             >
               Login
             </Button>
