@@ -30,9 +30,22 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Hero, getHeroes, calculateMMRBoostPrice, getHeroPlaceholderImage } from "@/data/heroes";
 import { Badge } from "@/components/ui/badge";
-import { Star, Trophy, User, DollarSign } from "lucide-react";
+import { Star, Trophy, User, DollarSign, Search } from "lucide-react";
 import HeroCard from "./HeroCard";
 import MMRPricingCard from "./MMRPricingCard";
+import { 
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface MMRBoostingSectionProps {
   isIntersecting?: boolean;
@@ -57,6 +70,7 @@ const MMRBoostingSection: React.FC<MMRBoostingSectionProps> = ({
   const [selectedHero, setSelectedHero] = useState<Hero | null>(null);
   const [price, setPrice] = useState<number>(0);
   const [showDetails, setShowDetails] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -168,37 +182,60 @@ const MMRBoostingSection: React.FC<MMRBoostingSectionProps> = ({
                         control={form.control}
                         name="hero"
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem className="flex flex-col">
                             <FormLabel className="text-white">Hero</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="bg-black/30 border-mlbb-purple/30 text-white">
-                                  <SelectValue placeholder="Select a hero" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent className="bg-black/90 border-mlbb-purple/30">
-                                {heroes.map((hero) => (
-                                  <SelectItem 
-                                    key={hero.id} 
-                                    value={hero.id}
-                                    className="text-white hover:bg-mlbb-purple/20"
+                            <Popover open={searchOpen} onOpenChange={setSearchOpen}>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <div
+                                    className="flex h-10 w-full items-center justify-between rounded-md border border-mlbb-purple/30 bg-black/30 px-3 py-2 text-white"
+                                    role="combobox"
+                                    aria-expanded={searchOpen}
                                   >
-                                    <div className="flex items-center">
-                                      <span className="mr-2">{hero.name}</span>
-                                      <Badge 
-                                        variant="outline" 
-                                        className="ml-2 text-mlbb-gold border-mlbb-gold/40"
-                                      >
-                                        {Array(hero.difficulty).fill("★").join("")}
-                                      </Badge>
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                                    {field.value ? (
+                                      heroes.find((hero) => hero.id === field.value)?.name
+                                    ) : (
+                                      <span className="text-gray-400">Search for a hero...</span>
+                                    )}
+                                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </div>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-full p-0 bg-black/90 border-mlbb-purple/30">
+                                <Command>
+                                  <CommandInput 
+                                    placeholder="Search hero..." 
+                                    className="h-9 text-white" 
+                                  />
+                                  <CommandList>
+                                    <CommandEmpty>No hero found.</CommandEmpty>
+                                    <CommandGroup>
+                                      {heroes.map((hero) => (
+                                        <CommandItem
+                                          key={hero.id}
+                                          value={hero.id}
+                                          onSelect={(value) => {
+                                            setValue("hero", value);
+                                            setSearchOpen(false);
+                                          }}
+                                          className="text-white hover:bg-mlbb-purple/20"
+                                        >
+                                          <div className="flex items-center">
+                                            <span className="mr-2">{hero.name}</span>
+                                            <Badge 
+                                              variant="outline" 
+                                              className="ml-2 text-mlbb-gold border-mlbb-gold/40"
+                                            >
+                                              {Array(hero.difficulty).fill("★").join("")}
+                                            </Badge>
+                                          </div>
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
                             <FormMessage />
                           </FormItem>
                         )}
