@@ -7,14 +7,14 @@ import { useToast } from "@/hooks/use-toast";
 
 interface PaymentMethodsProps {
   amount: number;
-  onPaymentSuccess: () => void;
-  onPaymentCancel: () => void;
+  onSuccess: () => void;
+  onCancel: () => void;
 }
 
 const PaymentMethods: React.FC<PaymentMethodsProps> = ({ 
   amount, 
-  onPaymentSuccess,
-  onPaymentCancel 
+  onSuccess,
+  onCancel 
 }) => {
   const [paymentMethod, setPaymentMethod] = useState<"stripe" | "paypal" | null>(null);
   const { toast } = useToast();
@@ -32,7 +32,7 @@ const PaymentMethods: React.FC<PaymentMethodsProps> = ({
       title: "Payment Successful",
       description: "Your boost order has been placed successfully!",
     });
-    onPaymentSuccess();
+    onSuccess();
   };
 
   if (paymentMethod === "stripe") {
@@ -70,7 +70,7 @@ const PaymentMethods: React.FC<PaymentMethodsProps> = ({
       </button>
       
       <button 
-        onClick={onPaymentCancel}
+        onClick={onCancel}
         className="w-full text-center text-xs text-gray-400 hover:text-gray-300 mt-2"
       >
         Cancel
