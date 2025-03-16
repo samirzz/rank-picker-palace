@@ -8,12 +8,14 @@ import WhyChooseUs from "@/components/WhyChooseUs";
 import ContactSection from "@/components/ContactSection";
 import { Rank, getAdminRanks } from "@/data/ranks";
 import MMRBoostingSection from "@/components/MMRBoostingSection";
+import DiscordCommunity from "@/components/DiscordCommunity";
 
 const Index = () => {
   const [currentRank, setCurrentRank] = useState<Rank | null>(null);
   const [targetRank, setTargetRank] = useState<Rank | null>(null);
   const [isIntersecting, setIsIntersecting] = useState(false);
   const [isMMRSectionVisible, setIsMMRSectionVisible] = useState(false);
+  const [isDiscordVisible, setIsDiscordVisible] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -29,6 +31,13 @@ const Index = () => {
       },
       { threshold: 0.1 }
     );
+    
+    const discordObserver = new IntersectionObserver(
+      ([entry]) => {
+        setIsDiscordVisible(entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
 
     const element = document.getElementById("ranks");
     if (element) {
@@ -39,6 +48,11 @@ const Index = () => {
     if (mmrElement) {
       mmrObserver.observe(mmrElement);
     }
+    
+    const discordElement = document.getElementById("discord-community");
+    if (discordElement) {
+      discordObserver.observe(discordElement);
+    }
 
     return () => {
       if (element) {
@@ -46,6 +60,9 @@ const Index = () => {
       }
       if (mmrElement) {
         mmrObserver.unobserve(mmrElement);
+      }
+      if (discordElement) {
+        discordObserver.unobserve(discordElement);
       }
     };
   }, []);
@@ -63,6 +80,19 @@ const Index = () => {
         targetRank={targetRank}
         setTargetRank={setTargetRank}
       />
+      
+      <section id="discord-community" className="py-12 md:py-16">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">
+            <span className="text-glow">Join Our Community</span>
+          </h2>
+          <div className={`transition-all duration-1000 transform ${isDiscordVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
+            <div className="max-w-md mx-auto">
+              <DiscordCommunity />
+            </div>
+          </div>
+        </div>
+      </section>
       
       <MMRBoostingSection isIntersecting={isMMRSectionVisible} />
       

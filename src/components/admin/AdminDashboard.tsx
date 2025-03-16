@@ -6,6 +6,7 @@ import { LogOut } from "lucide-react";
 import PriceEditor from "./PriceEditor";
 import CombinationPriceEditor from "./CombinationPriceEditor";
 import HeroManager from "./HeroManager";
+import DiscordLinkEditor from "./DiscordLinkEditor";
 import { ranks as initialRanks, getAdminRanks } from "@/data/ranks";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -72,10 +73,11 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         <Tabs defaultValue="tier-pricing" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="tier-pricing">Tier Pricing</TabsTrigger>
             <TabsTrigger value="custom-combinations">Custom Combinations</TabsTrigger>
             <TabsTrigger value="hero-management">Hero Management</TabsTrigger>
+            <TabsTrigger value="discord-settings">Discord Settings</TabsTrigger>
           </TabsList>
           
           <TabsContent value="tier-pricing">
@@ -130,6 +132,25 @@ const AdminDashboard: React.FC = () => {
                 </p>
                 <p>
                   <span className="font-medium text-mlbb-lightpurple">Difficulty:</span> Rate the hero's difficulty from 1-5 stars. This helps players understand the hero's complexity.
+                </p>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="discord-settings">
+            <DiscordLinkEditor />
+            
+            <div className="mt-8 glass-panel p-4 md:p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Discord Settings Information</h3>
+              <div className="text-sm text-gray-300 space-y-2">
+                <p>
+                  <span className="font-medium text-mlbb-lightpurple">Discord Integration:</span> Configure your Discord community link to display on the website.
+                </p>
+                <p>
+                  <span className="font-medium text-mlbb-lightpurple">Invite URL:</span> Use a permanent invite link from your Discord server settings.
+                </p>
+                <p>
+                  <span className="font-medium text-mlbb-lightpurple">Customization:</span> You can customize all text elements shown in the Discord community panel.
                 </p>
               </div>
             </div>
