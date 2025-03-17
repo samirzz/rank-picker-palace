@@ -5,6 +5,8 @@ export interface Rank {
   image: string;
   tier: number;
   priceModifier: number;
+  basePrice?: number; // Base price for this tier
+  costPerStar?: number; // Cost per star for this tier
   subdivisions?: RankSubdivision[];
   points?: PointsRange;
 }
@@ -35,6 +37,8 @@ const originalRanks: Rank[] = [
     image: "/warrior.png",
     tier: 1,
     priceModifier: 1,
+    basePrice: 5,
+    costPerStar: 0.5,
     subdivisions: [
       { name: "Warrior I", stars: 5 },
       { name: "Warrior II", stars: 5 },
@@ -47,6 +51,8 @@ const originalRanks: Rank[] = [
     image: "/elite.png",
     tier: 2,
     priceModifier: 1.2,
+    basePrice: 10,
+    costPerStar: 1,
     subdivisions: [
       { name: "Elite I", stars: 5 },
       { name: "Elite II", stars: 5 },
@@ -59,6 +65,8 @@ const originalRanks: Rank[] = [
     image: "/master.png",
     tier: 3,
     priceModifier: 1.5,
+    basePrice: 15,
+    costPerStar: 1.5,
     subdivisions: [
       { name: "Master I", stars: 5 },
       { name: "Master II", stars: 5 },
@@ -72,6 +80,8 @@ const originalRanks: Rank[] = [
     image: "/grandmaster.png",
     tier: 4,
     priceModifier: 1.8,
+    basePrice: 20,
+    costPerStar: 2,
     subdivisions: [
       { name: "Grandmaster I", stars: 5 },
       { name: "Grandmaster II", stars: 5 },
@@ -86,6 +96,8 @@ const originalRanks: Rank[] = [
     image: "/epic.png",
     tier: 5,
     priceModifier: 2.2,
+    basePrice: 25,
+    costPerStar: 2.5,
     subdivisions: [
       { name: "Epic I", stars: 5 },
       { name: "Epic II", stars: 5 },
@@ -100,6 +112,8 @@ const originalRanks: Rank[] = [
     image: "/legend.png",
     tier: 6,
     priceModifier: 2.8,
+    basePrice: 30,
+    costPerStar: 3,
     subdivisions: [
       { name: "Legend I", stars: 5 },
       { name: "Legend II", stars: 5 },
@@ -114,6 +128,8 @@ const originalRanks: Rank[] = [
     image: "/mythic.png",
     tier: 7,
     priceModifier: 3.5,
+    basePrice: 40,
+    costPerStar: 4,
     subdivisions: [
       { name: "Mythic", points: { min: 0, max: 24 } }
     ]
@@ -124,6 +140,8 @@ const originalRanks: Rank[] = [
     image: "/mythic.png",
     tier: 8,
     priceModifier: 4,
+    basePrice: 50,
+    costPerStar: 5,
     points: { min: 25, max: 49 }
   },
   {
@@ -132,6 +150,8 @@ const originalRanks: Rank[] = [
     image: "/mythical-glory.png",
     tier: 9,
     priceModifier: 5,
+    basePrice: 60,
+    costPerStar: 6,
     points: { min: 50, max: 99 }
   },
   {
@@ -140,6 +160,8 @@ const originalRanks: Rank[] = [
     image: "/mythical-glory.png",
     tier: 10,
     priceModifier: 6,
+    basePrice: 80,
+    costPerStar: 8,
     points: { min: 100, max: 9999 }
   }
 ];
@@ -176,6 +198,86 @@ const rankHasPoints = (rank: Rank | null): boolean => {
   return Boolean(rank.points) || Boolean(rank.id === "mythic" && rank.subdivisions && rank.subdivisions[0]?.points);
 };
 
+// Calculate the total stars required between two ranks and subdivisions
+const calculateTotalStars = (
+  currentRank: Rank,
+  targetRank: Rank,
+  currentSubdivision: number = 0,
+  targetSubdivision: number = 0,
+  currentStars: number = 0,
+  targetStars: number = 0
+): number => {
+  let totalStars = 0;
+  
+  // If same rank and subdivision, just calculate star difference
+  if (currentRank.id === targetRank.id && currentSubdivision === targetSubdivision) {
+    return targetStars - currentStars;
+  }
+  
+  // Same rank, different subdivisions
+  if (currentRank.id === targetRank.id) {
+    // Calculate stars in current subdivision (remaining stars)
+    if (currentRank.subdivisions && currentRank.subdivisions[currentSubdivision]) {
+      const maxStars = currentRank.subdivisions[currentSubdivision].stars || 0;
+      totalStars += maxStars - currentStars;
+    }
+    
+    // Add stars for in-between subdivisions
+    for (let i = currentSubdivision - 1; i > targetSubdivision; i--) {
+      if (currentRank.subdivisions && currentRank.subdivisions[i]) {
+        totalStars += currentRank.subdivisions[i].stars || 0;
+      }
+    }
+    
+    // Add stars for target subdivision
+    if (targetRank.subdivisions && targetRank.subdivisions[targetSubdivision]) {
+      totalStars += targetStars;
+    }
+    
+    return totalStars;
+  }
+  
+  // Different ranks
+  
+  // 1. Stars remaining in current rank
+  if (currentRank.subdivisions) {
+    // Current subdivision remaining stars
+    const currentMaxStars = currentRank.subdivisions[currentSubdivision]?.stars || 0;
+    totalStars += currentMaxStars - currentStars;
+    
+    // Add stars for higher subdivisions in current rank
+    for (let i = currentSubdivision - 1; i >= 0; i--) {
+      totalStars += currentRank.subdivisions[i]?.stars || 0;
+    }
+  }
+  
+  // 2. Stars for ranks in between
+  const ranksInBetween = ranks.filter(r => 
+    r.tier > currentRank.tier && r.tier < targetRank.tier
+  );
+  
+  for (const rank of ranksInBetween) {
+    if (rank.subdivisions) {
+      for (const subdivision of rank.subdivisions) {
+        totalStars += subdivision.stars || 0;
+      }
+    }
+  }
+  
+  // 3. Stars for target rank
+  if (targetRank.subdivisions) {
+    // Add stars for lower subdivisions in target rank
+    for (let i = targetRank.subdivisions.length - 1; i > targetSubdivision; i--) {
+      totalStars += targetRank.subdivisions[i]?.stars || 0;
+    }
+    
+    // Add stars for target subdivision
+    totalStars += targetStars;
+  }
+  
+  return totalStars;
+};
+
 export const calculatePrice = (
   currentRank: Rank, 
   targetRank: Rank, 
@@ -210,6 +312,7 @@ export const calculatePrice = (
     }
   }
   
+  // Check if there's a custom price for this specific combination
   const combinations = getRankCombinations();
   const customCombination = combinations.find(combo => 
     combo.fromRankId === currentRank.id && 
@@ -222,7 +325,7 @@ export const calculatePrice = (
     return customCombination.price;
   }
   
-  const basePricePerTier = getBasePrice();
+  // Get the admin-configured ranks
   const adminRanks = getAdminRanks();
   
   let updatedCurrentRank = currentRank;
@@ -234,53 +337,54 @@ export const calculatePrice = (
   if (foundCurrentRank) updatedCurrentRank = foundCurrentRank;
   if (foundTargetRank) updatedTargetRank = foundTargetRank;
   
-  const tierDifference = updatedTargetRank.tier - updatedCurrentRank.tier;
-  const priceMultiplier = updatedTargetRank.priceModifier;
+  let price = 0;
   
-  let price = Math.round(basePricePerTier * tierDifference * priceMultiplier);
+  // 1. Add base price of current tier
+  price += updatedCurrentRank.basePrice || 0;
   
-  if (currentRank.tier === targetRank.tier && 
-      currentRank.subdivisions && 
-      targetRank.subdivisions && 
-      currentSubdivision !== undefined && 
-      targetSubdivision !== undefined) {
-    if (targetSubdivision < currentSubdivision) {
-      const subdivisionDiff = currentSubdivision - targetSubdivision;
-      price = 5 * subdivisionDiff;
-    }
-  }
-  
-  if (currentRank.id === "legend" && targetRank.id === "legend" && 
-      currentSubdivision === targetSubdivision) {
-    const starDifference = targetStars - currentStars;
-    if (starDifference > 0) {
-      price = 2 * starDifference;
-    }
-  }
-  
-  if (rankHasPoints(currentRank) && rankHasPoints(targetRank)) {
-    if (currentRank.tier === targetRank.tier) {
-      const pointsDifference = targetMythicPoints - currentMythicPoints;
-      if (pointsDifference > 0) {
-        price = 3 * pointsDifference;
-      }
-    } else {
-      if (targetMythicPoints > 0) {
-        const minPoints = targetRank.points?.min || 0;
-        const pointsAboveMin = targetMythicPoints - minPoints;
-        if (pointsAboveMin > 0) {
-          price += 3 * pointsAboveMin;
+  // 2. Calculate stars based pricing
+  if (!rankHasPoints(currentRank) && !rankHasPoints(targetRank)) {
+    // Regular star-based ranks
+    const totalStars = calculateTotalStars(
+      updatedCurrentRank, 
+      updatedTargetRank, 
+      currentSubdivision, 
+      targetSubdivision,
+      currentStars,
+      targetStars
+    );
+    
+    // Use the cost per star of the current rank
+    price += totalStars * (updatedCurrentRank.costPerStar || 0);
+  } else {
+    // Handle mythic points
+    if (rankHasPoints(currentRank) && rankHasPoints(targetRank)) {
+      if (currentRank.tier === targetRank.tier) {
+        const pointsDifference = targetMythicPoints - currentMythicPoints;
+        if (pointsDifference > 0) {
+          price += 3 * pointsDifference; // $3 per mythic point
+        }
+      } else {
+        if (targetMythicPoints > 0) {
+          const minPoints = targetRank.points?.min || 0;
+          const pointsAboveMin = targetMythicPoints - minPoints;
+          if (pointsAboveMin > 0) {
+            price += 3 * pointsAboveMin;
+          }
         }
       }
     }
-  }
-  else if (!rankHasPoints(currentRank) && rankHasPoints(targetRank) && targetMythicPoints > 0) {
-    const minPoints = targetRank.points?.min || 0;
-    const pointsAboveMin = targetMythicPoints - minPoints;
-    if (pointsAboveMin > 0) {
-      price += 3 * pointsAboveMin;
+    else if (!rankHasPoints(currentRank) && rankHasPoints(targetRank) && targetMythicPoints > 0) {
+      const minPoints = targetRank.points?.min || 0;
+      const pointsAboveMin = targetMythicPoints - minPoints;
+      if (pointsAboveMin > 0) {
+        price += 3 * pointsAboveMin;
+      }
     }
   }
+  
+  // 3. Add base price of target tier
+  price += updatedTargetRank.basePrice || 0;
   
   return price;
 };

@@ -27,7 +27,29 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
     );
   };
 
-  const handleBasePriceChange = (value: string) => {
+  const handleBasePriceChange = (rankId: string, value: string) => {
+    const newValue = parseFloat(value);
+    if (isNaN(newValue) || newValue < 0) return;
+
+    setEditedRanks(
+      editedRanks.map(rank => 
+        rank.id === rankId ? { ...rank, basePrice: newValue } : rank
+      )
+    );
+  };
+
+  const handleCostPerStarChange = (rankId: string, value: string) => {
+    const newValue = parseFloat(value);
+    if (isNaN(newValue) || newValue < 0) return;
+
+    setEditedRanks(
+      editedRanks.map(rank => 
+        rank.id === rankId ? { ...rank, costPerStar: newValue } : rank
+      )
+    );
+  };
+
+  const handleGlobalBasePriceChange = (value: string) => {
     const newBasePrice = parseFloat(value);
     if (isNaN(newBasePrice) || newBasePrice <= 0) return;
     
@@ -67,7 +89,7 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
         <div className="flex items-center gap-4">
           <div className="flex-1">
             <label htmlFor="basePrice" className="block text-sm font-medium text-gray-300 mb-1">
-              Base Price Per Tier ($)
+              Global Base Price Per Tier ($)
             </label>
             <input
               id="basePrice"
@@ -75,7 +97,7 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
               min="1"
               step="0.5"
               value={basePrice}
-              onChange={(e) => handleBasePriceChange(e.target.value)}
+              onChange={(e) => handleGlobalBasePriceChange(e.target.value)}
               className="w-full px-3 py-2 bg-black/60 border border-mlbb-purple/30 rounded-md text-white"
             />
           </div>
@@ -92,47 +114,78 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
       </div>
 
       <div className="glass-panel p-4 md:p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Rank Price Modifiers</h3>
-        <div className="space-y-4">
-          <div className="grid grid-cols-12 text-xs text-gray-400 pb-2 border-b border-white/10">
-            <div className="col-span-1">#</div>
-            <div className="col-span-5 md:col-span-4">Rank</div>
-            <div className="col-span-3 md:col-span-2">Tier</div>
-            <div className="col-span-3 md:col-span-5">Price Modifier</div>
-          </div>
-          
-          {editedRanks.map((rank, index) => (
-            <div key={rank.id} className="grid grid-cols-12 items-center py-2 border-b border-white/5 last:border-0">
-              <div className="col-span-1 text-sm text-gray-500">{index + 1}</div>
-              <div className="col-span-5 md:col-span-4 flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 overflow-hidden flex items-center justify-center">
-                  <img
-                    src={rank.image}
-                    alt={rank.name}
-                    className="w-6 h-6 object-contain"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = getRankPlaceholderImage();
-                    }}
-                  />
-                </div>
-                <span className="text-sm text-white">{rank.name}</span>
-              </div>
-              <div className="col-span-3 md:col-span-2">
-                <span className="text-sm text-gray-300">Tier {rank.tier}</span>
-              </div>
-              <div className="col-span-3 md:col-span-5">
-                <input
-                  type="number"
-                  min="0.1"
-                  step="0.1"
-                  value={rank.priceModifier}
-                  onChange={(e) => handlePriceModifierChange(rank.id, e.target.value)}
-                  className="w-full md:w-1/2 px-3 py-1 bg-black/60 border border-mlbb-purple/30 rounded-md text-white"
-                />
-              </div>
-            </div>
-          ))}
+        <h3 className="text-lg font-semibold text-white mb-4">Rank Price Settings</h3>
+        <p className="text-sm text-gray-400 mb-4">Define base prices and costs per star for each rank</p>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[600px]">
+            <thead>
+              <tr className="text-xs text-gray-400 border-b border-white/10">
+                <th className="pb-2 text-left font-medium">#</th>
+                <th className="pb-2 text-left font-medium">Rank</th>
+                <th className="pb-2 text-left font-medium">Tier</th>
+                <th className="pb-2 text-left font-medium">Price Modifier</th>
+                <th className="pb-2 text-left font-medium">Base Price ($)</th>
+                <th className="pb-2 text-left font-medium">Cost per Star ($)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {editedRanks.map((rank, index) => (
+                <tr key={rank.id} className="border-b border-white/5 last:border-0">
+                  <td className="py-3 text-sm text-gray-500">{index + 1}</td>
+                  <td className="py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 overflow-hidden flex items-center justify-center">
+                        <img
+                          src={rank.image}
+                          alt={rank.name}
+                          className="w-6 h-6 object-contain"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = getRankPlaceholderImage();
+                          }}
+                        />
+                      </div>
+                      <span className="text-sm text-white">{rank.name}</span>
+                    </div>
+                  </td>
+                  <td className="py-3">
+                    <span className="text-sm text-gray-300">Tier {rank.tier}</span>
+                  </td>
+                  <td className="py-3">
+                    <input
+                      type="number"
+                      min="0.1"
+                      step="0.1"
+                      value={rank.priceModifier}
+                      onChange={(e) => handlePriceModifierChange(rank.id, e.target.value)}
+                      className="w-20 px-3 py-1 bg-black/60 border border-mlbb-purple/30 rounded-md text-white"
+                    />
+                  </td>
+                  <td className="py-3">
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={rank.basePrice || 0}
+                      onChange={(e) => handleBasePriceChange(rank.id, e.target.value)}
+                      className="w-20 px-3 py-1 bg-black/60 border border-mlbb-purple/30 rounded-md text-white"
+                    />
+                  </td>
+                  <td className="py-3">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      value={rank.costPerStar || 0}
+                      onChange={(e) => handleCostPerStarChange(rank.id, e.target.value)}
+                      className="w-20 px-3 py-1 bg-black/60 border border-mlbb-purple/30 rounded-md text-white"
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
