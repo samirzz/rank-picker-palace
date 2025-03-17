@@ -16,17 +16,6 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const handlePriceModifierChange = (rankId: string, value: string) => {
-    const newValue = parseFloat(value);
-    if (isNaN(newValue) || newValue <= 0) return;
-
-    setEditedRanks(
-      editedRanks.map(rank => 
-        rank.id === rankId ? { ...rank, priceModifier: newValue } : rank
-      )
-    );
-  };
-
   const handleBasePriceChange = (rankId: string, value: string) => {
     const newValue = parseFloat(value);
     if (isNaN(newValue) || newValue < 0) return;
@@ -124,7 +113,6 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
                 <th className="pb-2 text-left font-medium">#</th>
                 <th className="pb-2 text-left font-medium">Rank</th>
                 <th className="pb-2 text-left font-medium">Tier</th>
-                <th className="pb-2 text-left font-medium">Price Modifier</th>
                 <th className="pb-2 text-left font-medium">Base Price ($)</th>
                 <th className="pb-2 text-left font-medium">Cost per Star ($)</th>
               </tr>
@@ -151,16 +139,6 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
                   </td>
                   <td className="py-3">
                     <span className="text-sm text-gray-300">Tier {rank.tier}</span>
-                  </td>
-                  <td className="py-3">
-                    <input
-                      type="number"
-                      min="0.1"
-                      step="0.1"
-                      value={rank.priceModifier}
-                      onChange={(e) => handlePriceModifierChange(rank.id, e.target.value)}
-                      className="w-20 px-3 py-1 bg-black/60 border border-mlbb-purple/30 rounded-md text-white"
-                    />
                   </td>
                   <td className="py-3">
                     <input
