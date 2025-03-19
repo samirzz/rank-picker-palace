@@ -13,17 +13,17 @@ import { useToast } from "@/hooks/use-toast";
 import { Mail, Key, User, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-// Fix the login schema to properly validate email
+// Login schema
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
 
-// Fix the signup schema to make username properly optional
+// Signup schema with properly optional username
 const signupSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
-  username: z.string().min(3, { message: "Username must be at least 3 characters" }).optional().or(z.literal('')),
+  username: z.string().min(3, { message: "Username must be at least 3 characters" }).optional(),
 });
 
 const Auth = () => {
@@ -39,7 +39,6 @@ const Auth = () => {
       email: "",
       password: "",
     },
-    mode: "onChange", // Validate on change for better UX
   });
 
   const signupForm = useForm<z.infer<typeof signupSchema>>({
@@ -49,7 +48,6 @@ const Auth = () => {
       password: "",
       username: "",
     },
-    mode: "onChange", // Validate on change for better UX
   });
 
   useEffect(() => {
@@ -99,8 +97,8 @@ const Auth = () => {
     setErrorMessage(null);
     
     try {
-      // Process username value - if empty string, set to null
-      const username = values.username && values.username.trim() !== '' ? values.username : null;
+      // Process username value - if empty string, set to null or undefined
+      const username = values.username ? values.username : null;
       
       // Create user with email and password
       const { data, error } = await supabase.auth.signUp({
@@ -110,7 +108,6 @@ const Auth = () => {
           data: {
             username: username,
           },
-          // Disable email confirmation for easier testing
           emailRedirectTo: window.location.origin,
         },
       });
