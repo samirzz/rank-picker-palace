@@ -70,9 +70,11 @@ export const useMMRBoostingForm = () => {
       // Recalculate price when base price changes
       if (selectedHero) {
         try {
+          const currentMMR = watchedValues.currentMMR ?? 0;
+          const targetMMR = watchedValues.targetMMR ?? 0;
           const newPrice = await calculateMMRBoostPrice(
-            watchedValues.currentMMR,
-            watchedValues.targetMMR,
+            currentMMR,
+            targetMMR,
             selectedHero
           );
           setPrice(newPrice);
@@ -101,8 +103,11 @@ export const useMMRBoostingForm = () => {
     }
     
     // Ensure target MMR is always >= current MMR
-    if (watchedValues.currentMMR > watchedValues.targetMMR) {
-      form.setValue("targetMMR", watchedValues.currentMMR);
+    const currentMMR = watchedValues.currentMMR ?? 0;
+    const targetMMR = watchedValues.targetMMR ?? 0;
+    
+    if (currentMMR > targetMMR) {
+      form.setValue("targetMMR", currentMMR);
     }
     
     // Calculate price
@@ -110,8 +115,8 @@ export const useMMRBoostingForm = () => {
       if (selectedHero) {
         try {
           const newPrice = await calculateMMRBoostPrice(
-            watchedValues.currentMMR,
-            watchedValues.targetMMR,
+            currentMMR,
+            targetMMR,
             selectedHero
           );
           setPrice(newPrice);

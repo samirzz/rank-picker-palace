@@ -65,8 +65,8 @@ const MMRBoostingSection: React.FC<MMRBoostingSectionProps> = ({
           <div>
             <MMRPricingCard
               hero={selectedHero}
-              currentMMR={watchedValues.currentMMR}
-              targetMMR={watchedValues.targetMMR}
+              currentMMR={watchedValues.currentMMR ?? 0}
+              targetMMR={watchedValues.targetMMR ?? 0}
               price={price}
             />
           </div>

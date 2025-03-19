@@ -11,12 +11,16 @@ import * as z from "zod";
 interface MMRRangeCardProps {
   form: UseFormReturn<z.infer<any>>;
   watchedValues: {
-    currentMMR: number;
-    targetMMR: number;
+    currentMMR?: number;
+    targetMMR?: number;
   };
 }
 
 const MMRRangeCard: React.FC<MMRRangeCardProps> = ({ form, watchedValues }) => {
+  // Use default values if properties are undefined
+  const currentMMR = watchedValues.currentMMR ?? 1000;
+  const targetMMR = watchedValues.targetMMR ?? 1500;
+
   return (
     <Card className="bg-mlbb-darkpurple/40 border-mlbb-purple/20">
       <CardHeader>
@@ -73,7 +77,7 @@ const MMRRangeCard: React.FC<MMRRangeCardProps> = ({ form, watchedValues }) => {
                   <div className="flex items-center space-x-4">
                     <FormControl>
                       <Slider
-                        min={watchedValues.currentMMR}
+                        min={currentMMR}
                         max={4000}
                         step={50}
                         value={[field.value]}
@@ -86,7 +90,7 @@ const MMRRangeCard: React.FC<MMRRangeCardProps> = ({ form, watchedValues }) => {
                         type="number"
                         value={field.value}
                         onChange={(e) => field.onChange(Number(e.target.value))}
-                        min={watchedValues.currentMMR}
+                        min={currentMMR}
                         className="w-20 bg-black/30 border-mlbb-purple/30 text-white"
                       />
                     </FormControl>
@@ -101,7 +105,7 @@ const MMRRangeCard: React.FC<MMRRangeCardProps> = ({ form, watchedValues }) => {
             <div className="flex justify-between text-xs text-gray-400">
               <span>MMR Difference:</span>
               <span className="text-mlbb-gold font-medium">
-                {Math.max(0, watchedValues.targetMMR - watchedValues.currentMMR)} pts
+                {Math.max(0, targetMMR - currentMMR)} pts
               </span>
             </div>
           </div>
