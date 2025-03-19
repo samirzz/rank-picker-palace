@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Key, User, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -94,28 +95,46 @@ const Auth = () => {
     setErrorMessage(null);
     
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log("Signup values:", values);
+      
+      const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
           data: {
-            username: values.username,
+            username: values.username || undefined,
           },
         },
       });
       
+      console.log("Signup response:", { data, error });
+      
       if (error) {
         setErrorMessage(error.message);
-      } else {
+      } else if (data?.user) {
         toast({
-          title: "Sign up successful",
-          description: "Please check your email to confirm your account.",
+          title: "Account created successfully",
+          description: data.user.identities?.length === 0 
+            ? "This email is already registered. Please log in instead." 
+            : "Please check your email to confirm your account.",
         });
-        setAuthMode("login");
+        
+        // If email confirmation is not enabled or user was created successfully
+        if (data.user.identities && data.user.identities.length > 0) {
+          // If we got a session, user was logged in automatically
+          if (data.session) {
+            navigate('/');
+          } else {
+            setAuthMode("login");
+          }
+        } else {
+          // User exists but identities array is empty - this means the email already exists
+          setAuthMode("login");
+        }
       }
     } catch (error) {
+      console.error("Signup error:", error);
       setErrorMessage("An unexpected error occurred. Please try again.");
-      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -140,10 +159,10 @@ const Auth = () => {
           </div>
           
           {errorMessage && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-md p-3 mb-6 flex items-start">
-              <AlertCircle className="text-red-500 w-5 h-5 mr-2 mt-0.5 flex-shrink-0" />
-              <span className="text-red-200 text-sm">{errorMessage}</span>
-            </div>
+            <Alert variant="destructive" className="bg-red-500/10 border border-red-500/30 rounded-md mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-red-200 text-sm">{errorMessage}</AlertDescription>
+            </Alert>
           )}
           
           {authMode === "login" ? (
