@@ -1,13 +1,16 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import AuthContainer from "@/components/auth/AuthContainer";
 import LoginForm from "@/components/auth/LoginForm";
 import SignupForm from "@/components/auth/SignupForm";
+import ResetPasswordForm from "@/components/auth/ResetPasswordForm";
 
 const Auth = () => {
-  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+  const [searchParams] = useSearchParams();
+  const initialMode = searchParams.get("mode") === "reset-password" ? "reset-password" : "login";
+  const [authMode, setAuthMode] = useState<"login" | "signup" | "reset-password">(initialMode);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -26,10 +29,23 @@ const Auth = () => {
     setErrorMessage(null);
   };
 
-  const getTitle = () => authMode === "login" ? "Welcome Back" : "Create Account";
-  const getSubtitle = () => authMode === "login" 
-    ? "Log in to access your boosting services" 
-    : "Sign up to get started with MLBooster";
+  const getTitle = () => {
+    switch (authMode) {
+      case "login": return "Welcome Back";
+      case "signup": return "Create Account";
+      case "reset-password": return "Reset Password";
+      default: return "Welcome";
+    }
+  };
+  
+  const getSubtitle = () => {
+    switch (authMode) {
+      case "login": return "Log in to access your boosting services";
+      case "signup": return "Sign up to get started with MLBooster";
+      case "reset-password": return "Enter your email to receive a password reset link";
+      default: return "";
+    }
+  };
 
   return (
     <AuthContainer
@@ -38,21 +54,25 @@ const Auth = () => {
       errorMessage={errorMessage}
     >
       {authMode === "login" ? (
-        <LoginForm setErrorMessage={setErrorMessage} />
-      ) : (
+        <LoginForm setErrorMessage={setErrorMessage} setAuthMode={setAuthMode} />
+      ) : authMode === "signup" ? (
         <SignupForm setErrorMessage={setErrorMessage} setAuthMode={setAuthMode} />
+      ) : (
+        <ResetPasswordForm setErrorMessage={setErrorMessage} setAuthMode={setAuthMode} />
       )}
       
-      <div className="text-center mt-6">
-        <button 
-          onClick={toggleAuthMode} 
-          className="text-mlbb-lightpurple hover:text-white text-sm transition-colors"
-        >
-          {authMode === "login" 
-            ? "Don't have an account? Sign up" 
-            : "Already have an account? Log in"}
-        </button>
-      </div>
+      {authMode !== "reset-password" && (
+        <div className="text-center mt-6">
+          <button 
+            onClick={toggleAuthMode} 
+            className="text-mlbb-lightpurple hover:text-white text-sm transition-colors"
+          >
+            {authMode === "login" 
+              ? "Don't have an account? Sign up" 
+              : "Already have an account? Log in"}
+          </button>
+        </div>
+      )}
     </AuthContainer>
   );
 };

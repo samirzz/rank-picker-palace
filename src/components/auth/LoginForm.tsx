@@ -19,9 +19,10 @@ const loginSchema = z.object({
 
 type LoginFormProps = {
   setErrorMessage: React.Dispatch<React.SetStateAction<string | null>>;
+  setAuthMode: React.Dispatch<React.SetStateAction<"login" | "signup" | "reset-password">>;
 };
 
-const LoginForm = ({ setErrorMessage }: LoginFormProps) => {
+const LoginForm = ({ setErrorMessage, setAuthMode }: LoginFormProps) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -109,6 +110,16 @@ const LoginForm = ({ setErrorMessage }: LoginFormProps) => {
             </FormItem>
           )}
         />
+        
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setAuthMode("reset-password")} 
+            className="text-sm text-mlbb-lightpurple hover:text-white transition-colors"
+          >
+            Forgot password?
+          </button>
+        </div>
         
         <Button
           type="submit"
