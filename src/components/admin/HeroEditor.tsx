@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { getHeroBasePrice, getAdminHeroes, saveHeroes, saveHeroBasePrice } from "@/data/heroes";
+import { getHeroBasePrice, saveHeroBasePrice } from "@/data/heroes";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
@@ -9,9 +9,27 @@ import { Input } from "@/components/ui/input";
 import { Save } from "lucide-react";
 
 const HeroEditor: React.FC = () => {
-  const [basePrice, setBasePrice] = useState(getHeroBasePrice());
-  const [heroes, setHeroes] = useState(getAdminHeroes());
+  const [basePrice, setBasePrice] = useState<number>(0.1);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const price = await getHeroBasePrice();
+        setBasePrice(price);
+      } catch (error) {
+        console.error("Error fetching base price:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load base price. Using default value.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchData();
+  }, [toast]);
 
   const handleBasePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
@@ -20,21 +38,31 @@ const HeroEditor: React.FC = () => {
     }
   };
 
-  const handleSaveChanges = () => {
-    // Save base price
-    saveHeroBasePrice(basePrice);
+  const handleSaveChanges = async () => {
+    setLoading(true);
     
-    // Save heroes data
-    saveHeroes(heroes);
-    
-    toast({
-      title: "Changes saved",
-      description: "Hero settings have been updated successfully.",
-    });
-    
-    // Dispatch events to notify other components
-    window.dispatchEvent(new Event('adminHeroesChange'));
-    window.dispatchEvent(new Event('adminBasePriceChange'));
+    try {
+      // Save base price
+      await saveHeroBasePrice(basePrice);
+      
+      toast({
+        title: "Changes saved",
+        description: "Hero settings have been updated successfully.",
+      });
+      
+      // Dispatch events to notify other components
+      window.dispatchEvent(new Event('adminHeroesChange'));
+      window.dispatchEvent(new Event('adminBasePriceChange'));
+    } catch (error) {
+      console.error("Error saving changes:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save changes. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -60,9 +88,10 @@ const HeroEditor: React.FC = () => {
             <Button 
               onClick={handleSaveChanges} 
               className="bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple hover:from-mlbb-darkpurple hover:to-mlbb-purple"
+              disabled={loading}
             >
               <Save className="mr-2 h-4 w-4" />
-              Save Changes
+              {loading ? "Saving..." : "Save Changes"}
             </Button>
           </div>
           <p className="text-xs text-gray-400">

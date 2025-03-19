@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { getRankPlaceholderImage, getBasePrice } from "@/data/ranks";
+import { getRankPlaceholderImage, getBasePrice, saveBasePrice, saveAdminRanks } from "@/data/ranks";
 import { useToast } from "@/hooks/use-toast";
 import { Save } from "lucide-react";
 
@@ -12,9 +12,32 @@ interface PriceEditorProps {
 
 const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
   const [editedRanks, setEditedRanks] = useState([...ranks]);
-  const [basePrice, setBasePrice] = useState(getBasePrice());
+  const [basePrice, setBasePrice] = useState(0);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchBasePrice = async () => {
+      try {
+        const price = await getBasePrice();
+        setBasePrice(price);
+      } catch (error) {
+        console.error("Error fetching base price:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load base price. Using default value.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchBasePrice();
+  }, [toast]);
+
+  useEffect(() => {
+    // Update local state when prop changes
+    setEditedRanks([...ranks]);
+  }, [ranks]);
 
   const handleBasePriceChange = (rankId: string, value: string) => {
     const newValue = parseFloat(value);
@@ -45,30 +68,39 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
     setBasePrice(newBasePrice);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setLoading(true);
     
-    // Save base price to localStorage
-    localStorage.setItem("basePricePerTier", basePrice.toString());
-    
-    // Save ranks to localStorage
-    localStorage.setItem("adminRanks", JSON.stringify(editedRanks));
-    
-    // Trigger a custom event to notify other components of the price change
-    const priceChangeEvent = new CustomEvent('adminPriceChange', {
-      detail: { ranks: editedRanks, basePrice }
-    });
-    window.dispatchEvent(priceChangeEvent);
-    
-    // Call the onSave prop
-    onSave(editedRanks);
-    
-    toast({
-      title: "Changes saved",
-      description: "Rank price modifications have been saved successfully.",
-    });
-    
-    setLoading(false);
+    try {
+      // Save base price to database
+      await saveBasePrice(basePrice);
+      
+      // Save ranks to database
+      await saveAdminRanks(editedRanks);
+      
+      // Trigger a custom event to notify other components of the price change
+      const priceChangeEvent = new CustomEvent('adminPriceChange', {
+        detail: { ranks: editedRanks, basePrice }
+      });
+      window.dispatchEvent(priceChangeEvent);
+      
+      // Call the onSave prop
+      onSave(editedRanks);
+      
+      toast({
+        title: "Changes saved",
+        description: "Rank price modifications have been saved successfully.",
+      });
+    } catch (error) {
+      console.error("Error saving changes:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save changes. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

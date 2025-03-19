@@ -23,14 +23,27 @@ const CombinationPriceEditor: React.FC<CombinationPriceEditorProps> = ({ onSave 
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load saved combinations
-    const savedCombinations = getRankCombinations();
-    setCombinations(savedCombinations);
+    const fetchData = async () => {
+      try {
+        // Load saved combinations
+        const savedCombinations = await getRankCombinations();
+        setCombinations(savedCombinations);
+        
+        // Load ranks
+        const loadedRanks = await getAdminRanks();
+        setRanks(loadedRanks);
+      } catch (error) {
+        console.error("Error loading data:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load rank data. Please refresh and try again.",
+          variant: "destructive",
+        });
+      }
+    };
     
-    // Load ranks
-    const loadedRanks = getAdminRanks();
-    setRanks(loadedRanks);
-  }, []);
+    fetchData();
+  }, [toast]);
 
   const handleAddCombination = () => {
     if (ranks.length < 2) return;
@@ -64,32 +77,41 @@ const CombinationPriceEditor: React.FC<CombinationPriceEditorProps> = ({ onSave 
     setCombinations(updatedCombinations);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setLoading(true);
     
-    // Remove any invalid combinations
-    const validCombinations = combinations.filter(c => 
-      c.fromRankId && c.toRankId && c.price !== undefined && c.price >= 0
-    );
-    
-    // Save to localStorage
-    saveRankCombinations(validCombinations);
-    
-    // Trigger a custom event to notify other components
-    const combinationsChangeEvent = new CustomEvent('adminCombinationsChange', {
-      detail: { combinations: validCombinations }
-    });
-    window.dispatchEvent(combinationsChangeEvent);
-    
-    toast({
-      title: "Combinations saved",
-      description: "Custom rank combinations have been saved successfully.",
-    });
-    
-    // Call the onSave callback
-    onSave();
-    
-    setLoading(false);
+    try {
+      // Remove any invalid combinations
+      const validCombinations = combinations.filter(c => 
+        c.fromRankId && c.toRankId && c.price !== undefined && c.price >= 0
+      );
+      
+      // Save to database
+      await saveRankCombinations(validCombinations);
+      
+      // Trigger a custom event to notify other components
+      const combinationsChangeEvent = new CustomEvent('adminCombinationsChange', {
+        detail: { combinations: validCombinations }
+      });
+      window.dispatchEvent(combinationsChangeEvent);
+      
+      toast({
+        title: "Combinations saved",
+        description: "Custom rank combinations have been saved successfully.",
+      });
+      
+      // Call the onSave callback
+      onSave();
+    } catch (error) {
+      console.error("Error saving combinations:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save combinations. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Find a rank by its ID

@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 
 export interface Rank {
   id: string;
@@ -5,8 +6,8 @@ export interface Rank {
   image: string;
   tier: number;
   priceModifier: number;
-  basePrice?: number; // Base price for this tier
-  costPerStar?: number; // Cost per star for this tier
+  basePrice?: number;
+  costPerStar?: number;
   subdivisions?: RankSubdivision[];
   points?: PointsRange;
 }
@@ -166,39 +167,214 @@ const originalRanks: Rank[] = [
   }
 ];
 
-const defaultRankCombinations: RankCombination[] = [];
+const DEFAULT_BASE_PRICE_PER_TIER = 10;
 
-export const getAdminRanks = (): Rank[] => {
-  const savedRanks = localStorage.getItem("adminRanks");
-  if (savedRanks) {
-    return JSON.parse(savedRanks);
+export const getAdminRanks = async (): Promise<Rank[]> => {
+  const { data: ranksData, error: ranksError } = await supabase
+    .from('ranks')
+    .select('*')
+    .order('tier', { ascending: true });
+  
+  if (ranksError) {
+    console.error('Error fetching ranks:', ranksError);
+    return originalRanks;
   }
-  return originalRanks;
+  
+  const { data: subdivisionsData, error: subdivisionsError } = await supabase
+    .from('rank_subdivisions')
+    .select('*');
+  
+  if (subdivisionsError) {
+    console.error('Error fetching rank subdivisions:', subdivisionsError);
+    return ranksData.map(rank => ({
+      id: rank.id,
+      name: rank.name,
+      image: rank.image,
+      tier: rank.tier,
+      priceModifier: Number(rank.price_modifier),
+      basePrice: Number(rank.base_price),
+      costPerStar: Number(rank.cost_per_star)
+    }));
+  }
+  
+  const ranks = ranksData.map(rank => {
+    const rankSubdivisions = subdivisionsData
+      .filter(sub => sub.rank_id === rank.id)
+      .map(sub => ({
+        name: sub.name,
+        stars: sub.stars,
+        points: sub.min_points !== null && sub.max_points !== null ? {
+          min: sub.min_points,
+          max: sub.max_points
+        } : undefined
+      }));
+    
+    return {
+      id: rank.id,
+      name: rank.name,
+      image: rank.image,
+      tier: rank.tier,
+      priceModifier: Number(rank.price_modifier),
+      basePrice: Number(rank.base_price),
+      costPerStar: Number(rank.cost_per_star),
+      subdivisions: rankSubdivisions.length > 0 ? rankSubdivisions : undefined,
+      points: rank.id.includes('mythic') ? { min: 0, max: 99 } : undefined
+    };
+  });
+  
+  return ranks;
 };
 
-export const getBasePrice = (): number => {
-  const storedBasePrice = localStorage.getItem("basePricePerTier");
-  return storedBasePrice ? parseFloat(storedBasePrice) : 10;
+export const getBasePrice = async (): Promise<number> => {
+  const { data, error } = await supabase
+    .from('configuration')
+    .select('value')
+    .eq('id', 'basePricePerTier')
+    .single();
+  
+  if (error) {
+    console.error('Error fetching base price per tier:', error);
+    return DEFAULT_BASE_PRICE_PER_TIER;
+  }
+  
+  return parseFloat(data.value);
 };
 
-export const getRankCombinations = (): RankCombination[] => {
-  const storedCombinations = localStorage.getItem("rankCombinations");
-  return storedCombinations ? JSON.parse(storedCombinations) : defaultRankCombinations;
+export const saveAdminRanks = async (ranks: Rank[]): Promise<void> => {
+  const ranksForDb = ranks.map(rank => ({
+    id: rank.id,
+    name: rank.name,
+    image: rank.image,
+    tier: rank.tier,
+    price_modifier: rank.priceModifier,
+    base_price: rank.basePrice || 0,
+    cost_per_star: rank.costPerStar || 0
+  }));
+  
+  let subdivisionsForDb: any[] = [];
+  ranks.forEach(rank => {
+    if (rank.subdivisions) {
+      rank.subdivisions.forEach((sub, index) => {
+        subdivisionsForDb.push({
+          rank_id: rank.id,
+          name: sub.name,
+          stars: sub.stars,
+          min_points: sub.points?.min,
+          max_points: sub.points?.max
+        });
+      });
+    }
+  });
+  
+  const { error: deleteRanksError } = await supabase
+    .from('ranks')
+    .delete()
+    .neq('id', 'placeholder');
+  
+  if (deleteRanksError) {
+    console.error('Error deleting ranks:', deleteRanksError);
+    return;
+  }
+  
+  const { error: deleteSubdivisionsError } = await supabase
+    .from('rank_subdivisions')
+    .delete()
+    .neq('id', 0);
+  
+  if (deleteSubdivisionsError) {
+    console.error('Error deleting subdivisions:', deleteSubdivisionsError);
+  }
+  
+  const { error: insertRanksError } = await supabase
+    .from('ranks')
+    .insert(ranksForDb);
+  
+  if (insertRanksError) {
+    console.error('Error inserting ranks:', insertRanksError);
+    return;
+  }
+  
+  if (subdivisionsForDb.length > 0) {
+    const { error: insertSubdivisionsError } = await supabase
+      .from('rank_subdivisions')
+      .insert(subdivisionsForDb);
+    
+    if (insertSubdivisionsError) {
+      console.error('Error inserting subdivisions:', insertSubdivisionsError);
+    }
+  }
 };
 
-export const saveRankCombinations = (combinations: RankCombination[]): void => {
-  localStorage.setItem("rankCombinations", JSON.stringify(combinations));
+export const getRankCombinations = async (): Promise<RankCombination[]> => {
+  const { data, error } = await supabase
+    .from('rank_combinations')
+    .select('*');
+  
+  if (error) {
+    console.error('Error fetching rank combinations:', error);
+    return [];
+  }
+  
+  return data.map(combo => ({
+    fromRankId: combo.from_rank_id,
+    fromSubdivision: combo.from_subdivision,
+    toRankId: combo.to_rank_id,
+    toSubdivision: combo.to_subdivision,
+    price: Number(combo.price)
+  }));
 };
 
-export const ranks = getAdminRanks();
+export const saveRankCombinations = async (combinations: RankCombination[]): Promise<void> => {
+  const combosForDb = combinations.map(combo => ({
+    from_rank_id: combo.fromRankId,
+    from_subdivision: combo.fromSubdivision,
+    to_rank_id: combo.toRankId,
+    to_subdivision: combo.toSubdivision,
+    price: combo.price
+  }));
+  
+  const { error: deleteError } = await supabase
+    .from('rank_combinations')
+    .delete()
+    .neq('id', 0);
+  
+  if (deleteError) {
+    console.error('Error deleting rank combinations:', deleteError);
+    return;
+  }
+  
+  if (combosForDb.length > 0) {
+    const { error: insertError } = await supabase
+      .from('rank_combinations')
+      .insert(combosForDb);
+    
+    if (insertError) {
+      console.error('Error inserting rank combinations:', insertError);
+    }
+  }
+};
 
-// Updated rankHasPoints function to properly return a boolean
+export const saveBasePrice = async (price: number): Promise<void> => {
+  const { error } = await supabase
+    .from('configuration')
+    .upsert({ id: 'basePricePerTier', value: price.toString() });
+  
+  if (error) {
+    console.error('Error saving base price per tier:', error);
+  }
+};
+
+export let ranks = originalRanks;
+
+getAdminRanks().then(loadedRanks => {
+  ranks = loadedRanks;
+});
+
 const rankHasPoints = (rank: Rank | null): boolean => {
   if (!rank) return false;
   return Boolean(rank.points) || Boolean(rank.id === "mythic" && rank.subdivisions && rank.subdivisions[0]?.points);
 };
 
-// Calculate the total stars required between two ranks and subdivisions
 const calculateTotalStars = (
   currentRank: Rank,
   targetRank: Rank,
@@ -209,27 +385,22 @@ const calculateTotalStars = (
 ): number => {
   let totalStars = 0;
   
-  // If same rank and subdivision, just calculate star difference
   if (currentRank.id === targetRank.id && currentSubdivision === targetSubdivision) {
     return targetStars - currentStars;
   }
   
-  // Same rank, different subdivisions
   if (currentRank.id === targetRank.id) {
-    // Calculate stars in current subdivision (remaining stars)
     if (currentRank.subdivisions && currentRank.subdivisions[currentSubdivision]) {
       const maxStars = currentRank.subdivisions[currentSubdivision].stars || 0;
       totalStars += maxStars - currentStars;
     }
     
-    // Add stars for in-between subdivisions
     for (let i = currentSubdivision - 1; i > targetSubdivision; i--) {
       if (currentRank.subdivisions && currentRank.subdivisions[i]) {
         totalStars += currentRank.subdivisions[i].stars || 0;
       }
     }
     
-    // Add stars for target subdivision
     if (targetRank.subdivisions && targetRank.subdivisions[targetSubdivision]) {
       totalStars += targetStars;
     }
@@ -237,21 +408,15 @@ const calculateTotalStars = (
     return totalStars;
   }
   
-  // Different ranks
-  
-  // 1. Stars remaining in current rank
   if (currentRank.subdivisions) {
-    // Current subdivision remaining stars
     const currentMaxStars = currentRank.subdivisions[currentSubdivision]?.stars || 0;
     totalStars += currentMaxStars - currentStars;
     
-    // Add stars for higher subdivisions in current rank
     for (let i = currentSubdivision - 1; i >= 0; i--) {
       totalStars += currentRank.subdivisions[i]?.stars || 0;
     }
   }
   
-  // 2. Stars for ranks in between
   const ranksInBetween = ranks.filter(r => 
     r.tier > currentRank.tier && r.tier < targetRank.tier
   );
@@ -264,21 +429,18 @@ const calculateTotalStars = (
     }
   }
   
-  // 3. Stars for target rank
   if (targetRank.subdivisions) {
-    // Add stars for lower subdivisions in target rank
     for (let i = targetRank.subdivisions.length - 1; i > targetSubdivision; i--) {
       totalStars += targetRank.subdivisions[i]?.stars || 0;
     }
     
-    // Add stars for target subdivision
     totalStars += targetStars;
   }
   
   return totalStars;
 };
 
-export const calculatePrice = (
+export const calculatePrice = async (
   currentRank: Rank, 
   targetRank: Rank, 
   currentSubdivision: number = 0,
@@ -287,7 +449,7 @@ export const calculatePrice = (
   targetStars: number = 0,
   currentMythicPoints: number = 0,
   targetMythicPoints: number = 0
-): number => {
+): Promise<number> => {
   if (currentRank.tier > targetRank.tier) {
     return 0;
   }
@@ -312,8 +474,7 @@ export const calculatePrice = (
     }
   }
   
-  // Check if there's a custom price for this specific combination
-  const combinations = getRankCombinations();
+  const combinations = await getRankCombinations();
   const customCombination = combinations.find(combo => 
     combo.fromRankId === currentRank.id && 
     combo.toRankId === targetRank.id &&
@@ -325,8 +486,7 @@ export const calculatePrice = (
     return customCombination.price;
   }
   
-  // Get the admin-configured ranks
-  const adminRanks = getAdminRanks();
+  const adminRanks = await getAdminRanks();
   
   let updatedCurrentRank = currentRank;
   let updatedTargetRank = targetRank;
@@ -339,12 +499,9 @@ export const calculatePrice = (
   
   let price = 0;
   
-  // 1. Add base price of current tier
   price += updatedCurrentRank.basePrice || 0;
   
-  // 2. Calculate stars based pricing
   if (!rankHasPoints(currentRank) && !rankHasPoints(targetRank)) {
-    // Regular star-based ranks
     const totalStars = calculateTotalStars(
       updatedCurrentRank, 
       updatedTargetRank, 
@@ -354,15 +511,13 @@ export const calculatePrice = (
       targetStars
     );
     
-    // Use the cost per star of the current rank
     price += totalStars * (updatedCurrentRank.costPerStar || 0);
   } else {
-    // Handle mythic points
     if (rankHasPoints(currentRank) && rankHasPoints(targetRank)) {
       if (currentRank.tier === targetRank.tier) {
         const pointsDifference = targetMythicPoints - currentMythicPoints;
         if (pointsDifference > 0) {
-          price += 3 * pointsDifference; // $3 per mythic point
+          price += 3 * pointsDifference;
         }
       } else {
         if (targetMythicPoints > 0) {
@@ -383,7 +538,6 @@ export const calculatePrice = (
     }
   }
   
-  // 3. Add base price of target tier
   price += updatedTargetRank.basePrice || 0;
   
   return price;

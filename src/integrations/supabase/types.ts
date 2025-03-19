@@ -9,6 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      configuration: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
+      heroes: {
+        Row: {
+          created_at: string
+          difficulty: number
+          id: string
+          image: string
+          name: string
+          price_modifier: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          difficulty: number
+          id: string
+          image: string
+          name: string
+          price_modifier?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          difficulty?: number
+          id?: string
+          image?: string
+          name?: string
+          price_modifier?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -33,6 +84,131 @@ export type Database = {
           id?: string
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      rank_combinations: {
+        Row: {
+          created_at: string
+          from_rank_id: string
+          from_subdivision: number | null
+          id: number
+          price: number
+          to_rank_id: string
+          to_subdivision: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          from_rank_id: string
+          from_subdivision?: number | null
+          id?: number
+          price: number
+          to_rank_id: string
+          to_subdivision?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          from_rank_id?: string
+          from_subdivision?: number | null
+          id?: number
+          price?: number
+          to_rank_id?: string
+          to_subdivision?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rank_combinations_from_rank_id_fkey"
+            columns: ["from_rank_id"]
+            isOneToOne: false
+            referencedRelation: "ranks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rank_combinations_to_rank_id_fkey"
+            columns: ["to_rank_id"]
+            isOneToOne: false
+            referencedRelation: "ranks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rank_subdivisions: {
+        Row: {
+          created_at: string
+          id: number
+          max_points: number | null
+          min_points: number | null
+          name: string
+          rank_id: string
+          stars: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          max_points?: number | null
+          min_points?: number | null
+          name: string
+          rank_id: string
+          stars?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          max_points?: number | null
+          min_points?: number | null
+          name?: string
+          rank_id?: string
+          stars?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rank_subdivisions_rank_id_fkey"
+            columns: ["rank_id"]
+            isOneToOne: false
+            referencedRelation: "ranks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ranks: {
+        Row: {
+          base_price: number | null
+          cost_per_star: number | null
+          created_at: string
+          id: string
+          image: string
+          name: string
+          price_modifier: number
+          tier: number
+          updated_at: string
+        }
+        Insert: {
+          base_price?: number | null
+          cost_per_star?: number | null
+          created_at?: string
+          id: string
+          image: string
+          name: string
+          price_modifier?: number
+          tier: number
+          updated_at?: string
+        }
+        Update: {
+          base_price?: number | null
+          cost_per_star?: number | null
+          created_at?: string
+          id?: string
+          image?: string
+          name?: string
+          price_modifier?: number
+          tier?: number
+          updated_at?: string
         }
         Relationships: []
       }
