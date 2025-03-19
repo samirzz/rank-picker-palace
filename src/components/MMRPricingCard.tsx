@@ -1,9 +1,12 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Hero } from "@/data/heroes";
-import { CheckCircle, ChevronDown, ChevronUp, Zap } from "lucide-react";
+import { CheckCircle, ChevronDown, ChevronUp, Zap, Lock } from "lucide-react";
 import PaymentMethods from "./payments/PaymentMethods";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 interface MMRPricingCardProps {
   hero: Hero | null;
@@ -21,8 +24,19 @@ const MMRPricingCard: React.FC<MMRPricingCardProps> = ({
   const [showDetails, setShowDetails] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleProceedToCheckout = () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to continue with your purchase",
+        variant: "destructive"
+      });
+      navigate('/auth');
+      return;
+    }
     setShowPayment(true);
   };
 
@@ -143,8 +157,17 @@ const MMRPricingCard: React.FC<MMRPricingCardProps> = ({
                   onClick={handleProceedToCheckout}
                   className="w-full bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple hover:opacity-90 text-white py-4 text-sm md:text-base transition-all duration-300"
                 >
-                  <Zap className="w-4 h-4 mr-2" />
-                  Boost My MMR Now
+                  {!user ? (
+                    <>
+                      <Lock className="w-4 h-4 mr-2" />
+                      Login to Purchase
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4 mr-2" />
+                      Boost My MMR Now
+                    </>
+                  )}
                 </Button>
               </>
             )}

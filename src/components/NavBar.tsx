@@ -1,11 +1,21 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const NavBar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -15,6 +25,16 @@ const NavBar: React.FC = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleLogin = () => {
+    navigate('/auth');
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <nav
@@ -26,9 +46,9 @@ const NavBar: React.FC = () => {
     >
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center">
-          <span className="text-lg md:text-xl lg:text-2xl font-bold text-white">
+          <Link to="/" className="text-lg md:text-xl lg:text-2xl font-bold text-white">
             <span className="text-mlbb-purple">ML</span>Booster
-          </span>
+          </Link>
         </div>
 
         {/* Desktop Navigation */}
@@ -63,13 +83,36 @@ const NavBar: React.FC = () => {
           >
             Contact
           </a>
-          <Button
-            variant="gradient"
-            rounded="lg"
-            className="ml-2"
-          >
-            Login
-          </Button>
+          
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="gradient"
+                  rounded="lg"
+                  className="ml-2"
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  Account
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 bg-gray-900 border-gray-800 text-gray-200">
+                <DropdownMenuItem className="hover:bg-gray-800" onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button
+              variant="gradient"
+              rounded="lg"
+              className="ml-2"
+              onClick={handleLogin}
+            >
+              Login
+            </Button>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -127,14 +170,29 @@ const NavBar: React.FC = () => {
             >
               Contact
             </a>
-            <Button
-              variant="gradient"
-              rounded="lg"
-              size="full"
-              className="mt-2"
-            >
-              Login
-            </Button>
+            
+            {user ? (
+              <Button
+                variant="gradient"
+                rounded="lg"
+                size="full"
+                className="mt-2"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Log out
+              </Button>
+            ) : (
+              <Button
+                variant="gradient"
+                rounded="lg"
+                size="full"
+                className="mt-2"
+                onClick={handleLogin}
+              >
+                Login
+              </Button>
+            )}
           </div>
         </div>
       )}

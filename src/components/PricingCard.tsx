@@ -3,9 +3,11 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { calculatePrice } from "@/data/ranks";
 import type { Rank } from "@/data/ranks";
-import { CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { CheckCircle, ChevronDown, ChevronUp, Lock } from "lucide-react";
 import PaymentMethods from "./payments/PaymentMethods";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 interface PricingCardProps {
   currentRank: Rank | null;
@@ -35,6 +37,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
   const [price, setPrice] = useState<number | null>(null);
   const [showPayment, setShowPayment] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -66,6 +70,15 @@ const PricingCard: React.FC<PricingCardProps> = ({
   }, [currentRank, targetRank, currentSubdivision, targetSubdivision, currentStars, targetStars, currentMythicPoints, targetMythicPoints]);
 
   const handleProceedToCheckout = () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to continue with your purchase",
+        variant: "destructive"
+      });
+      navigate('/auth');
+      return;
+    }
     setShowPayment(true);
   };
 
@@ -141,7 +154,14 @@ const PricingCard: React.FC<PricingCardProps> = ({
                 onClick={handleProceedToCheckout}
                 className="w-full mt-6 bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple hover:opacity-90 text-white py-3 rounded-md font-semibold button-glow"
               >
-                Proceed to Checkout
+                {!user ? (
+                  <>
+                    <Lock className="w-4 h-4 mr-2" />
+                    Login to Purchase
+                  </>
+                ) : (
+                  "Proceed to Checkout"
+                )}
               </Button>
               
               <button
