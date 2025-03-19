@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -13,13 +12,31 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AdminDashboard: React.FC = () => {
   const [ranks, setRanks] = useState(initialRanks);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load ranks from localStorage if available
-    setRanks(getAdminRanks());
-  }, []);
+    // Load ranks from Supabase
+    const loadRanks = async () => {
+      try {
+        setLoading(true);
+        const loadedRanks = await getAdminRanks();
+        setRanks(loadedRanks);
+      } catch (error) {
+        console.error("Error loading ranks:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load rank data. Please refresh the page.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadRanks();
+  }, [toast]);
 
   const handleSaveRanks = (updatedRanks: any[]) => {
     setRanks(updatedRanks);

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import RankSelector from "@/components/RankSelector";
 import PricingCard from "@/components/PricingCard";
@@ -30,25 +31,32 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
 
   // Update ranks when admin changes prices
   useEffect(() => {
-    const handleAdminPriceChange = () => {
-      const updatedRanks = getAdminRanks();
-      setAvailableRanks(updatedRanks);
-      
-      // Update current and target ranks with new price modifiers if they exist
-      if (currentRank) {
-        const updatedCurrentRank = updatedRanks.find(rank => rank.id === currentRank.id);
-        if (updatedCurrentRank) {
-          setCurrentRank(updatedCurrentRank, currentSubdivision);
+    const handleAdminPriceChange = async () => {
+      try {
+        const updatedRanks = await getAdminRanks();
+        setAvailableRanks(updatedRanks);
+        
+        // Update current and target ranks with new price modifiers if they exist
+        if (currentRank) {
+          const updatedCurrentRank = updatedRanks.find(rank => rank.id === currentRank.id);
+          if (updatedCurrentRank) {
+            setCurrentRank(updatedCurrentRank, currentSubdivision);
+          }
         }
-      }
-      
-      if (targetRank) {
-        const updatedTargetRank = updatedRanks.find(rank => rank.id === targetRank.id);
-        if (updatedTargetRank) {
-          setTargetRank(updatedTargetRank, targetSubdivision);
+        
+        if (targetRank) {
+          const updatedTargetRank = updatedRanks.find(rank => rank.id === targetRank.id);
+          if (updatedTargetRank) {
+            setTargetRank(updatedTargetRank, targetSubdivision);
+          }
         }
+      } catch (error) {
+        console.error("Error updating ranks:", error);
       }
     };
+
+    // Initial load
+    handleAdminPriceChange();
 
     // Listen for the custom event
     window.addEventListener('adminPriceChange', handleAdminPriceChange);

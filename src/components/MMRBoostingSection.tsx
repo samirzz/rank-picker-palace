@@ -86,36 +86,50 @@ const MMRBoostingSection: React.FC<MMRBoostingSectionProps> = ({
   
   // Load heroes on initial render and when they change
   useEffect(() => {
-    const loadHeroes = () => {
-      const latestHeroes = getHeroes();
-      setHeroes(latestHeroes);
-      
-      // If the selected hero was deleted, reset selection
-      if (selectedHero && !latestHeroes.some(h => h.id === selectedHero.id)) {
-        setSelectedHero(null);
-        setValue("hero", "");
+    const loadHeroes = async () => {
+      try {
+        const latestHeroes = await getHeroes();
+        setHeroes(latestHeroes);
+        
+        // If the selected hero was deleted, reset selection
+        if (selectedHero && !latestHeroes.some(h => h.id === selectedHero.id)) {
+          setSelectedHero(null);
+          setValue("hero", "");
+        }
+      } catch (error) {
+        console.error("Error loading heroes:", error);
       }
     };
     
     loadHeroes();
     
     // Listen for hero list changes from admin panel
-    window.addEventListener('adminHeroesChange', loadHeroes);
-    window.addEventListener('adminBasePriceChange', () => {
+    const handleHeroListChange = async () => {
+      await loadHeroes();
+    };
+    
+    const handleBasePriceChange = async () => {
       // Recalculate price when base price changes
       if (selectedHero) {
-        const newPrice = calculateMMRBoostPrice(
-          watchedValues.currentMMR,
-          watchedValues.targetMMR,
-          selectedHero
-        );
-        setPrice(newPrice);
+        try {
+          const newPrice = await calculateMMRBoostPrice(
+            watchedValues.currentMMR,
+            watchedValues.targetMMR,
+            selectedHero
+          );
+          setPrice(newPrice);
+        } catch (error) {
+          console.error("Error calculating price:", error);
+        }
       }
-    });
+    };
+    
+    window.addEventListener('adminHeroesChange', handleHeroListChange);
+    window.addEventListener('adminBasePriceChange', handleBasePriceChange);
     
     return () => {
-      window.removeEventListener('adminHeroesChange', loadHeroes);
-      window.removeEventListener('adminBasePriceChange', () => {});
+      window.removeEventListener('adminHeroesChange', handleHeroListChange);
+      window.removeEventListener('adminBasePriceChange', handleBasePriceChange);
     };
   }, [selectedHero, setValue, watchedValues.currentMMR, watchedValues.targetMMR]);
   
@@ -133,16 +147,25 @@ const MMRBoostingSection: React.FC<MMRBoostingSectionProps> = ({
     }
     
     // Calculate price
-    if (selectedHero) {
-      const newPrice = calculateMMRBoostPrice(
-        watchedValues.currentMMR,
-        watchedValues.targetMMR,
-        selectedHero
-      );
-      setPrice(newPrice);
-    } else {
-      setPrice(0);
-    }
+    const updatePrice = async () => {
+      if (selectedHero) {
+        try {
+          const newPrice = await calculateMMRBoostPrice(
+            watchedValues.currentMMR,
+            watchedValues.targetMMR,
+            selectedHero
+          );
+          setPrice(newPrice);
+        } catch (error) {
+          console.error("Error calculating price:", error);
+          setPrice(0);
+        }
+      } else {
+        setPrice(0);
+      }
+    };
+    
+    updatePrice();
   }, [watchedValues, heroes, selectedHero, setValue]);
 
   return (

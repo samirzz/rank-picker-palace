@@ -10,13 +10,14 @@ import { getAdminRanks } from "@/data/ranks";
 import { useToast } from "@/hooks/use-toast";
 
 const AdminPriceManagerPage: React.FC = () => {
-  const [ranks, setRanks] = useState([]);
+  const [ranks, setRanks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     const fetchRanks = async () => {
       try {
+        setLoading(true);
         const loadedRanks = await getAdminRanks();
         setRanks(loadedRanks);
       } catch (error) {

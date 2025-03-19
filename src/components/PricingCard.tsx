@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { calculatePrice } from "@/data/ranks";
@@ -48,25 +47,58 @@ const PricingCard: React.FC<PricingCardProps> = ({
   }, [animationDelay]);
 
   useEffect(() => {
-    const handleCombinationChange = () => {
+    const handleCombinationChange = async () => {
       if (currentRank && targetRank) {
-        const calculatedPrice = calculatePrice(currentRank, targetRank, currentSubdivision, targetSubdivision, currentStars, targetStars, currentMythicPoints, targetMythicPoints);
-        setPrice(calculatedPrice);
+        try {
+          const calculatedPrice = await calculatePrice(
+            currentRank, 
+            targetRank, 
+            currentSubdivision, 
+            targetSubdivision, 
+            currentStars, 
+            targetStars, 
+            currentMythicPoints, 
+            targetMythicPoints
+          );
+          setPrice(calculatedPrice);
+        } catch (error) {
+          console.error("Error calculating price:", error);
+        }
       }
     };
+    
     window.addEventListener('adminCombinationsChange', handleCombinationChange);
+    
     return () => {
       window.removeEventListener('adminCombinationsChange', handleCombinationChange);
     };
   }, [currentRank, targetRank, currentSubdivision, targetSubdivision, currentStars, targetStars, currentMythicPoints, targetMythicPoints]);
 
   useEffect(() => {
-    if (currentRank && targetRank) {
-      const calculatedPrice = calculatePrice(currentRank, targetRank, currentSubdivision, targetSubdivision, currentStars, targetStars, currentMythicPoints, targetMythicPoints);
-      setPrice(calculatedPrice);
-    } else {
-      setPrice(null);
-    }
+    const updatePrice = async () => {
+      if (currentRank && targetRank) {
+        try {
+          const calculatedPrice = await calculatePrice(
+            currentRank, 
+            targetRank, 
+            currentSubdivision, 
+            targetSubdivision, 
+            currentStars, 
+            targetStars, 
+            currentMythicPoints, 
+            targetMythicPoints
+          );
+          setPrice(calculatedPrice);
+        } catch (error) {
+          console.error("Error calculating price:", error);
+          setPrice(null);
+        }
+      } else {
+        setPrice(null);
+      }
+    };
+    
+    updatePrice();
   }, [currentRank, targetRank, currentSubdivision, targetSubdivision, currentStars, targetStars, currentMythicPoints, targetMythicPoints]);
 
   const handleProceedToCheckout = () => {
