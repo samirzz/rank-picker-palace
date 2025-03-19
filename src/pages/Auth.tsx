@@ -95,15 +95,16 @@ const Auth = () => {
     setErrorMessage(null);
     
     try {
-      console.log("Signup values:", values);
-      
+      // Create user with just email and password
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
           data: {
-            username: values.username || undefined,
+            username: values.username || null,
           },
+          // Disable email confirmation for easier testing
+          emailRedirectTo: window.location.origin,
         },
       });
       
@@ -112,24 +113,27 @@ const Auth = () => {
       if (error) {
         setErrorMessage(error.message);
       } else if (data?.user) {
-        toast({
-          title: "Account created successfully",
-          description: data.user.identities?.length === 0 
-            ? "This email is already registered. Please log in instead." 
-            : "Please check your email to confirm your account.",
-        });
-        
-        // If email confirmation is not enabled or user was created successfully
-        if (data.user.identities && data.user.identities.length > 0) {
-          // If we got a session, user was logged in automatically
+        if (data.user.identities && data.user.identities.length === 0) {
+          // Email already exists
+          setErrorMessage("This email is already registered. Please log in instead.");
+          setAuthMode("login");
+        } else {
+          // Account successfully created
           if (data.session) {
+            // User was automatically logged in
+            toast({
+              title: "Account created successfully",
+              description: "You are now logged in.",
+            });
             navigate('/');
           } else {
+            // Email confirmation might be required by Supabase settings
+            toast({
+              title: "Account created successfully",
+              description: "Please check your email to confirm your account before logging in.",
+            });
             setAuthMode("login");
           }
-        } else {
-          // User exists but identities array is empty - this means the email already exists
-          setAuthMode("login");
         }
       }
     } catch (error) {
