@@ -6,6 +6,7 @@ import AuthContainer from "@/components/auth/AuthContainer";
 import LoginForm from "@/components/auth/LoginForm";
 import SignupForm from "@/components/auth/SignupForm";
 import ResetPasswordForm from "@/components/auth/ResetPasswordForm";
+import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -13,6 +14,7 @@ const Auth = () => {
   const [authMode, setAuthMode] = useState<"login" | "signup" | "reset-password">(initialMode);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkSession = async () => {
@@ -22,7 +24,22 @@ const Auth = () => {
       }
     };
     checkSession();
-  }, [navigate]);
+
+    // Handle OAuth responses when redirected back from Google
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        toast({
+          title: "Logged in successfully",
+          description: "Welcome back!",
+        });
+        navigate('/');
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [navigate, toast]);
 
   const toggleAuthMode = () => {
     setAuthMode(authMode === "login" ? "signup" : "login");
