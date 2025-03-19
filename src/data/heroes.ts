@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Hero {
@@ -17,6 +16,45 @@ export interface MMRRange {
 // Default hero base price
 const DEFAULT_BASE_PRICE_PER_MMR = 0.1;
 
+// Sample heroes to use as fallback if database is empty
+const defaultHeroes: Hero[] = [
+  {
+    id: "lancelot",
+    name: "Lancelot",
+    image: "/heroes/lancelot.png",
+    difficulty: 3,
+    priceModifier: 1.2
+  },
+  {
+    id: "fanny",
+    name: "Fanny",
+    image: "/heroes/fanny.png",
+    difficulty: 5,
+    priceModifier: 1.5
+  },
+  {
+    id: "chou",
+    name: "Chou",
+    image: "/heroes/chou.png",
+    difficulty: 4,
+    priceModifier: 1.3
+  },
+  {
+    id: "gusion",
+    name: "Gusion",
+    image: "/heroes/gusion.png",
+    difficulty: 4,
+    priceModifier: 1.3
+  },
+  {
+    id: "alucard",
+    name: "Alucard", 
+    image: "/heroes/alucard.png",
+    difficulty: 2,
+    priceModifier: 1.1
+  }
+];
+
 // Fetch heroes from Supabase
 export const getAdminHeroes = async (): Promise<Hero[]> => {
   const { data, error } = await supabase
@@ -25,16 +63,37 @@ export const getAdminHeroes = async (): Promise<Hero[]> => {
   
   if (error) {
     console.error('Error fetching heroes:', error);
-    return [];
+    return defaultHeroes; // Return default heroes on error
   }
   
-  return data.map(hero => ({
-    id: hero.id,
-    name: hero.name,
-    image: hero.image,
-    difficulty: hero.difficulty,
-    priceModifier: Number(hero.price_modifier)
-  }));
+  if (data && data.length > 0) {
+    return data.map(hero => ({
+      id: hero.id,
+      name: hero.name,
+      image: hero.image,
+      difficulty: hero.difficulty,
+      priceModifier: Number(hero.price_modifier)
+    }));
+  }
+  
+  // If no data found, insert default heroes and return them
+  console.log("No heroes found in database, initializing with defaults");
+  try {
+    const heroesForDb = defaultHeroes.map(hero => ({
+      id: hero.id,
+      name: hero.name,
+      image: hero.image,
+      difficulty: hero.difficulty,
+      price_modifier: hero.priceModifier
+    }));
+    
+    await supabase.from('heroes').insert(heroesForDb);
+    console.log("Default heroes added to database");
+  } catch (error) {
+    console.error("Error initializing default heroes:", error);
+  }
+  
+  return defaultHeroes;
 };
 
 // Get heroes for public use
@@ -74,6 +133,11 @@ export const saveHeroBasePrice = async (price: number): Promise<void> => {
 
 // Save heroes to Supabase
 export const saveHeroes = async (heroes: Hero[]): Promise<void> => {
+  if (!heroes || heroes.length === 0) {
+    console.warn("No heroes to save");
+    return;
+  }
+  
   // First, convert heroes to the format expected by Supabase
   const heroesForDb = heroes.map(hero => ({
     id: hero.id,
@@ -83,26 +147,42 @@ export const saveHeroes = async (heroes: Hero[]): Promise<void> => {
     price_modifier: hero.priceModifier
   }));
   
-  // Delete all heroes and insert new ones
-  // This is a simple approach - in a production app, you might want to use transactions
-  // and only update/insert/delete the necessary records
-  const { error: deleteError } = await supabase
-    .from('heroes')
-    .delete()
-    .neq('id', 'placeholder'); // This is a trick to delete all records
+  // Use upsert instead of delete+insert to preserve existing records
+  for (const hero of heroesForDb) {
+    const { error } = await supabase
+      .from('heroes')
+      .upsert(hero, { onConflict: 'id' });
+    
+    if (error) {
+      console.error(`Error upserting hero ${hero.id}:`, error);
+      throw error;
+    }
+  }
   
-  if (deleteError) {
-    console.error('Error deleting heroes:', deleteError);
+  // Check for heroes to delete (heroes in DB that aren't in the current list)
+  const { data: existingHeroes, error: fetchError } = await supabase
+    .from('heroes')
+    .select('id');
+  
+  if (fetchError) {
+    console.error('Error fetching existing heroes:', fetchError);
     return;
   }
   
-  const { error: insertError } = await supabase
-    .from('heroes')
-    .insert(heroesForDb);
+  const heroIds = new Set(heroes.map(h => h.id));
+  const heroesToDelete = existingHeroes
+    .filter(h => !heroIds.has(h.id))
+    .map(h => h.id);
   
-  if (insertError) {
-    console.error('Error inserting heroes:', insertError);
-    return;
+  if (heroesToDelete.length > 0) {
+    const { error: deleteError } = await supabase
+      .from('heroes')
+      .delete()
+      .in('id', heroesToDelete);
+    
+    if (deleteError) {
+      console.error('Error deleting unused heroes:', deleteError);
+    }
   }
   
   // Dispatch an event to notify components that the hero list has changed

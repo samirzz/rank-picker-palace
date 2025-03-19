@@ -19,7 +19,17 @@ const AdminPriceManagerPage: React.FC = () => {
       try {
         setLoading(true);
         const loadedRanks = await getAdminRanks();
-        setRanks(loadedRanks);
+        if (loadedRanks && loadedRanks.length > 0) {
+          console.log("Loaded ranks:", loadedRanks);
+          setRanks(loadedRanks);
+        } else {
+          console.warn("No ranks loaded from database");
+          toast({
+            title: "Warning",
+            description: "No rank data found. Using default values.",
+            variant: "default",
+          });
+        }
       } catch (error) {
         console.error("Error loading ranks:", error);
         toast({
@@ -37,7 +47,9 @@ const AdminPriceManagerPage: React.FC = () => {
 
   const handleSaveRanks = (updatedRanks: any[]) => {
     // This function will be called when PriceEditor saves its changes
-    setRanks(updatedRanks);
+    if (updatedRanks && updatedRanks.length > 0) {
+      setRanks(updatedRanks);
+    }
   };
 
   const handleSaveCombinations = () => {
@@ -59,6 +71,18 @@ const AdminPriceManagerPage: React.FC = () => {
     );
   }
 
+  // Only render the PriceEditor if we have ranks
+  const renderPriceEditor = () => {
+    if (ranks && ranks.length > 0) {
+      return <PriceEditor ranks={ranks} onSave={handleSaveRanks} />;
+    }
+    return (
+      <div className="glass-panel p-4 md:p-6">
+        <p className="text-white text-center">No rank data available. Please refresh the page.</p>
+      </div>
+    );
+  };
+
   return (
     <AdminRoute>
       <div className="container mx-auto px-4 py-6 md:py-8">
@@ -67,7 +91,7 @@ const AdminPriceManagerPage: React.FC = () => {
         <div className="space-y-6 mt-6">
           <div>
             <h2 className="text-xl font-semibold text-white mb-4">Rank Pricing Configuration</h2>
-            <PriceEditor ranks={ranks} onSave={handleSaveRanks} />
+            {renderPriceEditor()}
           </div>
           
           <div>

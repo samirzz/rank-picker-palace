@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { getRankPlaceholderImage, getBasePrice, saveBasePrice, saveAdminRanks } from "@/data/ranks";
@@ -11,7 +10,7 @@ interface PriceEditorProps {
 }
 
 const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
-  const [editedRanks, setEditedRanks] = useState([...ranks]);
+  const [editedRanks, setEditedRanks] = useState<any[]>([]);
   const [basePrice, setBasePrice] = useState(0);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -36,7 +35,12 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
 
   useEffect(() => {
     // Update local state when prop changes
-    setEditedRanks([...ranks]);
+    if (ranks && ranks.length > 0) {
+      console.log("Setting edited ranks from props:", ranks);
+      setEditedRanks([...ranks]);
+    } else {
+      console.warn("Received empty ranks array in PriceEditor");
+    }
   }, [ranks]);
 
   const handleBasePriceChange = (rankId: string, value: string) => {
@@ -69,6 +73,15 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
   };
 
   const handleSave = async () => {
+    if (!editedRanks || editedRanks.length === 0) {
+      toast({
+        title: "Error",
+        description: "No ranks to save. Please refresh the page and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setLoading(true);
     
     try {
@@ -102,6 +115,14 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
       setLoading(false);
     }
   };
+
+  if (!editedRanks || editedRanks.length === 0) {
+    return (
+      <div className="glass-panel p-4 md:p-6">
+        <p className="text-white text-center">Loading rank data...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

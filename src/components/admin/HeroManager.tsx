@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +32,11 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
       try {
         setLoading(true);
         const loadedHeroes = await getAdminHeroes();
-        setHeroes(loadedHeroes);
+        if (loadedHeroes && loadedHeroes.length > 0) {
+          setHeroes(loadedHeroes);
+        } else {
+          console.warn("No heroes found in database, initializing with defaults");
+        }
       } catch (error) {
         console.error("Error loading heroes:", error);
         toast({
@@ -79,6 +84,15 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
   };
 
   const handleSaveChanges = async () => {
+    if (heroes.length === 0) {
+      toast({
+        title: "Warning",
+        description: "No heroes to save. Please add at least one hero.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setSaving(true);
     try {
       await saveHeroes(heroes);

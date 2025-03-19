@@ -170,59 +170,107 @@ const originalRanks: Rank[] = [
 const DEFAULT_BASE_PRICE_PER_TIER = 10;
 
 export const getAdminRanks = async (): Promise<Rank[]> => {
-  const { data: ranksData, error: ranksError } = await supabase
-    .from('ranks')
-    .select('*')
-    .order('tier', { ascending: true });
-  
-  if (ranksError) {
-    console.error('Error fetching ranks:', ranksError);
-    return originalRanks;
-  }
-  
-  const { data: subdivisionsData, error: subdivisionsError } = await supabase
-    .from('rank_subdivisions')
-    .select('*');
-  
-  if (subdivisionsError) {
-    console.error('Error fetching rank subdivisions:', subdivisionsError);
-    return ranksData.map(rank => ({
-      id: rank.id,
-      name: rank.name,
-      image: rank.image,
-      tier: rank.tier,
-      priceModifier: Number(rank.price_modifier),
-      basePrice: Number(rank.base_price),
-      costPerStar: Number(rank.cost_per_star)
-    }));
-  }
-  
-  const ranks = ranksData.map(rank => {
-    const rankSubdivisions = subdivisionsData
-      .filter(sub => sub.rank_id === rank.id)
-      .map(sub => ({
-        name: sub.name,
-        stars: sub.stars,
-        points: sub.min_points !== null && sub.max_points !== null ? {
-          min: sub.min_points,
-          max: sub.max_points
-        } : undefined
-      }));
+  try {
+    const { data: ranksData, error: ranksError } = await supabase
+      .from('ranks')
+      .select('*')
+      .order('tier', { ascending: true });
     
-    return {
-      id: rank.id,
-      name: rank.name,
-      image: rank.image,
-      tier: rank.tier,
-      priceModifier: Number(rank.price_modifier),
-      basePrice: Number(rank.base_price),
-      costPerStar: Number(rank.cost_per_star),
-      subdivisions: rankSubdivisions.length > 0 ? rankSubdivisions : undefined,
-      points: rank.id.includes('mythic') ? { min: 0, max: 99 } : undefined
-    };
-  });
-  
-  return ranks;
+    if (ranksError) {
+      console.error('Error fetching ranks:', ranksError);
+      return originalRanks;
+    }
+    
+    if (!ranksData || ranksData.length === 0) {
+      console.log("No ranks found in database, initializing with defaults");
+      try {
+        const ranksForDb = originalRanks.map(rank => ({
+          id: rank.id,
+          name: rank.name,
+          image: rank.image,
+          tier: rank.tier,
+          price_modifier: rank.priceModifier,
+          base_price: rank.basePrice || 0,
+          cost_per_star: rank.costPerStar || 0
+        }));
+        
+        await supabase.from('ranks').insert(ranksForDb);
+        console.log("Default ranks added to database");
+        
+        let subdivisionsForDb: any[] = [];
+        originalRanks.forEach(rank => {
+          if (rank.subdivisions) {
+            rank.subdivisions.forEach((sub) => {
+              subdivisionsForDb.push({
+                rank_id: rank.id,
+                name: sub.name,
+                stars: sub.stars,
+                min_points: sub.points?.min,
+                max_points: sub.points?.max
+              });
+            });
+          }
+        });
+        
+        if (subdivisionsForDb.length > 0) {
+          await supabase.from('rank_subdivisions').insert(subdivisionsForDb);
+          console.log("Default rank subdivisions added to database");
+        }
+        
+        return originalRanks;
+      } catch (initError) {
+        console.error("Error initializing default ranks:", initError);
+        return originalRanks;
+      }
+    }
+    
+    const { data: subdivisionsData, error: subdivisionsError } = await supabase
+      .from('rank_subdivisions')
+      .select('*');
+    
+    if (subdivisionsError) {
+      console.error('Error fetching rank subdivisions:', subdivisionsError);
+      return ranksData.map(rank => ({
+        id: rank.id,
+        name: rank.name,
+        image: rank.image,
+        tier: rank.tier,
+        priceModifier: Number(rank.price_modifier),
+        basePrice: Number(rank.base_price),
+        costPerStar: Number(rank.cost_per_star)
+      }));
+    }
+    
+    const ranks = ranksData.map(rank => {
+      const rankSubdivisions = subdivisionsData
+        .filter(sub => sub.rank_id === rank.id)
+        .map(sub => ({
+          name: sub.name,
+          stars: sub.stars,
+          points: sub.min_points !== null && sub.max_points !== null ? {
+            min: sub.min_points,
+            max: sub.max_points
+          } : undefined
+        }));
+      
+      return {
+        id: rank.id,
+        name: rank.name,
+        image: rank.image,
+        tier: rank.tier,
+        priceModifier: Number(rank.price_modifier),
+        basePrice: Number(rank.base_price),
+        costPerStar: Number(rank.cost_per_star),
+        subdivisions: rankSubdivisions.length > 0 ? rankSubdivisions : undefined,
+        points: rank.id.includes('mythic') ? { min: 0, max: 99 } : undefined
+      };
+    });
+    
+    return ranks;
+  } catch (error) {
+    console.error('Unexpected error in getAdminRanks:', error);
+    return originalRanks; 
+  }
 };
 
 export const getBasePrice = async (): Promise<number> => {
@@ -241,6 +289,11 @@ export const getBasePrice = async (): Promise<number> => {
 };
 
 export const saveAdminRanks = async (ranks: Rank[]): Promise<void> => {
+  if (!ranks || ranks.length === 0) {
+    console.warn("No ranks to save");
+    return;
+  }
+  
   const ranksForDb = ranks.map(rank => ({
     id: rank.id,
     name: rank.name,
@@ -254,7 +307,7 @@ export const saveAdminRanks = async (ranks: Rank[]): Promise<void> => {
   let subdivisionsForDb: any[] = [];
   ranks.forEach(rank => {
     if (rank.subdivisions) {
-      rank.subdivisions.forEach((sub, index) => {
+      rank.subdivisions.forEach((sub) => {
         subdivisionsForDb.push({
           rank_id: rank.id,
           name: sub.name,
@@ -266,42 +319,63 @@ export const saveAdminRanks = async (ranks: Rank[]): Promise<void> => {
     }
   });
   
-  const { error: deleteRanksError } = await supabase
-    .from('ranks')
-    .delete()
-    .neq('id', 'placeholder');
-  
-  if (deleteRanksError) {
-    console.error('Error deleting ranks:', deleteRanksError);
-    return;
-  }
-  
-  const { error: deleteSubdivisionsError } = await supabase
-    .from('rank_subdivisions')
-    .delete()
-    .neq('id', 0);
-  
-  if (deleteSubdivisionsError) {
-    console.error('Error deleting subdivisions:', deleteSubdivisionsError);
-  }
-  
-  const { error: insertRanksError } = await supabase
-    .from('ranks')
-    .insert(ranksForDb);
-  
-  if (insertRanksError) {
-    console.error('Error inserting ranks:', insertRanksError);
-    return;
-  }
-  
-  if (subdivisionsForDb.length > 0) {
-    const { error: insertSubdivisionsError } = await supabase
-      .from('rank_subdivisions')
-      .insert(subdivisionsForDb);
-    
-    if (insertSubdivisionsError) {
-      console.error('Error inserting subdivisions:', insertSubdivisionsError);
+  try {
+    for (const rank of ranksForDb) {
+      const { error } = await supabase
+        .from('ranks')
+        .upsert(rank, { onConflict: 'id' });
+      
+      if (error) {
+        console.error(`Error upserting rank ${rank.id}:`, error);
+        throw error;
+      }
     }
+    
+    const { data: existingRanks, error: fetchError } = await supabase
+      .from('ranks')
+      .select('id');
+    
+    if (fetchError) {
+      console.error('Error fetching existing ranks:', fetchError);
+    } else {
+      const rankIds = new Set(ranks.map(r => r.id));
+      const ranksToDelete = existingRanks
+        .filter(r => !rankIds.has(r.id))
+        .map(r => r.id);
+      
+      if (ranksToDelete.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('ranks')
+          .delete()
+          .in('id', ranksToDelete);
+        
+        if (deleteError) {
+          console.error('Error deleting unused ranks:', deleteError);
+        }
+      }
+    }
+    
+    const { error: deleteSubdivisionsError } = await supabase
+      .from('rank_subdivisions')
+      .delete()
+      .in('rank_id', ranks.map(r => r.id));
+    
+    if (deleteSubdivisionsError) {
+      console.error('Error deleting subdivisions:', deleteSubdivisionsError);
+    }
+    
+    if (subdivisionsForDb.length > 0) {
+      const { error: insertSubdivisionsError } = await supabase
+        .from('rank_subdivisions')
+        .insert(subdivisionsForDb);
+      
+      if (insertSubdivisionsError) {
+        console.error('Error inserting subdivisions:', insertSubdivisionsError);
+      }
+    }
+  } catch (error) {
+    console.error('Error in saveAdminRanks:', error);
+    throw error;
   }
 };
 
