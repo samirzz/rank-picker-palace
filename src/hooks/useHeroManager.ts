@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Hero, getAdminHeroes, saveHeroes, getHeroPlaceholderImage } from "@/data/heroes";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useHeroManager = (onSave?: () => void) => {
   const [heroes, setHeroes] = useState<Hero[]>([]);
@@ -100,7 +101,13 @@ export const useHeroManager = (onSave?: () => void) => {
     }
     
     setSaving(true);
+    
+    // Log authentication status
+    const { data: authData } = await supabase.auth.getSession();
+    console.log("Authentication status:", authData?.session ? "Authenticated" : "Not authenticated");
+    
     try {
+      console.log("Attempting to save heroes:", heroes);
       await saveHeroes(heroes);
       toast({
         title: "Database updated",
@@ -111,7 +118,7 @@ export const useHeroManager = (onSave?: () => void) => {
       console.error("Error saving heroes to database:", error);
       toast({
         title: "Database Error",
-        description: "Failed to save changes to the database. Please try again.",
+        description: "Failed to save changes to the database. Please check console for details.",
         variant: "destructive",
       });
     } finally {

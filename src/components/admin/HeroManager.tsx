@@ -28,6 +28,11 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
     handleSaveChanges
   } = useHeroManager(onSave);
 
+  const openAddHeroDialog = () => {
+    console.log("Opening Add Hero dialog");
+    setIsAddHeroDialogOpen(true);
+  };
+
   if (loading) {
     return <LoadingPanel />;
   }
@@ -38,10 +43,7 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
         <div className="mb-4 flex justify-between items-center">
           <h2 className="text-lg font-semibold text-white">Hero Management</h2>
           <Button 
-            onClick={() => {
-              console.log("Add Hero button clicked");
-              setIsAddHeroDialogOpen(true);
-            }} 
+            onClick={openAddHeroDialog} 
             variant="outline" 
             className="bg-black/30 border-mlbb-purple/30 text-white hover:bg-black/50"
           >
@@ -75,6 +77,7 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
           </p>
         </div>
         
+        {/* Hero Form Dialog */}
         <HeroFormDialog
           open={isAddHeroDialogOpen}
           onOpenChange={setIsAddHeroDialogOpen}
