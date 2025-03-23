@@ -10,6 +10,7 @@ import RankSelectionSection from '@/components/RankSelectionSection';
 import MMRBoostingSection from '@/components/MMRBoostingSection';
 import { Rank } from '@/data/ranks';
 import { initializeRanksWithCorrectStars } from '@/data/rankInitializer';
+import NavBar from '@/components/NavBar';
 
 export default function Index() {
   const [whyChooseUsRef, whyChooseUsInView] = useInView({
@@ -56,6 +57,7 @@ export default function Index() {
 
   return (
     <div className="bg-mlbb-dark min-h-screen text-white">
+      <NavBar />
       <HeroSection />
       
       <div ref={whyChooseUsRef}>
