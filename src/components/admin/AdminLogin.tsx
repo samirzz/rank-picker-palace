@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminLogin: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -11,14 +12,27 @@ const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simple admin authentication (in a real app, use proper authentication)
-    // For demo purposes: username: admin, password: admin123
-    setTimeout(() => {
-      if (username === "admin" && password === "admin123") {
+    try {
+      // Check admin credentials against the database
+      const { data, error } = await supabase
+        .from("admin_users")
+        .select("*")
+        .eq("username", username)
+        .eq("password_hash", password) // In production, use proper password hashing!
+        .single();
+
+      if (error || !data) {
+        toast({
+          title: "Login failed",
+          description: "Invalid username or password",
+          variant: "destructive",
+        });
+        console.error("Admin login error:", error);
+      } else {
         // Store auth token in localStorage
         localStorage.setItem("adminAuth", "true");
         toast({
@@ -27,15 +41,17 @@ const AdminLogin: React.FC = () => {
           variant: "default",
         });
         navigate("/admin/dashboard");
-      } else {
-        toast({
-          title: "Login failed",
-          description: "Invalid username or password",
-          variant: "destructive",
-        });
       }
+    } catch (error) {
+      console.error("Admin login error:", error);
+      toast({
+        title: "Login failed",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
