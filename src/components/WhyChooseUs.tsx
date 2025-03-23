@@ -2,10 +2,10 @@
 import React from "react";
 
 interface WhyChooseUsProps {
-  isIntersecting: boolean;
+  isIntersecting?: boolean;
 }
 
-const WhyChooseUs: React.FC<WhyChooseUsProps> = ({ isIntersecting }) => {
+const WhyChooseUs: React.FC<WhyChooseUsProps> = ({ isIntersecting = false }) => {
   return (
     <section id="about" className="py-16 md:py-24 px-4 relative overflow-hidden">
       {/* Background decorations */}

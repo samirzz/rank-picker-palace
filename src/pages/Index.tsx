@@ -77,11 +77,11 @@ export default function Index() {
       </div>
       
       <div ref={discordRef}>
-        <DiscordCommunity isIntersecting={discordInView} />
+        <DiscordCommunity />
       </div>
       
       <div ref={contactRef}>
-        <ContactSection isIntersecting={contactInView} />
+        <ContactSection />
       </div>
 
       <Footer />

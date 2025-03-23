@@ -2,7 +2,11 @@
 import React from "react";
 import { Mail, MessageSquare } from "lucide-react";
 
-const ContactSection: React.FC = () => {
+interface ContactSectionProps {
+  isIntersecting?: boolean;
+}
+
+const ContactSection: React.FC<ContactSectionProps> = ({ isIntersecting = false }) => {
   return (
     <section id="contact" className="py-16 md:py-20 px-4 bg-gradient-to-b from-black to-mlbb-blue/70 relative">
       <div className="container mx-auto max-w-4xl">
