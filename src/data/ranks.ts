@@ -31,7 +31,7 @@ export interface RankCombination {
   price: number;
 }
 
-const originalRanks: Rank[] = [
+export const originalRanks: Rank[] = [
   {
     id: "warrior",
     name: "Warrior",
@@ -41,9 +41,9 @@ const originalRanks: Rank[] = [
     basePrice: 5,
     costPerStar: 0.5,
     subdivisions: [
-      { name: "Warrior I", stars: 5 },
-      { name: "Warrior II", stars: 5 },
-      { name: "Warrior III", stars: 5 }
+      { name: "Warrior I", stars: 3 },
+      { name: "Warrior II", stars: 3 },
+      { name: "Warrior III", stars: 3 }
     ]
   },
   {
@@ -55,9 +55,10 @@ const originalRanks: Rank[] = [
     basePrice: 10,
     costPerStar: 1,
     subdivisions: [
-      { name: "Elite I", stars: 5 },
-      { name: "Elite II", stars: 5 },
-      { name: "Elite III", stars: 5 }
+      { name: "Elite I", stars: 3 },
+      { name: "Elite II", stars: 3 },
+      { name: "Elite III", stars: 3 },
+      { name: "Elite IV", stars: 3 }
     ]
   },
   {
@@ -69,10 +70,10 @@ const originalRanks: Rank[] = [
     basePrice: 15,
     costPerStar: 1.5,
     subdivisions: [
-      { name: "Master I", stars: 5 },
-      { name: "Master II", stars: 5 },
-      { name: "Master III", stars: 5 },
-      { name: "Master IV", stars: 5 }
+      { name: "Master I", stars: 4 },
+      { name: "Master II", stars: 4 },
+      { name: "Master III", stars: 4 },
+      { name: "Master IV", stars: 4 }
     ]
   },
   {
@@ -209,6 +210,14 @@ export const getAdminRanks = async (): Promise<Rank[]> => {
                 max_points: sub.points?.max
               });
             });
+          } else if (rank.points) {
+            subdivisionsForDb.push({
+              rank_id: rank.id,
+              name: rank.name,
+              stars: null,
+              min_points: rank.points.min,
+              max_points: rank.points.max
+            });
           }
         });
         
@@ -253,6 +262,22 @@ export const getAdminRanks = async (): Promise<Rank[]> => {
           } : undefined
         }));
       
+      const isMythicRank = rank.id.includes('mythic') || rank.id === 'immortal';
+      const hasPointsInSubdivision = rankSubdivisions.some(sub => sub.points);
+      
+      let pointsRange;
+      if (isMythicRank && !hasPointsInSubdivision) {
+        const mythicSub = subdivisionsData.find(
+          sub => sub.rank_id === rank.id && sub.min_points !== null && sub.max_points !== null
+        );
+        if (mythicSub) {
+          pointsRange = {
+            min: mythicSub.min_points,
+            max: mythicSub.max_points
+          };
+        }
+      }
+      
       return {
         id: rank.id,
         name: rank.name,
@@ -262,7 +287,8 @@ export const getAdminRanks = async (): Promise<Rank[]> => {
         basePrice: Number(rank.base_price),
         costPerStar: Number(rank.cost_per_star),
         subdivisions: rankSubdivisions.length > 0 ? rankSubdivisions : undefined,
-        points: rank.id.includes('mythic') ? { min: 0, max: 99 } : undefined
+        points: pointsRange || (rank.id.includes('mythic') || rank.id === 'immortal' ? 
+          findPointsForMythicRank(rank.id) : undefined)
       };
     });
     
@@ -271,6 +297,11 @@ export const getAdminRanks = async (): Promise<Rank[]> => {
     console.error('Unexpected error in getAdminRanks:', error);
     return originalRanks; 
   }
+};
+
+const findPointsForMythicRank = (rankId: string): PointsRange | undefined => {
+  const rank = originalRanks.find(r => r.id === rankId);
+  return rank?.points;
 };
 
 export const getBasePrice = async (): Promise<number> => {
