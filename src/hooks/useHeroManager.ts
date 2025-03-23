@@ -65,16 +65,15 @@ export const useHeroManager = (onSave?: () => void) => {
     });
   };
 
-  const handleAddHero = () => {
+  const handleAddHero = (heroData: Omit<Hero, "id">) => {
     // Generate a more reliable unique ID using UUID
     const newId = uuidv4();
     
     const newHero: Hero = { 
-      id: newId, 
-      name: "New Hero", 
-      image: getHeroPlaceholderImage(), 
-      difficulty: 1, 
-      priceModifier: 1 
+      id: newId,
+      ...heroData,
+      // Use the provided image or fallback to placeholder
+      image: heroData.image || getHeroPlaceholderImage()
     };
     
     // Make sure we're adding to the current state

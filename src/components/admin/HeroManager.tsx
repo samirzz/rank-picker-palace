@@ -1,10 +1,11 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Save } from "lucide-react";
 import HeroListTable from "./hero/HeroListTable";
 import LoadingPanel from "./hero/LoadingPanel";
+import HeroFormDialog from "./hero/HeroFormDialog";
 import { useHeroManager } from "@/hooks/useHeroManager";
 
 interface HeroManagerProps {
@@ -12,6 +13,8 @@ interface HeroManagerProps {
 }
 
 const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
+  const [isAddHeroDialogOpen, setIsAddHeroDialogOpen] = useState(false);
+  
   const {
     heroes,
     loading,
@@ -37,7 +40,7 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
           <Button 
             onClick={() => {
               console.log("Add Hero button clicked");
-              handleAddHero();
+              setIsAddHeroDialogOpen(true);
             }} 
             variant="outline" 
             className="bg-black/30 border-mlbb-purple/30 text-white hover:bg-black/50"
@@ -71,6 +74,12 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
             Changes are not saved to the database until you click the button above.
           </p>
         </div>
+        
+        <HeroFormDialog
+          open={isAddHeroDialogOpen}
+          onOpenChange={setIsAddHeroDialogOpen}
+          onSave={handleAddHero}
+        />
       </CardContent>
     </Card>
   );
