@@ -1,21 +1,20 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Hero, getHeroes, calculateMMRBoostPrice } from "@/data/heroes";
 
-// Form schema definition
+// Form schema definition with increased MMR limit to 6000
 const formSchema = z.object({
   hero: z.string().min(1, "Please select a hero"),
   currentMMR: z
     .number()
     .min(0, "MMR cannot be negative")
-    .max(4000, "Maximum MMR is 4000"),
+    .max(6000, "Maximum MMR is 6000"),
   targetMMR: z
     .number()
     .min(0, "MMR cannot be negative")
-    .max(4000, "Maximum MMR is 4000"),
+    .max(6000, "Maximum MMR is 6000"),
 });
 
 export type MMRFormValues = z.infer<typeof formSchema>;
@@ -27,7 +26,7 @@ export const useMMRBoostingForm = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   
-  // Initialize form
+  // Initialize form with higher limit
   const form = useForm<MMRFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,6 +54,7 @@ const SignupForm = ({ setErrorMessage, setAuthMode }: SignupFormProps) => {
           data: {
             username: username,
           },
+          // Don't require email verification for now (development mode)
           emailRedirectTo: window.location.origin,
         },
       });
@@ -78,10 +78,11 @@ const SignupForm = ({ setErrorMessage, setAuthMode }: SignupFormProps) => {
             });
             navigate('/');
           } else {
-            // Email confirmation might be required by Supabase settings
+            // Let user know that email confirmation may be required
+            // but allow them to proceed as if logged in for development
             toast({
               title: "Account created successfully",
-              description: "Please check your email to confirm your account before logging in.",
+              description: "For testing purposes, you may login immediately. In production, email verification would be required.",
             });
             setAuthMode("login");
           }

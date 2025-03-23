@@ -27,12 +27,25 @@ const Auth = () => {
 
     // Handle OAuth responses when redirected back from Google
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session);
+      
       if (event === 'SIGNED_IN' && session) {
         toast({
           title: "Logged in successfully",
           description: "Welcome back!",
         });
         navigate('/');
+      } else if (event === 'USER_UPDATED') {
+        toast({
+          title: "Account updated",
+          description: "Your account has been updated successfully.",
+        });
+      } else if (event === 'PASSWORD_RECOVERY') {
+        toast({
+          title: "Password recovery",
+          description: "Please reset your password.",
+        });
+        setAuthMode('reset-password');
       }
     });
 
