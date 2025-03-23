@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Hero {
@@ -58,6 +59,7 @@ const defaultHeroes: Hero[] = [
 // Fetch heroes from Supabase
 export const getAdminHeroes = async (): Promise<Hero[]> => {
   try {
+    console.log("Fetching heroes from database...");
     const { data, error } = await supabase
       .from('heroes')
       .select('*');
@@ -68,6 +70,7 @@ export const getAdminHeroes = async (): Promise<Hero[]> => {
     }
     
     if (data && data.length > 0) {
+      console.log(`Found ${data.length} heroes in database`);
       return data.map(hero => ({
         id: hero.id,
         name: hero.name,
@@ -109,6 +112,7 @@ export const getHeroes = async (): Promise<Hero[]> => {
 // Get hero base price from configuration table
 export const getHeroBasePrice = async (): Promise<number> => {
   try {
+    console.log("Fetching hero base price from database...");
     const { data, error } = await supabase
       .from('configuration')
       .select('value')
@@ -130,6 +134,7 @@ export const getHeroBasePrice = async (): Promise<number> => {
 // Save hero base price to configuration table
 export const saveHeroBasePrice = async (price: number): Promise<void> => {
   try {
+    console.log(`Saving hero base price to database: ${price}`);
     const { error } = await supabase
       .from('configuration')
       .upsert({ id: 'heroBasePricePerMMR', value: price.toString() });
@@ -139,6 +144,7 @@ export const saveHeroBasePrice = async (price: number): Promise<void> => {
       throw error;
     }
     
+    console.log("Hero base price saved successfully");
     // Dispatch an event to notify components that the base price has changed
     window.dispatchEvent(new Event('adminBasePriceChange'));
   } catch (error) {
@@ -155,6 +161,7 @@ export const saveHeroes = async (heroes: Hero[]): Promise<void> => {
   }
   
   try {
+    console.log(`Saving ${heroes.length} heroes to database...`);
     // First, convert heroes to the format expected by Supabase
     const heroesForDb = heroes.map(hero => ({
       id: hero.id,
@@ -166,6 +173,7 @@ export const saveHeroes = async (heroes: Hero[]): Promise<void> => {
     
     // Use upsert instead of delete+insert to preserve existing records
     for (const hero of heroesForDb) {
+      console.log(`Upserting hero: ${hero.id} - ${hero.name}`);
       const { error } = await supabase
         .from('heroes')
         .upsert(hero, { onConflict: 'id' });
@@ -192,6 +200,7 @@ export const saveHeroes = async (heroes: Hero[]): Promise<void> => {
       .map(h => h.id);
     
     if (heroesToDelete.length > 0) {
+      console.log(`Deleting ${heroesToDelete.length} unused heroes from database`);
       const { error: deleteError } = await supabase
         .from('heroes')
         .delete()
@@ -203,6 +212,7 @@ export const saveHeroes = async (heroes: Hero[]): Promise<void> => {
       }
     }
     
+    console.log("Heroes saved successfully to database");
     // Dispatch an event to notify components that the hero list has changed
     window.dispatchEvent(new Event('adminHeroesChange'));
   } catch (error) {
