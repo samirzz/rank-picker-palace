@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { getHeroBasePrice, saveHeroBasePrice } from "@/data/heroes";
+import { getHeroBasePrice, saveHeroBasePrice } from "@/services/hero.service";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";

@@ -3,7 +3,7 @@ import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { User, Search } from "lucide-react";
-import { Hero } from "@/data/heroes";
+import { Hero } from "@/types/hero.types";
 import HeroCard from "../HeroCard";
 import {
   Popover,

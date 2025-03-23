@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { Hero, getAdminHeroes, saveHeroes, getHeroPlaceholderImage } from "@/data/heroes";
+import { Hero } from "@/types/hero.types";
+import { getAdminHeroes, saveHeroes, getHeroPlaceholderImage } from "@/data/heroes";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
 import { supabase } from "@/integrations/supabase/client";

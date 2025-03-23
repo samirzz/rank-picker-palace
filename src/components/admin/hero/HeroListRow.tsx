@@ -1,11 +1,10 @@
-
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Slider } from "@/components/ui/slider";
 import { Trash2, Star } from "lucide-react";
-import { Hero } from "@/data/heroes";
+import { Hero } from "@/types/hero.types";
 
 interface HeroListRowProps {
   hero: Hero;

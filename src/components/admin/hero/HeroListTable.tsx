@@ -8,7 +8,7 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { Hero } from "@/data/heroes";
+import { Hero } from "@/types/hero.types";
 import HeroListRow from "./HeroListRow";
 
 interface HeroListTableProps {

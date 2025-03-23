@@ -1,6 +1,7 @@
 
 import React from "react";
-import { Hero, getHeroPlaceholderImage } from "@/data/heroes";
+import { Hero } from "@/types/hero.types";
+import { getHeroPlaceholderImage } from "@/utils/hero.utils";
 import { Badge } from "@/components/ui/badge";
 import { Star } from "lucide-react";
 

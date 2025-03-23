@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Hero, getHeroes, calculateMMRBoostPrice } from "@/data/heroes";
+import { Hero } from "@/types/hero.types";
+import { getHeroes } from "@/services/hero.service";
+import { calculateMMRBoostPrice } from "@/services/price.service";
 
 // Form schema definition with increased MMR limit to 6000
 const formSchema = z.object({
