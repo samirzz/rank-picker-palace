@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Hero, getAdminHeroes, saveHeroes, getHeroPlaceholderImage } from "@/data/heroes";
 import { useToast } from "@/hooks/use-toast";
+import { v4 as uuidv4 } from "uuid";
 
 export const useHeroManager = (onSave?: () => void) => {
   const [heroes, setHeroes] = useState<Hero[]>([]);
@@ -65,18 +66,28 @@ export const useHeroManager = (onSave?: () => void) => {
   };
 
   const handleAddHero = () => {
-    const newId = Math.random().toString(36).substring(7);
-    setHeroes([...heroes, { 
+    // Generate a more reliable unique ID using UUID
+    const newId = uuidv4();
+    
+    const newHero: Hero = { 
       id: newId, 
       name: "New Hero", 
       image: getHeroPlaceholderImage(), 
       difficulty: 1, 
       priceModifier: 1 
-    }]);
+    };
+    
+    // Make sure we're adding to the current state
+    setHeroes(currentHeroes => [...currentHeroes, newHero]);
+    
     toast({
       title: "Hero added",
       description: "New hero has been added. Remember to save changes to update the database.",
     });
+    
+    // Log to console for debugging
+    console.log("Added new hero:", newHero);
+    console.log("Current heroes count:", heroes.length + 1);
   };
 
   const handleSaveChanges = async () => {

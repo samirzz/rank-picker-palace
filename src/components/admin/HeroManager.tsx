@@ -35,7 +35,10 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
         <div className="mb-4 flex justify-between items-center">
           <h2 className="text-lg font-semibold text-white">Hero Management</h2>
           <Button 
-            onClick={handleAddHero} 
+            onClick={() => {
+              console.log("Add Hero button clicked");
+              handleAddHero();
+            }} 
             variant="outline" 
             className="bg-black/30 border-mlbb-purple/30 text-white hover:bg-black/50"
           >
@@ -44,14 +47,16 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
           </Button>
         </div>
         
-        <HeroListTable
-          heroes={heroes}
-          onNameChange={handleNameChange}
-          onImageChange={handleImageChange}
-          onDifficultyChange={handleDifficultyChange}
-          onPriceModifierChange={handlePriceModifierChange}
-          onDelete={handleDeleteHero}
-        />
+        <div className="overflow-x-auto">
+          <HeroListTable
+            heroes={heroes}
+            onNameChange={handleNameChange}
+            onImageChange={handleImageChange}
+            onDifficultyChange={handleDifficultyChange}
+            onPriceModifierChange={handlePriceModifierChange}
+            onDelete={handleDeleteHero}
+          />
+        </div>
 
         <div className="mt-6 flex flex-col space-y-2">
           <Button 
