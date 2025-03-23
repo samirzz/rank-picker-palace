@@ -53,14 +53,19 @@ const HeroManager: React.FC<HeroManagerProps> = ({ onSave }) => {
           onDelete={handleDeleteHero}
         />
 
-        <Button 
-          onClick={handleSaveChanges} 
-          className="mt-6 bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple hover:from-mlbb-darkpurple hover:to-mlbb-purple"
-          disabled={saving}
-        >
-          <Save className="mr-2 h-4 w-4" />
-          {saving ? "Saving..." : "Save Changes"}
-        </Button>
+        <div className="mt-6 flex flex-col space-y-2">
+          <Button 
+            onClick={handleSaveChanges} 
+            className="bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple hover:from-mlbb-darkpurple hover:to-mlbb-purple"
+            disabled={saving}
+          >
+            <Save className="mr-2 h-4 w-4" />
+            {saving ? "Saving to Database..." : "Save Changes to Database"}
+          </Button>
+          <p className="text-xs text-gray-400 text-center">
+            Changes are not saved to the database until you click the button above.
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

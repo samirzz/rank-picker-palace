@@ -19,12 +19,17 @@ export const useHeroManager = (onSave?: () => void) => {
           setHeroes(loadedHeroes);
         } else {
           console.warn("No heroes found in database, initializing with defaults");
+          toast({
+            title: "Warning",
+            description: "No heroes found in database. Using default heroes.",
+            variant: "destructive",
+          });
         }
       } catch (error) {
         console.error("Error loading heroes:", error);
         toast({
-          title: "Error",
-          description: "Failed to load hero data. Please refresh the page.",
+          title: "Database Error",
+          description: "Failed to load hero data from database. Please refresh the page.",
           variant: "destructive",
         });
       } finally {
@@ -53,6 +58,10 @@ export const useHeroManager = (onSave?: () => void) => {
 
   const handleDeleteHero = (id: string) => {
     setHeroes(heroes.filter(hero => hero.id !== id));
+    toast({
+      title: "Hero removed",
+      description: "Hero has been removed. Remember to save changes to update the database.",
+    });
   };
 
   const handleAddHero = () => {
@@ -64,6 +73,10 @@ export const useHeroManager = (onSave?: () => void) => {
       difficulty: 1, 
       priceModifier: 1 
     }]);
+    toast({
+      title: "Hero added",
+      description: "New hero has been added. Remember to save changes to update the database.",
+    });
   };
 
   const handleSaveChanges = async () => {
@@ -80,15 +93,15 @@ export const useHeroManager = (onSave?: () => void) => {
     try {
       await saveHeroes(heroes);
       toast({
-        title: "Changes saved",
-        description: "Hero list has been updated successfully.",
+        title: "Database updated",
+        description: "Hero list has been saved to the database successfully.",
       });
       onSave?.();
     } catch (error) {
-      console.error("Error saving heroes:", error);
+      console.error("Error saving heroes to database:", error);
       toast({
-        title: "Error",
-        description: "Failed to save changes. Please try again.",
+        title: "Database Error",
+        description: "Failed to save changes to the database. Please try again.",
         variant: "destructive",
       });
     } finally {
