@@ -1,6 +1,5 @@
 
 // Barrel file to maintain the same exports for backward compatibility
-import { Hero, MMRRange } from "@/types/hero.types";
 import { getHeroPlaceholderImage, defaultHeroes, DEFAULT_BASE_PRICE_PER_MMR } from "@/utils/hero.utils";
 import { 
   getAdminHeroes, 
@@ -11,10 +10,11 @@ import {
 } from "@/services/hero.service";
 import { calculateMMRBoostPrice } from "@/services/price.service";
 
-// Re-export everything to maintain backward compatibility
+// Re-export types with 'export type' to fix the TS1205 error
+export type { Hero, MMRRange } from "@/types/hero.types";
+
+// Re-export everything else to maintain backward compatibility
 export {
-  Hero,
-  MMRRange,
   getHeroPlaceholderImage,
   getAdminHeroes,
   getHeroes,
