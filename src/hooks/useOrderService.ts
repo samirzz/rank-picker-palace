@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import type { Hero } from "@/types/hero.types";
 import type { Rank } from "@/data/ranks";
+import { useToast } from "@/hooks/use-toast";
 
 interface OrderData {
   orderType: "rank" | "mmr";
@@ -22,12 +23,14 @@ interface OrderResult {
   success: boolean;
   orderId?: string;
   orderNumber?: string;
+  emailSent?: boolean;
   error?: any;
 }
 
 export function useOrderService() {
   const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
+  const { toast } = useToast();
 
   const createOrder = async (orderData: OrderData): Promise<OrderResult> => {
     try {
@@ -56,6 +59,11 @@ export function useOrderService() {
 
       if (saveError) {
         console.error("Error saving order:", saveError);
+        toast({
+          title: "Order Error",
+          description: "Failed to save your order. Please try again.",
+          variant: "destructive",
+        });
         throw saveError;
       }
 
@@ -67,36 +75,75 @@ export function useOrderService() {
 
       if (configError) {
         console.error("Error fetching configuration:", configError);
-        throw configError;
+        // Continue with default values
       }
 
-      // Create configuration object
-      const config = configData.reduce((acc, item) => {
+      // Create configuration object with defaults
+      const config = (configData || []).reduce((acc, item) => {
         acc[item.id] = item.value;
         return acc;
-      }, {} as Record<string, string>);
+      }, {
+        discord_invite_link: "https://discord.gg/example",
+        company_name: "MLBooster",
+        support_email: "support@mlbooster.com"
+      } as Record<string, string>);
 
-      // Send confirmation email
-      await sendOrderConfirmationEmail({
-        id: orderRecord.id,
-        orderNumber,
-        customerName: orderData.customerName || user.email.split("@")[0],
-        email: user.email,
-        orderType: orderData.orderType,
-        currentRank: orderData.currentRank?.name,
-        targetRank: orderData.targetRank?.name,
-        currentMMR: orderData.currentMMR,
-        targetMMR: orderData.targetMMR,
-        heroName: orderData.hero?.name,
-        totalAmount: orderData.totalAmount,
-        discordInviteLink: config.discord_invite_link || "https://discord.gg/example",
-        companyName: config.company_name || "MLBooster",
-        supportEmail: config.support_email || "support@mlbooster.com",
-      });
-
-      return { success: true, orderId: orderRecord.id, orderNumber };
+      try {
+        // Add timeout protection for the function call
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error("Email function timed out")), 10000);
+        });
+        
+        // Send confirmation email with timeout protection
+        await Promise.race([
+          sendOrderConfirmationEmail({
+            id: orderRecord.id,
+            orderNumber,
+            customerName: orderData.customerName || user.email.split("@")[0],
+            email: user.email,
+            orderType: orderData.orderType,
+            currentRank: orderData.currentRank?.name,
+            targetRank: orderData.targetRank?.name,
+            currentMMR: orderData.currentMMR,
+            targetMMR: orderData.targetMMR,
+            heroName: orderData.hero?.name,
+            totalAmount: orderData.totalAmount,
+            discordInviteLink: config.discord_invite_link,
+            companyName: config.company_name,
+            supportEmail: config.support_email,
+          }),
+          timeoutPromise
+        ]);
+        
+        return { 
+          success: true, 
+          orderId: orderRecord.id, 
+          orderNumber,
+          emailSent: true
+        };
+      } catch (emailError) {
+        // Log the error but return a partial success since the order was created
+        console.error("Failed to send confirmation email but order was created:", emailError);
+        toast({
+          title: "Order Created",
+          description: "Your order was created but we couldn't send a confirmation email. Please check your orders in your account.",
+          variant: "default",
+        });
+        
+        return { 
+          success: true, 
+          orderId: orderRecord.id, 
+          orderNumber,
+          emailSent: false
+        };
+      }
     } catch (error) {
       console.error("Order creation failed:", error);
+      toast({
+        title: "Order Failed",
+        description: "We couldn't process your order. Please try again later.",
+        variant: "destructive",
+      });
       return { success: false, error };
     } finally {
       setIsProcessing(false);

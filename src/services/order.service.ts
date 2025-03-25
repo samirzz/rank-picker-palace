@@ -64,25 +64,37 @@ export async function createOrder(orderData: OrderData) {
       return acc;
     }, {} as Record<string, string>);
 
-    // Send confirmation email
-    await sendOrderConfirmationEmail({
-      id: orderRecord.id,
-      orderNumber,
-      customerName: orderData.customerName || user.email.split("@")[0],
-      email: user.email,
-      orderType: orderData.orderType,
-      currentRank: orderData.currentRank?.name,
-      targetRank: orderData.targetRank?.name,
-      currentMMR: orderData.currentMMR,
-      targetMMR: orderData.targetMMR,
-      heroName: orderData.hero?.name,
-      totalAmount: orderData.totalAmount,
-      discordInviteLink: config.discord_invite_link || "https://discord.gg/example",
-      companyName: config.company_name || "MLBooster",
-      supportEmail: config.support_email || "support@mlbooster.com",
-    });
+    try {
+      // Send confirmation email with better error handling
+      await sendOrderConfirmationEmail({
+        id: orderRecord.id,
+        orderNumber,
+        customerName: orderData.customerName || user.email.split("@")[0],
+        email: user.email,
+        orderType: orderData.orderType,
+        currentRank: orderData.currentRank?.name,
+        targetRank: orderData.targetRank?.name,
+        currentMMR: orderData.currentMMR,
+        targetMMR: orderData.targetMMR,
+        heroName: orderData.hero?.name,
+        totalAmount: orderData.totalAmount,
+        discordInviteLink: config.discord_invite_link || "https://discord.gg/example",
+        companyName: config.company_name || "MLBooster",
+        supportEmail: config.support_email || "support@mlbooster.com",
+      });
+    } catch (emailError) {
+      // Log the email error but don't fail the order creation
+      console.error("Failed to send confirmation email but order was created:", emailError);
+      // Return partial success
+      return { 
+        success: true, 
+        orderId: orderRecord.id, 
+        orderNumber,
+        emailSent: false
+      };
+    }
 
-    return { success: true, orderId: orderRecord.id, orderNumber };
+    return { success: true, orderId: orderRecord.id, orderNumber, emailSent: true };
   } catch (error) {
     console.error("Order creation failed:", error);
     return { success: false, error };
@@ -106,9 +118,18 @@ async function sendOrderConfirmationEmail(orderDetails: {
   supportEmail: string;
 }) {
   try {
-    const { data, error } = await supabase.functions.invoke("send-order-confirmation", {
-      body: orderDetails,
+    // Use a timeout to prevent hanging indefinitely
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Email function timed out")), 10000);
     });
+    
+    // Call the function with timeout protection
+    const { data, error } = await Promise.race([
+      supabase.functions.invoke("send-order-confirmation", {
+        body: orderDetails,
+      }),
+      timeoutPromise
+    ]) as any;
 
     if (error) {
       console.error("Error sending confirmation email:", error);

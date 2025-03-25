@@ -71,6 +71,10 @@ redirect_uri = ""
 # or any other third-party OIDC providers.
 url = ""
 
+[functions]
+# Port for Functions server. For local development only.
+port = 54321
+
 [analytics]
 enabled = false
 port = 54327
