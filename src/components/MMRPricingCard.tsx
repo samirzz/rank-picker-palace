@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,9 @@ import { ShoppingBag, Check } from "lucide-react";
 import { Hero } from "@/data/heroes";
 import { useToast } from "@/hooks/use-toast";
 import PaymentMethods from "./payments/PaymentMethods";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { useOrderService } from "@/hooks/useOrderService";
 
 interface MMRPricingCardProps {
   hero: Hero | null;
@@ -23,10 +25,23 @@ const MMRPricingCard: React.FC<MMRPricingCardProps> = ({
   const { toast } = useToast();
   const [showPayment, setShowPayment] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { createOrder, isProcessing } = useOrderService();
   
   const isComplete = hero && currentMMR < targetMMR;
   
   const handleAddToCart = () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to continue with your purchase",
+        variant: "destructive"
+      });
+      navigate('/auth');
+      return;
+    }
+    
     if (!isComplete) return;
     setShowPayment(true);
   };
@@ -35,13 +50,40 @@ const MMRPricingCard: React.FC<MMRPricingCardProps> = ({
     setShowPayment(false);
   };
 
-  const handlePaymentSuccess = () => {
-    setShowPayment(false);
-    setOrderComplete(true);
-    toast({
-      title: "Order Placed Successfully!",
-      description: "Your MMR boost order has been confirmed.",
-    });
+  const handlePaymentSuccess = async () => {
+    try {      
+      if (!hero) {
+        throw new Error("Missing hero information");
+      }
+      
+      // Create the order in the database and send confirmation email
+      const result = await createOrder({
+        orderType: "mmr",
+        currentMMR,
+        targetMMR,
+        hero,
+        totalAmount: price,
+        customerName: user?.email?.split("@")[0]
+      });
+
+      if (!result.success) {
+        throw new Error("Failed to process order");
+      }
+
+      setShowPayment(false);
+      setOrderComplete(true);
+      toast({
+        title: "Order Confirmed",
+        description: "Thank you for your order! Check your email for confirmation details.",
+      });
+    } catch (error) {
+      console.error("Order processing error:", error);
+      toast({
+        title: "Order Processing Failed",
+        description: "There was an error processing your order. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
   
   return (
@@ -63,7 +105,7 @@ const MMRPricingCard: React.FC<MMRPricingCardProps> = ({
             </div>
             <h3 className="text-lg font-medium text-white">Order Confirmed!</h3>
             <p className="text-gray-400 text-sm">
-              Your MMR boost will begin shortly. You'll receive updates via email.
+              Your MMR boost will begin shortly. Please check your email for confirmation details.
             </p>
           </div>
         ) : (
@@ -98,11 +140,17 @@ const MMRPricingCard: React.FC<MMRPricingCardProps> = ({
         <CardFooter>
           <Button 
             className="w-full bg-mlbb-gold hover:bg-mlbb-gold/80 text-black"
-            disabled={!isComplete}
+            disabled={!isComplete || isProcessing}
             onClick={handleAddToCart}
           >
-            <ShoppingBag className="mr-2 h-4 w-4" />
-            Proceed to Payment
+            {isProcessing ? (
+              "Processing..."
+            ) : (
+              <>
+                <ShoppingBag className="mr-2 h-4 w-4" />
+                Proceed to Payment
+              </>
+            )}
           </Button>
         </CardFooter>
       )}

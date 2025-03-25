@@ -84,6 +84,54 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          created_at: string
+          current_mmr: number | null
+          current_rank: string | null
+          customer_name: string | null
+          email: string
+          hero_id: string | null
+          id: string
+          order_type: string
+          status: string
+          target_mmr: number | null
+          target_rank: string | null
+          total_amount: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_mmr?: number | null
+          current_rank?: string | null
+          customer_name?: string | null
+          email: string
+          hero_id?: string | null
+          id?: string
+          order_type: string
+          status?: string
+          target_mmr?: number | null
+          target_rank?: string | null
+          total_amount: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_mmr?: number | null
+          current_rank?: string | null
+          customer_name?: string | null
+          email?: string
+          hero_id?: string | null
+          id?: string
+          order_type?: string
+          status?: string
+          target_mmr?: number | null
+          target_rank?: string | null
+          total_amount?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

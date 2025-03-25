@@ -7,6 +7,7 @@ import PaymentMethods from "./payments/PaymentMethods";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { useOrderService } from "@/hooks/useOrderService";
 
 interface PricingCardProps {
   currentRank: Rank | null;
@@ -35,9 +36,11 @@ const PricingCard: React.FC<PricingCardProps> = ({
   const [showDetails, setShowDetails] = useState(false);
   const [price, setPrice] = useState<number | null>(null);
   const [showPayment, setShowPayment] = useState(false);
+  const [orderComplete, setOrderComplete] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { createOrder, isProcessing } = useOrderService();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -114,12 +117,40 @@ const PricingCard: React.FC<PricingCardProps> = ({
     setShowPayment(true);
   };
 
-  const handlePaymentSuccess = () => {
-    setShowPayment(false);
-    toast({
-      title: "Order Confirmed",
-      description: "Thank you for your order! Our boosters will start working on it shortly."
-    });
+  const handlePaymentSuccess = async () => {
+    try {
+      if (!currentRank || !targetRank || !price) {
+        throw new Error("Missing required order information");
+      }
+      
+      const result = await createOrder({
+        orderType: "rank",
+        currentRank,
+        targetRank,
+        currentSubdivision,
+        targetSubdivision,
+        totalAmount: price,
+        customerName: user?.email?.split("@")[0]
+      });
+
+      if (!result.success) {
+        throw new Error("Failed to process order");
+      }
+
+      setShowPayment(false);
+      setOrderComplete(true);
+      toast({
+        title: "Order Confirmed",
+        description: "Thank you for your order! Check your email for confirmation details.",
+      });
+    } catch (error) {
+      console.error("Order processing error:", error);
+      toast({
+        title: "Order Processing Failed",
+        description: "There was an error processing your order. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handlePaymentCancel = () => {
@@ -182,19 +213,30 @@ const PricingCard: React.FC<PricingCardProps> = ({
                 </div>
               </div>
               
-              <Button 
-                onClick={handleProceedToCheckout}
-                className="w-full mt-6 bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple hover:opacity-90 text-white py-3 rounded-md font-semibold button-glow"
-              >
-                {!user ? (
-                  <>
-                    <Lock className="w-4 h-4 mr-2" />
-                    Login to Purchase
-                  </>
-                ) : (
-                  "Proceed to Checkout"
-                )}
-              </Button>
+              {orderComplete ? (
+                <div className="mt-6 p-4 bg-green-500/20 rounded-md text-center">
+                  <CheckCircle className="w-8 h-8 mx-auto text-green-500 mb-2" />
+                  <h3 className="text-lg font-medium text-white mb-1">Order Confirmed!</h3>
+                  <p className="text-sm text-gray-300">
+                    Thank you for your order. Please check your email for confirmation details.
+                  </p>
+                </div>
+              ) : (
+                <Button 
+                  onClick={handleProceedToCheckout}
+                  className="w-full mt-6 bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple hover:opacity-90 text-white py-3 rounded-md font-semibold button-glow"
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? "Processing..." : !user ? (
+                    <>
+                      <Lock className="w-4 h-4 mr-2" />
+                      Login to Purchase
+                    </>
+                  ) : (
+                    "Proceed to Checkout"
+                  )}
+                </Button>
+              )}
               
               <button
                 onClick={() => setShowDetails(!showDetails)}
