@@ -1,12 +1,4 @@
 
-import nodemailer from 'nodemailer';
-
-interface EmailDetails {
-  to: string;
-  subject: string;
-  html: string;
-}
-
 export interface OrderEmailDetails {
   id: string;
   orderNumber: string;
@@ -25,155 +17,25 @@ export interface OrderEmailDetails {
 }
 
 /**
- * Send an email using nodemailer
- */
-export async function sendEmail(details: EmailDetails): Promise<boolean> {
-  try {
-    // Create a test account if we're in development mode
-    const testAccount = await nodemailer.createTestAccount();
-    
-    // Create a transporter object
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST || 'smtp.ethereal.email',
-      port: parseInt(process.env.EMAIL_PORT || '587'),
-      secure: process.env.EMAIL_SECURE === 'true',
-      auth: {
-        user: process.env.EMAIL_USER || testAccount.user,
-        pass: process.env.EMAIL_PASSWORD || testAccount.pass,
-      },
-    });
-
-    // Send the email
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM || '"MLBooster" <noreply@mlbooster.com>',
-      to: details.to,
-      subject: details.subject,
-      html: details.html,
-    });
-
-    console.log('Email sent successfully:', info.messageId);
-    
-    // If using ethereal email in development, log the preview URL
-    if (!process.env.EMAIL_HOST) {
-      console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Failed to send email:', error);
-    return false;
-  }
-}
-
-/**
- * Generate HTML content for order confirmation email
- */
-export function generateOrderConfirmationEmail(order: OrderEmailDetails): string {
-  // Create common details section
-  const commonDetails = `
-    <tr>
-      <td style="padding: 8px 0;">Order Number:</td>
-      <td style="padding: 8px 0;"><strong>#${order.orderNumber}</strong></td>
-    </tr>
-    <tr>
-      <td style="padding: 8px 0;">Total Amount:</td>
-      <td style="padding: 8px 0;"><strong>$${order.totalAmount.toFixed(2)}</strong></td>
-    </tr>
-  `;
-
-  // Create order-specific details based on order type
-  let orderSpecificDetails = '';
-  if (order.orderType === 'rank') {
-    orderSpecificDetails = `
-      <tr>
-        <td style="padding: 8px 0;">Current Rank:</td>
-        <td style="padding: 8px 0;"><strong>${order.currentRank}</strong></td>
-      </tr>
-      <tr>
-        <td style="padding: 8px 0;">Desired Rank:</td>
-        <td style="padding: 8px 0;"><strong>${order.targetRank}</strong></td>
-      </tr>
-    `;
-  } else if (order.orderType === 'mmr') {
-    orderSpecificDetails = `
-      <tr>
-        <td style="padding: 8px 0;">Selected Hero:</td>
-        <td style="padding: 8px 0;"><strong>${order.heroName}</strong></td>
-      </tr>
-      <tr>
-        <td style="padding: 8px 0;">Current MMR:</td>
-        <td style="padding: 8px 0;"><strong>${order.currentMMR}</strong></td>
-      </tr>
-      <tr>
-        <td style="padding: 8px 0;">Desired MMR:</td>
-        <td style="padding: 8px 0;"><strong>${order.targetMMR}</strong></td>
-      </tr>
-    `;
-  }
-
-  // Generate the complete HTML email
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Order Confirmation</title>
-    </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background-color: #1a2039; padding: 20px; border-radius: 8px 8px 0 0;">
-        <h1 style="color: #f6d26b; margin: 0; text-align: center;">${order.companyName}</h1>
-      </div>
-      
-      <div style="background-color: #f8f9fa; padding: 20px; border-radius: 0 0 8px 8px; border: 1px solid #ddd;">
-        <h2 style="color: #1a2039; margin-top: 0;">Order Confirmation</h2>
-        
-        <p>Dear ${order.customerName},</p>
-        
-        <p>Thank you for your order! 🎉 We have received your boost request and are excited to help you reach your desired rank. Below are your order details:</p>
-        
-        <div style="background-color: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 15px; margin: 20px 0;">
-          <h3 style="margin-top: 0; color: #1a2039;">Order Details:</h3>
-          <table style="width: 100%; border-collapse: collapse;">
-            ${commonDetails}
-            ${orderSpecificDetails}
-          </table>
-        </div>
-        
-        <div style="background-color: #1a2039; border-radius: 4px; padding: 15px; margin: 20px 0; text-align: center;">
-          <p style="color: #fff; margin-top: 0;">To proceed with your order, please join our Discord server:</p>
-          <a href="${order.discordInviteLink}" style="display: inline-block; background-color: #f6d26b; color: #1a2039; text-decoration: none; padding: 10px 20px; border-radius: 4px; font-weight: bold;">Join Our Discord</a>
-        </div>
-        
-        <p>Once you join, our team will guide you through the next steps. If you have any questions, feel free to reach out to our support team at <a href="mailto:${order.supportEmail}" style="color: #1a2039;">${order.supportEmail}</a>.</p>
-        
-        <p>Thank you for choosing us! 🚀</p>
-        
-        <p>Best regards,<br>${order.companyName} Team</p>
-      </div>
-      
-      <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
-        <p>&copy; ${new Date().getFullYear()} ${order.companyName}. All rights reserved.</p>
-      </div>
-    </body>
-    </html>
-  `;
-}
-
-/**
- * Send order confirmation email
+ * Send order confirmation email via Supabase function
  */
 export async function sendOrderConfirmationEmail(orderDetails: OrderEmailDetails): Promise<boolean> {
   try {
-    // Generate email content
-    const htmlContent = generateOrderConfirmationEmail(orderDetails);
-    
-    // Send the email
-    return await sendEmail({
-      to: orderDetails.email,
-      subject: `Order Confirmation – [Order #${orderDetails.orderNumber}]`,
-      html: htmlContent,
+    // Use the browser's fetch API to call our email sending endpoint
+    const response = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(orderDetails),
     });
+
+    if (!response.ok) {
+      throw new Error(`Email API responded with status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result.success;
   } catch (error) {
     console.error('Failed to send order confirmation email:', error);
     return false;

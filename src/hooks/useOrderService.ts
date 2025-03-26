@@ -41,7 +41,8 @@ export function useOrderService() {
         throw new Error("User must be logged in to create an order");
       }
 
-      const result = await createOrder(orderData);
+      // Pass the user ID and email to the order service
+      const result = await createOrder(orderData, user.id, user.email);
 
       if (result.success) {
         if (result.emailSent) {

@@ -1,6 +1,5 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { Hero } from "@/types/hero.types";
 import { Rank } from "@/data/ranks";
 import { sendOrderConfirmationEmail } from "@/services/email.service";
@@ -18,11 +17,9 @@ export interface OrderData {
   customerName?: string;
 }
 
-export async function createOrder(orderData: OrderData) {
+export async function createOrder(orderData: OrderData, userId: string, userEmail: string) {
   try {
-    const { user } = useAuth();
-    
-    if (!user || !user.email) {
+    if (!userId || !userEmail) {
       throw new Error("User must be logged in to create an order");
     }
 
@@ -31,7 +28,7 @@ export async function createOrder(orderData: OrderData) {
     
     // Save order to database
     const { data: orderRecord, error: saveError } = await supabase.from("orders").insert({
-      user_id: user.id,
+      user_id: userId,
       order_type: orderData.orderType,
       current_rank: orderData.currentRank?.id,
       target_rank: orderData.targetRank?.id,
@@ -39,8 +36,8 @@ export async function createOrder(orderData: OrderData) {
       target_mmr: orderData.targetMMR,
       hero_id: orderData.hero?.id,
       total_amount: orderData.totalAmount,
-      email: user.email,
-      customer_name: orderData.customerName || user.email.split("@")[0],
+      email: userEmail,
+      customer_name: orderData.customerName || userEmail.split("@")[0],
     }).select().single();
 
     if (saveError) {
@@ -66,26 +63,30 @@ export async function createOrder(orderData: OrderData) {
     }, {} as Record<string, string>);
 
     try {
-      // Send confirmation email using Node.js email service with a timeout
-      const emailSent = await Promise.race([
-        sendOrderConfirmationEmail({
-          id: orderRecord.id,
-          orderNumber,
-          customerName: orderData.customerName || user.email.split("@")[0],
-          email: user.email,
-          orderType: orderData.orderType,
-          currentRank: orderData.currentRank?.name,
-          targetRank: orderData.targetRank?.name,
-          currentMMR: orderData.currentMMR,
-          targetMMR: orderData.targetMMR,
-          heroName: orderData.hero?.name,
-          totalAmount: orderData.totalAmount,
-          discordInviteLink: config.discord_invite_link || "https://discord.gg/example",
-          companyName: config.company_name || "MLBooster",
-          supportEmail: config.support_email || "support@mlbooster.com",
-        }),
-        new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 10000)) // 10 second timeout
-      ]);
+      // Send confirmation email with a timeout
+      const emailPromise = sendOrderConfirmationEmail({
+        id: orderRecord.id,
+        orderNumber,
+        customerName: orderData.customerName || userEmail.split("@")[0],
+        email: userEmail,
+        orderType: orderData.orderType,
+        currentRank: orderData.currentRank?.name,
+        targetRank: orderData.targetRank?.name,
+        currentMMR: orderData.currentMMR,
+        targetMMR: orderData.targetMMR,
+        heroName: orderData.hero?.name,
+        totalAmount: orderData.totalAmount,
+        discordInviteLink: config.discord_invite_link || "https://discord.gg/example",
+        companyName: config.company_name || "MLBooster",
+        supportEmail: config.support_email || "support@mlbooster.com",
+      });
+
+      // Set a timeout for email sending
+      const timeoutPromise = new Promise<boolean>((resolve) => 
+        setTimeout(() => resolve(false), 5000) // 5 second timeout
+      );
+
+      const emailSent = await Promise.race([emailPromise, timeoutPromise]);
 
       if (!emailSent) {
         console.warn("Email sending timed out or failed");
