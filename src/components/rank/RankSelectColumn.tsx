@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Rank } from "@/data/ranks";
-import RankSelector from "@/components/RankSelector";
+import RankSelector from "@/components/rank-selector/RankSelector";
 import StarsInput from "./StarsInput";
 import PointsInput from "./PointsInput";
 
