@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Hero } from "@/types/hero.types";
 import { Rank } from "@/data/ranks";
+import { sendOrderConfirmationEmail } from "@/services/email.service";
 
 export interface OrderData {
   orderType: "rank" | "mmr";
@@ -65,23 +66,38 @@ export async function createOrder(orderData: OrderData) {
     }, {} as Record<string, string>);
 
     try {
-      // Send confirmation email with better error handling
-      await sendOrderConfirmationEmail({
-        id: orderRecord.id,
-        orderNumber,
-        customerName: orderData.customerName || user.email.split("@")[0],
-        email: user.email,
-        orderType: orderData.orderType,
-        currentRank: orderData.currentRank?.name,
-        targetRank: orderData.targetRank?.name,
-        currentMMR: orderData.currentMMR,
-        targetMMR: orderData.targetMMR,
-        heroName: orderData.hero?.name,
-        totalAmount: orderData.totalAmount,
-        discordInviteLink: config.discord_invite_link || "https://discord.gg/example",
-        companyName: config.company_name || "MLBooster",
-        supportEmail: config.support_email || "support@mlbooster.com",
-      });
+      // Send confirmation email using Node.js email service with a timeout
+      const emailSent = await Promise.race([
+        sendOrderConfirmationEmail({
+          id: orderRecord.id,
+          orderNumber,
+          customerName: orderData.customerName || user.email.split("@")[0],
+          email: user.email,
+          orderType: orderData.orderType,
+          currentRank: orderData.currentRank?.name,
+          targetRank: orderData.targetRank?.name,
+          currentMMR: orderData.currentMMR,
+          targetMMR: orderData.targetMMR,
+          heroName: orderData.hero?.name,
+          totalAmount: orderData.totalAmount,
+          discordInviteLink: config.discord_invite_link || "https://discord.gg/example",
+          companyName: config.company_name || "MLBooster",
+          supportEmail: config.support_email || "support@mlbooster.com",
+        }),
+        new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 10000)) // 10 second timeout
+      ]);
+
+      if (!emailSent) {
+        console.warn("Email sending timed out or failed");
+        return { 
+          success: true, 
+          orderId: orderRecord.id, 
+          orderNumber,
+          emailSent: false
+        };
+      }
+
+      return { success: true, orderId: orderRecord.id, orderNumber, emailSent: true };
     } catch (emailError) {
       // Log the email error but don't fail the order creation
       console.error("Failed to send confirmation email but order was created:", emailError);
@@ -94,51 +110,8 @@ export async function createOrder(orderData: OrderData) {
       };
     }
 
-    return { success: true, orderId: orderRecord.id, orderNumber, emailSent: true };
   } catch (error) {
     console.error("Order creation failed:", error);
     return { success: false, error };
-  }
-}
-
-async function sendOrderConfirmationEmail(orderDetails: {
-  id: string;
-  orderNumber: string;
-  customerName: string;
-  email: string;
-  orderType: "rank" | "mmr";
-  currentRank?: string;
-  targetRank?: string;
-  currentMMR?: number;
-  targetMMR?: number;
-  heroName?: string;
-  totalAmount: number;
-  discordInviteLink: string;
-  companyName: string;
-  supportEmail: string;
-}) {
-  try {
-    // Use a timeout to prevent hanging indefinitely
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Email function timed out")), 10000);
-    });
-    
-    // Call the function with timeout protection
-    const { data, error } = await Promise.race([
-      supabase.functions.invoke("send-order-confirmation", {
-        body: orderDetails,
-      }),
-      timeoutPromise
-    ]) as any;
-
-    if (error) {
-      console.error("Error sending confirmation email:", error);
-      throw error;
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Failed to send order confirmation email:", error);
-    throw error;
   }
 }
