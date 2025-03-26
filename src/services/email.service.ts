@@ -1,4 +1,6 @@
 
+import { supabase } from "@/integrations/supabase/client";
+
 export interface OrderEmailDetails {
   id: string;
   orderNumber: string;
@@ -21,21 +23,17 @@ export interface OrderEmailDetails {
  */
 export async function sendOrderConfirmationEmail(orderDetails: OrderEmailDetails): Promise<boolean> {
   try {
-    // Use the browser's fetch API to call our email sending endpoint
-    const response = await fetch('/api/send-email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(orderDetails),
+    // Call the Supabase Edge Function directly
+    const { data, error } = await supabase.functions.invoke("send-order-confirmation", {
+      body: orderDetails,
     });
 
-    if (!response.ok) {
-      throw new Error(`Email API responded with status: ${response.status}`);
+    if (error) {
+      console.error('Failed to send order confirmation email:', error);
+      return false;
     }
 
-    const result = await response.json();
-    return result.success;
+    return data?.success || false;
   } catch (error) {
     console.error('Failed to send order confirmation email:', error);
     return false;
