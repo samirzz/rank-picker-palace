@@ -6,11 +6,13 @@ import { MessageSquare, Send, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
+// Define a Message interface to match our database schema
 interface Message {
   id: string;
   content: string;
   sender_id: string;
   sender_name: string;
+  recipient_id: string | null;
   is_admin: boolean;
   created_at: string;
 }
@@ -38,7 +40,7 @@ const LiveChat: React.FC = () => {
         const { data, error } = await supabase
           .from("chat_messages")
           .select("*")
-          .or(`sender_id.eq.${user.id},is_admin.eq.true`)
+          .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
           .order("created_at", { ascending: true })
           .limit(50);
 
@@ -74,15 +76,11 @@ const LiveChat: React.FC = () => {
           event: "INSERT",
           schema: "public",
           table: "chat_messages",
-          filter: `is_admin=eq.true`,
+          filter: `recipient_id=eq.${user.id}`,
         },
         (payload) => {
           // Only add admin messages for this user
-          const newMessage = payload.new as Message;
-          // Check if this admin message is a reply to this user
-          if (newMessage.recipient_id === user.id) {
-            setMessages((prev) => [...prev, newMessage]);
-          }
+          setMessages((prev) => [...prev, payload.new as Message]);
         }
       )
       .subscribe();

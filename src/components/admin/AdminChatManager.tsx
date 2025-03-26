@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,14 +8,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
+// Define a Message interface to match our database schema
 interface Message {
   id: string;
   content: string;
   sender_id: string;
   sender_name: string;
+  recipient_id: string | null;
   is_admin: boolean;
   created_at: string;
-  recipient_id: string | null;
 }
 
 interface User {

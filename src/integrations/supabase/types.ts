@@ -33,6 +33,36 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_admin: boolean | null
+          recipient_id: string | null
+          sender_id: string
+          sender_name: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean | null
+          recipient_id?: string | null
+          sender_id: string
+          sender_name: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean | null
+          recipient_id?: string | null
+          sender_id?: string
+          sender_name?: string
+        }
+        Relationships: []
+      }
       configuration: {
         Row: {
           created_at: string
