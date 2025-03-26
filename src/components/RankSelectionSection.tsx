@@ -1,10 +1,10 @@
 
-import React, { useState, useEffect } from "react";
-import RankSelector from "@/components/RankSelector";
-import PricingCard from "@/components/PricingCard";
+import React from "react";
+import { Rank } from "@/data/ranks";
 import { ArrowRight, ArrowDown } from "lucide-react";
-import { Rank, ranks, getAdminRanks } from "@/data/ranks";
-import { Input } from "@/components/ui/input";
+import PricingCard from "@/components/PricingCard";
+import { useRankSelection } from "@/hooks/useRankSelection";
+import RankSelectColumn from "./rank/RankSelectColumn";
 
 interface RankSelectionSectionProps {
   isIntersecting: boolean;
@@ -21,123 +21,28 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
   targetRank,
   setTargetRank
 }) => {
-  const [currentSubdivision, setCurrentSubdivision] = useState(0);
-  const [targetSubdivision, setTargetSubdivision] = useState(0);
-  const [availableRanks, setAvailableRanks] = useState(ranks);
-  const [currentStars, setCurrentStars] = useState(0);
-  const [targetStars, setTargetStars] = useState(0);
-  const [currentMythicPoints, setCurrentMythicPoints] = useState(0);
-  const [targetMythicPoints, setTargetMythicPoints] = useState(0);
-
-  // Update ranks when admin changes prices
-  useEffect(() => {
-    const handleAdminPriceChange = async () => {
-      try {
-        const updatedRanks = await getAdminRanks();
-        setAvailableRanks(updatedRanks);
-        
-        // Update current and target ranks with new price modifiers if they exist
-        if (currentRank) {
-          const updatedCurrentRank = updatedRanks.find(rank => rank.id === currentRank.id);
-          if (updatedCurrentRank) {
-            setCurrentRank(updatedCurrentRank, currentSubdivision);
-          }
-        }
-        
-        if (targetRank) {
-          const updatedTargetRank = updatedRanks.find(rank => rank.id === targetRank.id);
-          if (updatedTargetRank) {
-            setTargetRank(updatedTargetRank, targetSubdivision);
-          }
-        }
-      } catch (error) {
-        console.error("Error updating ranks:", error);
-      }
-    };
-
-    // Initial load
-    handleAdminPriceChange();
-
-    // Listen for the custom event
-    window.addEventListener('adminPriceChange', handleAdminPriceChange);
-    
-    // Cleanup
-    return () => {
-      window.removeEventListener('adminPriceChange', handleAdminPriceChange);
-    };
-  }, [currentRank, targetRank, currentSubdivision, targetSubdivision, setCurrentRank, setTargetRank]);
-
-  const handleCurrentRankSelect = (rank: Rank, subdivisionIndex: number = 0) => {
-    setCurrentRank(rank);
-    setCurrentSubdivision(subdivisionIndex);
-    setCurrentStars(0); // Reset stars when changing rank
-    setCurrentMythicPoints(0); // Reset mythic points when changing rank
-  };
-
-  const handleTargetRankSelect = (rank: Rank, subdivisionIndex: number = 0) => {
-    setTargetRank(rank);
-    setTargetSubdivision(subdivisionIndex);
-    setTargetStars(0); // Reset stars when changing rank
-    setTargetMythicPoints(0); // Reset mythic points when changing rank
-  };
-
-  // Handle current stars input change
-  const handleCurrentStarsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value) || 0;
-    setCurrentStars(Math.min(Math.max(value, 0), 5)); // Limit between 0-5
-  };
-
-  // Handle target stars input change
-  const handleTargetStarsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value) || 0;
-    setTargetStars(Math.min(Math.max(value, 0), 5)); // Limit between 0-5
-  };
-
-  // Handle current mythic points input change
-  const handleCurrentMythicPointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value) || 0;
-    // Get min and max values from the rank's points property
-    const minPoints = currentRank?.points?.min || 0;
-    const maxPoints = currentRank?.points?.max || 999;
-    setCurrentMythicPoints(Math.min(Math.max(value, minPoints), maxPoints));
-  };
-
-  // Handle target mythic points input change
-  const handleTargetMythicPointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value) || 0;
-    // Get min and max values from the rank's points property
-    const minPoints = targetRank?.points?.min || 0;
-    const maxPoints = targetRank?.points?.max || 999;
-    setTargetMythicPoints(Math.min(Math.max(value, minPoints), maxPoints));
-  };
-
-  // Check if rank has points system (Mythic and above)
-  const rankHasPoints = (rank: Rank | null): boolean => {
-    if (!rank) return false;
-    return Boolean(rank.points) || Boolean(rank.id === "mythic" && rank.subdivisions?.[0]?.points);
-  };
-
-  // Determine which ranks should be disabled for target selection
-  const getDisabledTargetRanks = () => {
-    if (!currentRank) return [];
-    
-    // If current rank has subdivisions selected, we need to disable:
-    // 1. All ranks with lower tier than current rank
-    // 2. Current rank's subdivisions that are lower than or equal to selected subdivision
-    return availableRanks.filter(rank => {
-      // Filter out lower tier ranks
-      if (rank.tier < currentRank.tier) return true;
-      
-      // If same rank, filter out same or lower subdivisions
-      if (rank.id === currentRank.id) {
-        if (!rank.subdivisions) return true;
-        // This rank would be completely disabled if not using subdivisions
-        return true;
-      }
-      
-      return false;
-    });
-  };
+  const {
+    availableRanks,
+    currentSubdivision,
+    targetSubdivision,
+    currentStars,
+    targetStars,
+    currentMythicPoints,
+    targetMythicPoints,
+    handleCurrentRankSelect,
+    handleTargetRankSelect,
+    handleCurrentStarsChange,
+    handleTargetStarsChange,
+    handleCurrentMythicPointsChange,
+    handleTargetMythicPointsChange,
+    rankHasPoints,
+    getDisabledTargetRanks
+  } = useRankSelection({
+    currentRank,
+    targetRank,
+    setCurrentRank,
+    setTargetRank
+  });
 
   return (
     <section
@@ -167,67 +72,19 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
         
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
           {/* Current Rank Selector */}
-          <div className="md:col-span-5">
-            <RankSelector
-              label="Current Rank"
-              selectedRank={currentRank}
-              onRankSelect={handleCurrentRankSelect}
-              disabledRanks={[]}
-              animationDelay={200}
-              ranks={availableRanks}
-            />
-
-            {/* Current Stars Input for Legend rank */}
-            {currentRank && currentRank.id === "legend" && (
-              <div className="mt-4 glass-panel p-4 animate-fade-in">
-                <label className="block text-sm text-mlbb-lightpurple mb-2">
-                  Current Stars
-                </label>
-                <Input
-                  type="number"
-                  min="0"
-                  max="5"
-                  value={currentStars}
-                  onChange={handleCurrentStarsChange}
-                  className="bg-black/20 border-mlbb-purple/30 text-white"
-                />
-                <div className="flex items-center mt-2 text-xs text-gray-400">
-                  <div className="flex items-center">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <span 
-                        key={i} 
-                        className={`w-4 h-4 mx-0.5 rounded-full ${i < currentStars ? 'bg-mlbb-gold' : 'bg-gray-700'}`}
-                      />
-                    ))}
-                  </div>
-                  <span className="ml-2">{currentStars}/5</span>
-                </div>
-              </div>
-            )}
-
-            {/* Current Mythic Points Input */}
-            {currentRank && rankHasPoints(currentRank) && (
-              <div className="mt-4 glass-panel p-4 animate-fade-in">
-                <label className="block text-sm text-mlbb-lightpurple mb-2">
-                  Current Points
-                </label>
-                <Input
-                  type="number"
-                  min={currentRank?.points?.min || 0}
-                  max={currentRank?.points?.max || 999}
-                  value={currentMythicPoints}
-                  onChange={handleCurrentMythicPointsChange}
-                  className="bg-black/20 border-mlbb-purple/30 text-white"
-                />
-                <div className="mt-2 text-xs text-gray-400">
-                  {currentRank?.id === "mythic" ? "Mythic Points" : 
-                   currentRank?.id === "mythic-honor" ? "Mythic Honor Points" : 
-                   currentRank?.id === "mythical-glory" ? "Mythical Glory Points" : 
-                   "Immortal Points"}
-                </div>
-              </div>
-            )}
-          </div>
+          <RankSelectColumn 
+            label="Current Rank"
+            selectedRank={currentRank}
+            onRankSelect={handleCurrentRankSelect}
+            disabledRanks={[]}
+            animationDelay={200}
+            availableRanks={availableRanks}
+            stars={currentStars}
+            onStarsChange={handleCurrentStarsChange}
+            points={currentMythicPoints}
+            onPointsChange={handleCurrentMythicPointsChange}
+            rankHasPoints={rankHasPoints}
+          />
           
           {/* Arrow - vertical on mobile, horizontal on desktop */}
           <div className="md:col-span-2 flex items-center justify-center py-2 md:py-0">
@@ -238,67 +95,19 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
           </div>
           
           {/* Target Rank Selector */}
-          <div className="md:col-span-5">
-            <RankSelector
-              label="Desired Rank"
-              selectedRank={targetRank}
-              onRankSelect={handleTargetRankSelect}
-              disabledRanks={getDisabledTargetRanks()}
-              animationDelay={400}
-              ranks={availableRanks}
-            />
-
-            {/* Target Stars Input for Legend rank */}
-            {targetRank && targetRank.id === "legend" && (
-              <div className="mt-4 glass-panel p-4 animate-fade-in">
-                <label className="block text-sm text-mlbb-lightpurple mb-2">
-                  Desired Stars
-                </label>
-                <Input
-                  type="number"
-                  min="0"
-                  max="5"
-                  value={targetStars}
-                  onChange={handleTargetStarsChange}
-                  className="bg-black/20 border-mlbb-purple/30 text-white"
-                />
-                <div className="flex items-center mt-2 text-xs text-gray-400">
-                  <div className="flex items-center">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <span 
-                        key={i} 
-                        className={`w-4 h-4 mx-0.5 rounded-full ${i < targetStars ? 'bg-mlbb-gold' : 'bg-gray-700'}`}
-                      />
-                    ))}
-                  </div>
-                  <span className="ml-2">{targetStars}/5</span>
-                </div>
-              </div>
-            )}
-
-            {/* Target Mythic Points Input */}
-            {targetRank && rankHasPoints(targetRank) && (
-              <div className="mt-4 glass-panel p-4 animate-fade-in">
-                <label className="block text-sm text-mlbb-lightpurple mb-2">
-                  Desired Points
-                </label>
-                <Input
-                  type="number"
-                  min={targetRank?.points?.min || 0}
-                  max={targetRank?.points?.max || 999}
-                  value={targetMythicPoints}
-                  onChange={handleTargetMythicPointsChange}
-                  className="bg-black/20 border-mlbb-purple/30 text-white"
-                />
-                <div className="mt-2 text-xs text-gray-400">
-                  {targetRank?.id === "mythic" ? "Mythic Points" : 
-                   targetRank?.id === "mythic-honor" ? "Mythic Honor Points" : 
-                   targetRank?.id === "mythical-glory" ? "Mythical Glory Points" : 
-                   "Immortal Points"}
-                </div>
-              </div>
-            )}
-          </div>
+          <RankSelectColumn 
+            label="Desired Rank"
+            selectedRank={targetRank}
+            onRankSelect={handleTargetRankSelect}
+            disabledRanks={getDisabledTargetRanks()}
+            animationDelay={400}
+            availableRanks={availableRanks}
+            stars={targetStars}
+            onStarsChange={handleTargetStarsChange}
+            points={targetMythicPoints}
+            onPointsChange={handleTargetMythicPointsChange}
+            rankHasPoints={rankHasPoints}
+          />
         </div>
         
         {/* Pricing Card */}
