@@ -1,92 +1,65 @@
 
-import React, { useEffect } from 'react';
-import HeroSection from '@/components/HeroSection';
-import WhyChooseUs from '@/components/WhyChooseUs';
-import ContactSection from '@/components/ContactSection';
-import Footer from '@/components/Footer';
-import DiscordCommunity from '@/components/DiscordCommunity';
-import { useInView } from 'react-intersection-observer';
-import RankSelectionSection from '@/components/RankSelectionSection';
-import MMRBoostingSection from '@/components/MMRBoostingSection';
-import { Rank } from '@/data/ranks';
-import { initializeRanksWithCorrectStars } from '@/data/rankInitializer';
-import NavBar from '@/components/NavBar';
+import React, { useRef } from "react";
+import { useInView } from "react-intersection-observer";
+import NavBar from "@/components/NavBar";
+import Footer from "@/components/Footer";
+import HeroSection from "@/components/HeroSection";
+import RankSelectionSection from "@/components/RankSelectionSection";
+import WhyChooseUs from "@/components/WhyChooseUs";
+import ContactSection from "@/components/ContactSection";
+import MMRBoostingSection from "@/components/MMRBoostingSection";
+import DiscordCommunity from "@/components/DiscordCommunity";
+import LiveChat from "@/components/LiveChat";
 
-export default function Index() {
-  const [whyChooseUsRef, whyChooseUsInView] = useInView({
+const Index: React.FC = () => {
+  const { ref: discordRef, inView: discordInView } = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
-
-  const [rankSectionRef, rankSectionInView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
-
-  const [mmrBoostingRef, mmrBoostingInView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
-
-  const [discordRef, discordInView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
-
-  const [contactRef, contactInView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
-  
-  const [currentRank, setCurrentRank] = React.useState<Rank | null>(null);
-  const [targetRank, setTargetRank] = React.useState<Rank | null>(null);
-
-  // Initialize ranks when the page loads
-  useEffect(() => {
-    // Initialize ranks with correct star counts
-    initializeRanksWithCorrectStars();
-  }, []);
-
-  const handleCurrentRankSelect = (rank: Rank, subdivisionIndex?: number) => {
-    setCurrentRank(rank);
-  };
-
-  const handleTargetRankSelect = (rank: Rank, subdivisionIndex?: number) => {
-    setTargetRank(rank);
-  };
 
   return (
-    <div className="bg-mlbb-dark min-h-screen text-white">
+    <div className="min-h-screen bg-black text-white">
       <NavBar />
-      <HeroSection />
       
-      <div ref={whyChooseUsRef}>
-        <WhyChooseUs isIntersecting={whyChooseUsInView} />
-      </div>
+      <main>
+        <section id="home">
+          <HeroSection />
+        </section>
+        
+        <section id="ranks" className="py-16 md:py-24">
+          <RankSelectionSection />
+        </section>
+        
+        <section id="mmrboost" className="py-16 md:py-24 bg-gradient-to-b from-black to-gray-900">
+          <MMRBoostingSection />
+        </section>
+        
+        <section id="about" className="py-16 md:py-24">
+          <WhyChooseUs />
+        </section>
+        
+        <section 
+          id="community" 
+          className="py-16 md:py-24 bg-gradient-to-b from-gray-900 to-black"
+          ref={discordRef}
+        >
+          <div className="container mx-auto px-4">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-12">
+              Join Our Community
+            </h2>
+            <DiscordCommunity isIntersecting={discordInView} />
+          </div>
+        </section>
+        
+        <section id="contact" className="py-16 md:py-24">
+          <ContactSection />
+        </section>
+      </main>
       
-      <div ref={rankSectionRef}>
-        <RankSelectionSection 
-          isIntersecting={rankSectionInView}
-          currentRank={currentRank}
-          setCurrentRank={handleCurrentRankSelect}
-          targetRank={targetRank}
-          setTargetRank={handleTargetRankSelect}
-        />
-      </div>
-      
-      <div ref={mmrBoostingRef}>
-        <MMRBoostingSection isIntersecting={mmrBoostingInView} />
-      </div>
-      
-      <div ref={discordRef}>
-        <DiscordCommunity />
-      </div>
-      
-      <div ref={contactRef}>
-        <ContactSection />
-      </div>
-
+      <LiveChat />
       <Footer />
     </div>
   );
-}
+};
+
+export default Index;

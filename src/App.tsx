@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminPriceManagerPage from "./pages/AdminPriceManagerPage";
+import AdminChatPage from "./pages/AdminChatPage";
 import Auth from "./pages/Auth";
 import { AuthProvider } from "./hooks/useAuth";
 import React from "react";
@@ -31,6 +32,7 @@ const App = () => {
               <Route path="/admin/login" element={<Admin />} />
               <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
               <Route path="/admin/prices" element={<AdminPriceManagerPage />} />
+              <Route path="/admin/chat" element={<AdminChatPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

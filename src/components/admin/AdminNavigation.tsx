@@ -1,42 +1,53 @@
 
 import React from "react";
-import { NavLink } from "react-router-dom";
-import { Home, DollarSign } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { Link, useLocation } from "react-router-dom";
+import { BarChart, DollarSign, MessageSquare } from "lucide-react";
 
 const AdminNavigation: React.FC = () => {
-  const isMobile = useIsMobile();
-
+  const location = useLocation();
+  
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
+  
   return (
-    <div className="glass-panel p-4">
+    <div className="glass-panel p-2 rounded-lg">
       <nav className="flex flex-wrap gap-2">
-        <NavLink
+        <Link
           to="/admin/dashboard"
-          className={({ isActive }) =>
-            `flex items-center px-4 py-2 rounded-md w-full sm:w-auto ${
-              isActive
-                ? "bg-mlbb-purple text-white"
-                : "bg-black/40 text-gray-300 hover:bg-mlbb-purple/20"
-            }`
-          }
+          className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+            isActive("/admin/dashboard")
+              ? "bg-mlbb-purple/20 text-white"
+              : "hover:bg-gray-800/50 text-gray-300 hover:text-white"
+          }`}
         >
-          <Home className="h-4 w-4 mr-2" />
-          Dashboard
-        </NavLink>
+          <BarChart className="h-4 w-4" />
+          <span>Dashboard</span>
+        </Link>
         
-        <NavLink
+        <Link
           to="/admin/prices"
-          className={({ isActive }) =>
-            `flex items-center px-4 py-2 rounded-md w-full sm:w-auto ${
-              isActive
-                ? "bg-mlbb-purple text-white"
-                : "bg-black/40 text-gray-300 hover:bg-mlbb-purple/20"
-            }`
-          }
+          className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+            isActive("/admin/prices")
+              ? "bg-mlbb-purple/20 text-white"
+              : "hover:bg-gray-800/50 text-gray-300 hover:text-white"
+          }`}
         >
-          <DollarSign className="h-4 w-4 mr-2" />
-          Pricing
-        </NavLink>
+          <DollarSign className="h-4 w-4" />
+          <span>Pricing</span>
+        </Link>
+        
+        <Link
+          to="/admin/chat"
+          className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+            isActive("/admin/chat")
+              ? "bg-mlbb-purple/20 text-white"
+              : "hover:bg-gray-800/50 text-gray-300 hover:text-white"
+          }`}
+        >
+          <MessageSquare className="h-4 w-4" />
+          <span>Live Chat</span>
+        </Link>
       </nav>
     </div>
   );
