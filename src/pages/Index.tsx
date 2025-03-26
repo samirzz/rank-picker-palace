@@ -23,6 +23,11 @@ const Index: React.FC = () => {
     threshold: 0.1,
   });
   
+  const { ref: mmrRef, inView: mmrInView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+  
   const [currentRank, setCurrentRank] = useState<Rank | null>(null);
   const [targetRank, setTargetRank] = useState<Rank | null>(null);
   
@@ -53,8 +58,8 @@ const Index: React.FC = () => {
           />
         </section>
         
-        <section id="mmrboost" className="py-16 md:py-24 bg-gradient-to-b from-black to-gray-900">
-          <MMRBoostingSection />
+        <section id="mmrboost" className="py-16 md:py-24 bg-gradient-to-b from-black to-gray-900" ref={mmrRef}>
+          <MMRBoostingSection isIntersecting={mmrInView} />
         </section>
         
         <section id="about" className="py-16 md:py-24">

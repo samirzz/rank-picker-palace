@@ -11,7 +11,7 @@ interface MMRBoostingSectionProps {
 }
 
 const MMRBoostingSection: React.FC<MMRBoostingSectionProps> = ({ 
-  isIntersecting = false 
+  isIntersecting = true  // Default to true to ensure visibility if not provided
 }) => {
   const {
     form,
