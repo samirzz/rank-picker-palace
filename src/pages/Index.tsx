@@ -1,5 +1,5 @@
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
@@ -16,6 +16,10 @@ const Index: React.FC = () => {
     triggerOnce: true,
     threshold: 0.1,
   });
+  
+  // Add required state for RankSelectionSection props
+  const [currentRank, setCurrentRank] = useState("");
+  const [targetRank, setTargetRank] = useState("");
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -27,7 +31,13 @@ const Index: React.FC = () => {
         </section>
         
         <section id="ranks" className="py-16 md:py-24">
-          <RankSelectionSection />
+          <RankSelectionSection 
+            isIntersecting={true}
+            currentRank={currentRank}
+            setCurrentRank={setCurrentRank}
+            targetRank={targetRank}
+            setTargetRank={setTargetRank}
+          />
         </section>
         
         <section id="mmrboost" className="py-16 md:py-24 bg-gradient-to-b from-black to-gray-900">
