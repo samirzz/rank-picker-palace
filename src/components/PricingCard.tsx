@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { calculatePrice } from "@/data/ranks";
-import type { Rank } from "@/data/ranks";
+import type { Rank } from "@/data/ranks/types";
 import { CheckCircle, ChevronDown, ChevronUp, Lock } from "lucide-react";
 import PaymentMethods from "./payments/PaymentMethods";
 import { useToast } from "@/hooks/use-toast";

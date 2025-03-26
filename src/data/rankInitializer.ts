@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { originalRanks } from "./ranks";
+import { originalRanks } from "./ranks/constants";
 
 export const initializeRanksWithCorrectStars = async (): Promise<void> => {
   try {

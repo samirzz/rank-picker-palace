@@ -1,7 +1,7 @@
 
 import React from "react";
 import { ChevronDown } from "lucide-react";
-import { Rank } from "@/data/ranks";
+import { Rank } from "@/data/ranks/types";
 import SubdivisionItem from "./SubdivisionItem";
 
 interface SubdivisionsDropdownProps {

@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Rank } from "@/data/ranks";
+import { Rank } from "@/data/ranks/types";
 import { ArrowRight, ArrowDown } from "lucide-react";
 import PricingCard from "@/components/PricingCard";
 import { useRankSelection } from "@/hooks/useRankSelection";

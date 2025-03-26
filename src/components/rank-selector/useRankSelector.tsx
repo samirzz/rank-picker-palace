@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { Rank } from "@/data/ranks";
+import { Rank } from "@/data/ranks/types";
 
 interface UseRankSelectorProps {
   label: string;

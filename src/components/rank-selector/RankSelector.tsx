@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Rank } from "@/data/ranks";
+import { Rank } from "@/data/ranks/types";
 import { useRankSelector } from "./useRankSelector";
 import RankSelectorHeader from "./RankSelectorHeader";
 import RanksDropdown from "./RanksDropdown";

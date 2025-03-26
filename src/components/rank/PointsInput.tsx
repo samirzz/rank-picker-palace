@@ -1,7 +1,6 @@
-
 import React from "react";
 import { Input } from "@/components/ui/input";
-import { Rank } from "@/data/ranks";
+import { Rank } from "@/data/ranks/types";
 
 interface PointsInputProps {
   label: string;

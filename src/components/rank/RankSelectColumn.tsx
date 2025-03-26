@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Rank } from "@/data/ranks";
+import { Rank } from "@/data/ranks/types";
 import RankSelector from "@/components/rank-selector/RankSelector";
 import StarsInput from "./StarsInput";
 import PointsInput from "./PointsInput";

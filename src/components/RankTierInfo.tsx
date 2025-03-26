@@ -1,7 +1,6 @@
-
 import React from "react";
 import { Star } from "lucide-react";
-import { Rank, RankSubdivision } from "@/data/ranks";
+import { Rank, RankSubdivision } from "@/data/ranks/types";
 
 interface RankTierInfoProps {
   rank: Rank;

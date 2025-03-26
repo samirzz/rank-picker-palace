@@ -6,18 +6,17 @@ import PriceEditor from "./PriceEditor";
 import CombinationPriceEditor from "./CombinationPriceEditor";
 import HeroManager from "./HeroManager";
 import DiscordLinkEditor from "./DiscordLinkEditor";
-import { ranks as initialRanks, getAdminRanks } from "@/data/ranks";
+import { getAdminRanks } from "@/data/ranks";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AdminDashboard: React.FC = () => {
-  const [ranks, setRanks] = useState(initialRanks);
+  const [ranks, setRanks] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load ranks from Supabase
     const loadRanks = async () => {
       try {
         setLoading(true);

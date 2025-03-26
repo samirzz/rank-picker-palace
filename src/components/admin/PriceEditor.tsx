@@ -34,7 +34,6 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
   }, [toast]);
 
   useEffect(() => {
-    // Update local state when prop changes
     if (ranks && ranks.length > 0) {
       console.log("Setting edited ranks from props:", ranks);
       setEditedRanks([...ranks]);
@@ -85,19 +84,15 @@ const PriceEditor: React.FC<PriceEditorProps> = ({ ranks, onSave }) => {
     setLoading(true);
     
     try {
-      // Save base price to database
       await saveBasePrice(basePrice);
       
-      // Save ranks to database
       await saveAdminRanks(editedRanks);
       
-      // Trigger a custom event to notify other components of the price change
       const priceChangeEvent = new CustomEvent('adminPriceChange', {
         detail: { ranks: editedRanks, basePrice }
       });
       window.dispatchEvent(priceChangeEvent);
       
-      // Call the onSave prop
       onSave(editedRanks);
       
       toast({
