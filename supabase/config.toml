@@ -73,7 +73,7 @@ url = ""
 
 [functions]
 # Port for Functions server. For local development only.
-port = 54321
+serve_port = 54321
 
 [analytics]
 enabled = false
