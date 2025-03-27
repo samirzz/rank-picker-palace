@@ -47,9 +47,6 @@ const Index: React.FC = () => {
         <section id="home">
           <HeroSection />
         </section>
-
-
-        <p>Hello samir</p>
         
         <section id="ranks" className="py-16 md:py-24" ref={rankRef}>
           <RankSelectionSection 

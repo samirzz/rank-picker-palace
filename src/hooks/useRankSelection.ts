@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Rank, getAdminRanks } from "@/data/ranks";
+import { Rank, initializeRanks } from "@/data/ranks";
 
 interface UseRankSelectionProps {
   currentRank: Rank | null;
@@ -23,39 +23,43 @@ export const useRankSelection = ({
   const [currentMythicPoints, setCurrentMythicPoints] = useState(0);
   const [targetMythicPoints, setTargetMythicPoints] = useState(0);
 
-  // Update ranks when admin changes prices
+  // Load ranks on initial render
   useEffect(() => {
-    const handleAdminPriceChange = async () => {
+    const loadRanks = async () => {
       try {
-        const updatedRanks = await getAdminRanks();
-        setAvailableRanks(updatedRanks);
+        console.log('Loading ranks in useRankSelection');
+        const loadedRanks = await initializeRanks();
+        console.log(`Loaded ${loadedRanks.length} ranks`);
+        setAvailableRanks([...loadedRanks]);
         
-        // Update current and target ranks with new price modifiers if they exist
+        // Update current and target ranks if they exist
         if (currentRank) {
-          const updatedCurrentRank = updatedRanks.find(rank => rank.id === currentRank.id);
+          const updatedCurrentRank = loadedRanks.find(rank => rank.id === currentRank.id);
           if (updatedCurrentRank) {
             setCurrentRank(updatedCurrentRank, currentSubdivision);
           }
         }
         
         if (targetRank) {
-          const updatedTargetRank = updatedRanks.find(rank => rank.id === targetRank.id);
+          const updatedTargetRank = loadedRanks.find(rank => rank.id === targetRank.id);
           if (updatedTargetRank) {
             setTargetRank(updatedTargetRank, targetSubdivision);
           }
         }
       } catch (error) {
-        console.error("Error updating ranks:", error);
+        console.error("Error loading ranks:", error);
       }
     };
 
-    // Initial load
-    handleAdminPriceChange();
+    loadRanks();
 
-    // Listen for the custom event
+    // Listen for admin price changes
+    const handleAdminPriceChange = () => {
+      loadRanks();
+    };
+    
     window.addEventListener('adminPriceChange', handleAdminPriceChange);
     
-    // Cleanup
     return () => {
       window.removeEventListener('adminPriceChange', handleAdminPriceChange);
     };
