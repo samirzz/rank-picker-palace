@@ -4,7 +4,7 @@ import { Rank } from "@/data/ranks/types";
 import { ArrowRight, ArrowDown } from "lucide-react";
 import PricingCard from "@/components/pricing/PricingCard";
 import { useRankSelection } from "@/hooks/useRankSelection";
-import RankSelectColumn from "./rank/RankSelectColumn";
+import ThreeColumnRankSelector from "./rank/ThreeColumnRankSelector";
 
 interface RankSelectionSectionProps {
   isIntersecting: boolean;
@@ -45,6 +45,19 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
     setTargetRank
   });
 
+  // Add handlers for subdivision selection
+  const handleCurrentSubdivisionSelect = (subdivisionIndex: number) => {
+    if (currentRank) {
+      handleCurrentRankSelect(currentRank, subdivisionIndex);
+    }
+  };
+
+  const handleTargetSubdivisionSelect = (subdivisionIndex: number) => {
+    if (targetRank) {
+      handleTargetRankSelect(targetRank, subdivisionIndex);
+    }
+  };
+
   return (
     <section
       id="ranks"
@@ -72,21 +85,25 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
-          {/* Current Rank Selector */}
-          <RankSelectColumn 
-            label="Current Rank"
-            selectedRank={currentRank}
-            onRankSelect={handleCurrentRankSelect}
-            disabledRanks={[]}
-            animationDelay={200}
-            availableRanks={availableRanks}
-            stars={currentStars}
-            onStarsChange={handleCurrentStarsChange}
-            points={currentMythicPoints}
-            onPointsChange={handleCurrentMythicPointsChange}
-            rankHasPoints={rankHasPoints}
-            rankHasStars={rankHasStars}
-          />
+          {/* Current Rank Selector - Three Column Layout */}
+          <div className="md:col-span-5">
+            <ThreeColumnRankSelector
+              label="Current Rank"
+              availableRanks={availableRanks}
+              selectedRank={currentRank}
+              selectedSubdivision={currentSubdivision}
+              stars={currentStars}
+              points={currentMythicPoints}
+              onRankSelect={(rank) => handleCurrentRankSelect(rank, 0)}
+              onSubdivisionSelect={handleCurrentSubdivisionSelect}
+              onStarsChange={handleCurrentStarsChange}
+              onPointsChange={handleCurrentMythicPointsChange}
+              disabledRanks={[]}
+              rankHasPoints={rankHasPoints}
+              rankHasStars={rankHasStars}
+              animationDelay={200}
+            />
+          </div>
           
           {/* Arrow - vertical on mobile, horizontal on desktop */}
           <div className="md:col-span-2 flex items-center justify-center py-2 md:py-0">
@@ -96,24 +113,28 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
             </div>
           </div>
           
-          {/* Target Rank Selector */}
-          <RankSelectColumn 
-            label="Desired Rank"
-            selectedRank={targetRank}
-            onRankSelect={handleTargetRankSelect}
-            disabledRanks={getDisabledTargetRanks()}
-            animationDelay={400}
-            availableRanks={availableRanks}
-            stars={targetStars}
-            onStarsChange={handleTargetStarsChange}
-            points={targetMythicPoints}
-            onPointsChange={handleTargetMythicPointsChange}
-            rankHasPoints={rankHasPoints}
-            rankHasStars={rankHasStars}
-          />
+          {/* Target Rank Selector - Three Column Layout */}
+          <div className="md:col-span-5">
+            <ThreeColumnRankSelector
+              label="Desired Rank"
+              availableRanks={availableRanks}
+              selectedRank={targetRank}
+              selectedSubdivision={targetSubdivision}
+              stars={targetStars}
+              points={targetMythicPoints}
+              onRankSelect={(rank) => handleTargetRankSelect(rank, 0)}
+              onSubdivisionSelect={handleTargetSubdivisionSelect}
+              onStarsChange={handleTargetStarsChange}
+              onPointsChange={handleTargetMythicPointsChange}
+              disabledRanks={getDisabledTargetRanks()}
+              rankHasPoints={rankHasPoints}
+              rankHasStars={rankHasStars}
+              animationDelay={400}
+            />
+          </div>
         </div>
         
-        {/* Pricing Card - moved to its own row */}
+        {/* Pricing Card - moved to its own row with clear vertical spacing */}
         <div className="mt-12 md:mt-16 mx-auto max-w-full md:max-w-md">
           <PricingCard
             currentRank={currentRank}

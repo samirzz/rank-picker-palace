@@ -18,6 +18,7 @@ interface RankSelectColumnProps {
   onPointsChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   rankHasPoints: (rank: Rank | null) => boolean;
   rankHasStars: (rank: Rank | null) => boolean;
+  className?: string; // Added className prop for more flexible positioning
 }
 
 const RankSelectColumn: React.FC<RankSelectColumnProps> = ({
@@ -32,7 +33,8 @@ const RankSelectColumn: React.FC<RankSelectColumnProps> = ({
   points,
   onPointsChange,
   rankHasPoints,
-  rankHasStars
+  rankHasStars,
+  className = ""
 }) => {
   // Determine max stars for the selected rank subdivision
   const getMaxStars = () => {
@@ -42,7 +44,7 @@ const RankSelectColumn: React.FC<RankSelectColumnProps> = ({
   };
 
   return (
-    <div className="md:col-span-5">
+    <div className={`flex flex-col ${className}`}>
       <RankSelector
         label={label}
         selectedRank={selectedRank}
