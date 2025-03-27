@@ -64,7 +64,9 @@ export async function createOrder(orderData: OrderData, userId: string, userEmai
 
     try {
       // Send confirmation email with a timeout
-      const emailPromise = sendOrderConfirmationEmail({
+      console.log("Sending order confirmation email...");
+      
+      const emailDetails = {
         id: orderRecord.id,
         orderNumber,
         customerName: orderData.customerName || userEmail.split("@")[0],
@@ -79,14 +81,20 @@ export async function createOrder(orderData: OrderData, userId: string, userEmai
         discordInviteLink: config.discord_invite_link || "https://discord.gg/example",
         companyName: config.company_name || "MLBooster",
         supportEmail: config.support_email || "support@mlbooster.com",
-      });
+      };
+      
+      console.log("Email details:", JSON.stringify(emailDetails, null, 2));
+      
+      const emailPromise = sendOrderConfirmationEmail(emailDetails);
 
       // Set a timeout for email sending
       const timeoutPromise = new Promise<boolean>((resolve) => 
-        setTimeout(() => resolve(false), 5000) // 5 second timeout
+        setTimeout(() => resolve(false), 10000) // 10 second timeout
       );
 
       const emailSent = await Promise.race([emailPromise, timeoutPromise]);
+      
+      console.log("Email sent result:", emailSent);
 
       if (!emailSent) {
         console.warn("Email sending timed out or failed");

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { calculatePrice } from "@/data/ranks";
 import type { Rank } from "@/data/ranks/types";
@@ -33,6 +32,7 @@ export const usePricingCard = ({
   const [price, setPrice] = useState<number | null>(null);
   const [showPayment, setShowPayment] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
+  const [emailSent, setEmailSent] = useState(true);
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -119,6 +119,7 @@ export const usePricingCard = ({
         throw new Error("Missing required order information");
       }
       
+      console.log("Creating order...");
       const result = await createOrder({
         orderType: "rank",
         currentRank,
@@ -129,15 +130,21 @@ export const usePricingCard = ({
         customerName: user?.email?.split("@")[0]
       });
 
+      console.log("Order creation result:", result);
+
       if (!result.success) {
         throw new Error("Failed to process order");
       }
 
+      setEmailSent(result.emailSent || false);
       setShowPayment(false);
       setOrderComplete(true);
+      
       toast({
         title: "Order Confirmed",
-        description: "Thank you for your order! Check your email for confirmation details.",
+        description: result.emailSent 
+          ? "Thank you for your order! Check your email for confirmation details." 
+          : "Thank you for your order! Your order was created, but we couldn't send a confirmation email.",
       });
     } catch (error) {
       console.error("Order processing error:", error);
@@ -202,6 +209,7 @@ export const usePricingCard = ({
     getEstimatedTime,
     user,
     isProcessing,
+    emailSent,
     canCalculatePrice: currentRank && targetRank && price !== null && price > 0
   };
 };

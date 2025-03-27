@@ -46,7 +46,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
     getEstimatedTime,
     user,
     isProcessing,
-    canCalculatePrice
+    canCalculatePrice,
+    emailSent
   } = usePricingCard({
     currentRank,
     targetRank,
@@ -74,7 +75,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
               />
               
               {orderComplete ? (
-                <OrderConfirmation />
+                <OrderConfirmation emailSent={emailSent} />
               ) : (
                 <CheckoutButton
                   onProceedToCheckout={handleProceedToCheckout}
