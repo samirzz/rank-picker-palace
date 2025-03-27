@@ -113,8 +113,8 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
           />
         </div>
         
-        {/* Pricing Card */}
-        <div className="mt-8 md:mt-12 mx-auto max-w-full md:max-w-md">
+        {/* Pricing Card - moved to its own row */}
+        <div className="mt-12 md:mt-16 mx-auto max-w-full md:max-w-md">
           <PricingCard
             currentRank={currentRank}
             targetRank={targetRank}

@@ -8,16 +8,18 @@ interface StarsInputProps {
   value: number;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   maxStars?: number;
+  className?: string;
 }
 
 const StarsInput: React.FC<StarsInputProps> = ({ 
   label, 
   value, 
   onChange,
-  maxStars = 5 
+  maxStars = 5,
+  className = ""
 }) => {
   return (
-    <div className="mt-4 glass-panel p-4 animate-fade-in">
+    <div className={`mt-4 glass-panel p-4 animate-fade-in ${className}`}>
       <label className="block text-sm text-mlbb-lightpurple mb-2">
         {label}
       </label>

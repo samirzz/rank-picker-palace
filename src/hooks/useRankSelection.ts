@@ -68,15 +68,41 @@ export const useRankSelection = ({
   const handleCurrentRankSelect = (rank: Rank, subdivisionIndex: number = 0) => {
     setCurrentRank(rank);
     setCurrentSubdivision(subdivisionIndex);
-    setCurrentStars(0); // Reset stars when changing rank
-    setCurrentMythicPoints(0); // Reset mythic points when changing rank
+    
+    // Instead of resetting stars, update them to the maximum for this rank if needed
+    const maxStars = getMaxStarsForRank(rank);
+    if (currentStars > maxStars) {
+      setCurrentStars(maxStars);
+    } else if (currentStars === 0) {
+      // Only set default stars if it was previously 0
+      setCurrentStars(0);
+    }
+    
+    if (rankHasPoints(rank)) {
+      setCurrentMythicPoints(rank.points?.min || 0);
+    } else {
+      setCurrentMythicPoints(0);
+    }
   };
 
   const handleTargetRankSelect = (rank: Rank, subdivisionIndex: number = 0) => {
     setTargetRank(rank);
     setTargetSubdivision(subdivisionIndex);
-    setTargetStars(0); // Reset stars when changing rank
-    setTargetMythicPoints(0); // Reset mythic points when changing rank
+    
+    // Instead of resetting stars, update them to the maximum for this rank if needed
+    const maxStars = getMaxStarsForRank(rank);
+    if (targetStars > maxStars) {
+      setTargetStars(maxStars);
+    } else if (targetStars === 0) {
+      // For target rank, set to max stars by default
+      setTargetStars(maxStars);
+    }
+    
+    if (rankHasPoints(rank)) {
+      setTargetMythicPoints(rank.points?.min || 0);
+    } else {
+      setTargetMythicPoints(0);
+    }
   };
 
   // Handle current stars input change
@@ -124,13 +150,11 @@ export const useRankSelection = ({
     return Boolean(rank.points) || Boolean(rank.id === "mythic" && rank.subdivisions?.[0]?.points);
   };
 
-  // Check if rank has stars system (Warrior through Legend)
+  // Check if rank has stars system (all ranks except those with points)
   const rankHasStars = (rank: Rank | null): boolean => {
     if (!rank) return false;
-    if (rank.id === "mythic" || rank.id === "mythic-honor" || rank.id === "mythical-glory" || rank.id === "immortal") {
-      return false;
-    }
-    return Boolean(rank.subdivisions && rank.subdivisions[0]?.stars);
+    // Ranks with points don't use the star system
+    return !rankHasPoints(rank);
   };
 
   // Determine which ranks should be disabled for target selection

@@ -52,13 +52,14 @@ const RankSelectColumn: React.FC<RankSelectColumnProps> = ({
         ranks={availableRanks}
       />
 
-      {/* Stars Input for ranks with stars */}
+      {/* Stars Input for all ranks except those with points */}
       {selectedRank && rankHasStars(selectedRank) && (
         <StarsInput 
           label={`${label === "Current Rank" ? "Current" : "Desired"} Stars`}
           value={stars}
           onChange={onStarsChange}
           maxStars={getMaxStars()}
+          className="mt-4"
         />
       )}
 
