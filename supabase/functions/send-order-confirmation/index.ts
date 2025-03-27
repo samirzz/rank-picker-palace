@@ -8,6 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 interface OrderDetails {
@@ -30,11 +31,14 @@ interface OrderDetails {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
+    console.log("Handling CORS preflight request");
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log("Processing order confirmation request");
     const orderDetails: OrderDetails = await req.json();
+    console.log("Order details received:", JSON.stringify(orderDetails, null, 2));
     
     // Generate the email content
     const emailContent = generateOrderConfirmationEmail(orderDetails);
@@ -58,6 +62,7 @@ serve(async (req) => {
       );
     }
 
+    console.log("Email sent successfully:", data);
     return new Response(
       JSON.stringify({ 
         success: true, 
