@@ -2,7 +2,7 @@
 import React from "react";
 import { Rank } from "@/data/ranks/types";
 import { ArrowRight, ArrowDown } from "lucide-react";
-import PricingCard from "@/components/PricingCard";
+import PricingCard from "@/components/pricing/PricingCard";
 import { useRankSelection } from "@/hooks/useRankSelection";
 import RankSelectColumn from "./rank/RankSelectColumn";
 
