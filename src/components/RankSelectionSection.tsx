@@ -36,6 +36,7 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
     handleCurrentMythicPointsChange,
     handleTargetMythicPointsChange,
     rankHasPoints,
+    rankHasStars,
     getDisabledTargetRanks
   } = useRankSelection({
     currentRank,
@@ -84,6 +85,7 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
             points={currentMythicPoints}
             onPointsChange={handleCurrentMythicPointsChange}
             rankHasPoints={rankHasPoints}
+            rankHasStars={rankHasStars}
           />
           
           {/* Arrow - vertical on mobile, horizontal on desktop */}
@@ -107,6 +109,7 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
             points={targetMythicPoints}
             onPointsChange={handleTargetMythicPointsChange}
             rankHasPoints={rankHasPoints}
+            rankHasStars={rankHasStars}
           />
         </div>
         

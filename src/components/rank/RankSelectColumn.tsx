@@ -17,6 +17,7 @@ interface RankSelectColumnProps {
   points: number;
   onPointsChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   rankHasPoints: (rank: Rank | null) => boolean;
+  rankHasStars: (rank: Rank | null) => boolean;
 }
 
 const RankSelectColumn: React.FC<RankSelectColumnProps> = ({
@@ -30,8 +31,16 @@ const RankSelectColumn: React.FC<RankSelectColumnProps> = ({
   onStarsChange,
   points,
   onPointsChange,
-  rankHasPoints
+  rankHasPoints,
+  rankHasStars
 }) => {
+  // Determine max stars for the selected rank subdivision
+  const getMaxStars = () => {
+    if (!selectedRank || !selectedRank.subdivisions) return 5;
+    const subdivision = selectedRank.subdivisions[0]; // Using first subdivision as reference
+    return subdivision.stars || 5;
+  };
+
   return (
     <div className="md:col-span-5">
       <RankSelector
@@ -43,12 +52,13 @@ const RankSelectColumn: React.FC<RankSelectColumnProps> = ({
         ranks={availableRanks}
       />
 
-      {/* Stars Input for Legend rank */}
-      {selectedRank && selectedRank.id === "legend" && (
+      {/* Stars Input for ranks with stars */}
+      {selectedRank && rankHasStars(selectedRank) && (
         <StarsInput 
           label={`${label === "Current Rank" ? "Current" : "Desired"} Stars`}
           value={stars}
           onChange={onStarsChange}
+          maxStars={getMaxStars()}
         />
       )}
 

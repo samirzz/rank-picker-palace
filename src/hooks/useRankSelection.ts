@@ -82,13 +82,22 @@ export const useRankSelection = ({
   // Handle current stars input change
   const handleCurrentStarsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value) || 0;
-    setCurrentStars(Math.min(Math.max(value, 0), 5)); // Limit between 0-5
+    const maxStars = getMaxStarsForRank(currentRank);
+    setCurrentStars(Math.min(Math.max(value, 0), maxStars)); // Limit between 0-maxStars
   };
 
   // Handle target stars input change
   const handleTargetStarsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value) || 0;
-    setTargetStars(Math.min(Math.max(value, 0), 5)); // Limit between 0-5
+    const maxStars = getMaxStarsForRank(targetRank);
+    setTargetStars(Math.min(Math.max(value, 0), maxStars)); // Limit between 0-maxStars
+  };
+
+  // Get the maximum stars for a given rank
+  const getMaxStarsForRank = (rank: Rank | null): number => {
+    if (!rank || !rank.subdivisions || rank.subdivisions.length === 0) return 5;
+    const subdivision = rank.subdivisions[0]; // Using first subdivision as reference
+    return subdivision.stars || 5;
   };
 
   // Handle current mythic points input change
@@ -113,6 +122,15 @@ export const useRankSelection = ({
   const rankHasPoints = (rank: Rank | null): boolean => {
     if (!rank) return false;
     return Boolean(rank.points) || Boolean(rank.id === "mythic" && rank.subdivisions?.[0]?.points);
+  };
+
+  // Check if rank has stars system (Warrior through Legend)
+  const rankHasStars = (rank: Rank | null): boolean => {
+    if (!rank) return false;
+    if (rank.id === "mythic" || rank.id === "mythic-honor" || rank.id === "mythical-glory" || rank.id === "immortal") {
+      return false;
+    }
+    return Boolean(rank.subdivisions && rank.subdivisions[0]?.stars);
   };
 
   // Determine which ranks should be disabled for target selection
@@ -152,6 +170,7 @@ export const useRankSelection = ({
     handleCurrentMythicPointsChange,
     handleTargetMythicPointsChange,
     rankHasPoints,
+    rankHasStars,
     getDisabledTargetRanks
   };
 };
