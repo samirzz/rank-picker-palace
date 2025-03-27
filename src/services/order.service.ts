@@ -87,9 +87,12 @@ export async function createOrder(orderData: OrderData, userId: string, userEmai
       
       const emailPromise = sendOrderConfirmationEmail(emailDetails);
 
-      // Set a timeout for email sending
+      // Set a timeout for email sending - increased to 20 seconds
       const timeoutPromise = new Promise<boolean>((resolve) => 
-        setTimeout(() => resolve(false), 10000) // 10 second timeout
+        setTimeout(() => {
+          console.log("Email sending timed out");
+          resolve(false);
+        }, 20000) // 20 second timeout
       );
 
       const emailSent = await Promise.race([emailPromise, timeoutPromise]);
