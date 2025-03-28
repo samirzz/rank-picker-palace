@@ -122,7 +122,7 @@ serve(async (req) => {
     </html>
     `;
 
-    // Now let's send the email using Nodemailer via SMTP
+    // Send email using SMTP
     try {
       console.log("Setting up SMTP client with Gmail");
       
