@@ -22,8 +22,14 @@ export async function sendOrderConfirmationEmail(details: OrderEmailDetails): Pr
   try {
     console.log("Sending order confirmation email with details:", JSON.stringify(details, null, 2));
     
+    // Make sure orderType is properly set to either "rank" or "mmr"
+    if (details.orderType !== "rank" && details.orderType !== "mmr") {
+      console.warn(`Invalid orderType: ${details.orderType}, defaulting to "rank"`);
+      details.orderType = details.heroName ? "mmr" : "rank";
+    }
+    
     const { data, error } = await supabase.functions.invoke('send-order-confirmation', {
-      body: details
+      body: details,
     });
     
     if (error) {

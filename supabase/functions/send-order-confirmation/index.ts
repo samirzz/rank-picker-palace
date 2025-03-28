@@ -5,6 +5,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS"
 };
 
 interface OrderEmailDetails {
@@ -25,11 +26,13 @@ interface OrderEmailDetails {
 }
 
 serve(async (req) => {
-  console.log("Order confirmation email function called");
+  console.log("Order confirmation email function called", req.method);
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log("Handling OPTIONS preflight request");
     return new Response(null, {
+      status: 204,
       headers: corsHeaders
     });
   }
@@ -111,9 +114,9 @@ serve(async (req) => {
 
     // Now let's send the email using Resend
     try {
+      console.log("Sending email to:", details.email);
       const resendUrl = "https://api.resend.com/emails";
       
-      console.log("Sending email to:", details.email);
       const emailData = {
         from: `${details.companyName} <onboarding@resend.dev>`,
         to: details.email,

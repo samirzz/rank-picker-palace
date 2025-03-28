@@ -63,8 +63,8 @@ const Checkout: React.FC = () => {
         throw new Error("Missing required order information");
       }
       
-      // Ensure orderType is correctly set
-      const orderType = orderData.hero ? "mmr" : "rank";
+      // Ensure orderType is correct and matches the expected type
+      const orderType: "rank" | "mmr" = orderData.hero ? "mmr" : "rank";
       console.log(`Creating ${orderType} order`);
       
       const orderRequest = {
@@ -159,33 +159,33 @@ const Checkout: React.FC = () => {
                   <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
                   
                   <div className="space-y-4">
-                    {orderData.orderType === "rank" ? (
+                    {orderData?.orderType === "rank" ? (
                       <div className="flex justify-between">
                         <span>Rank Boost:</span>
                         <span>
-                          {orderData.currentRank?.name} → {orderData.targetRank?.name}
+                          {orderData?.currentRank?.name} → {orderData?.targetRank?.name}
                         </span>
                       </div>
                     ) : (
                       <>
                         <div className="flex justify-between">
                           <span>Hero:</span>
-                          <span>{orderData.hero?.name}</span>
+                          <span>{orderData?.hero?.name}</span>
                         </div>
                         <div className="flex justify-between">
                           <span>MMR Boost:</span>
                           <span>
-                            {orderData.currentMMR} → {orderData.targetMMR}
+                            {orderData?.currentMMR} → {orderData?.targetMMR}
                           </span>
                         </div>
                       </>
                     )}
                     
-                    {orderData.options.filter(opt => opt.isActive).length > 0 && (
+                    {orderData?.options.filter(opt => opt.isActive).length > 0 && (
                       <div>
                         <div className="font-medium mb-2">Additional Services:</div>
                         <ul className="space-y-2">
-                          {orderData.options.filter(opt => opt.isActive).map(option => (
+                          {orderData?.options.filter(opt => opt.isActive).map(option => (
                             <li key={option.id} className="flex justify-between text-sm">
                               <span>{option.name}</span>
                               <span className="text-mlbb-gold">+{option.percentageIncrease}%</span>
@@ -198,7 +198,7 @@ const Checkout: React.FC = () => {
                     <div className="pt-4 border-t border-gray-700">
                       <div className="flex justify-between font-bold">
                         <span>Total Price:</span>
-                        <span className="text-mlbb-gold">${orderData.totalPrice?.toFixed(2)}</span>
+                        <span className="text-mlbb-gold">${orderData?.totalPrice?.toFixed(2)}</span>
                       </div>
                     </div>
                     
@@ -215,7 +215,7 @@ const Checkout: React.FC = () => {
                   <h2 className="text-xl font-semibold mb-6">Payment Method</h2>
                   
                   <PaymentMethods 
-                    amount={orderData.totalPrice || 0} 
+                    amount={orderData?.totalPrice || 0} 
                     onSuccess={handlePaymentSuccess}
                     onCancel={handleBack}
                   />

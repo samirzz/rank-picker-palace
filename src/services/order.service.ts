@@ -34,9 +34,9 @@ export async function createOrder(orderData: OrderData, userId: string, userEmai
       userEmail
     }, null, 2));
     
-    // Make sure orderType is set
-    if (!orderData.orderType) {
-      console.error("orderType is missing in orderData");
+    // Validate orderType
+    if (orderData.orderType !== "rank" && orderData.orderType !== "mmr") {
+      console.error(`Invalid orderType: ${orderData.orderType}, auto-detecting`);
       orderData.orderType = orderData.hero ? "mmr" : "rank";
       console.log("Auto-detected orderType:", orderData.orderType);
     }
@@ -52,7 +52,8 @@ export async function createOrder(orderData: OrderData, userId: string, userEmai
       hero_id: orderData.hero?.id,
       total_amount: orderData.totalAmount,
       email: userEmail,
-      customer_name: orderData.customerName || userEmail.split("@")[0]
+      customer_name: orderData.customerName || userEmail.split("@")[0],
+      order_number: orderNumber
     };
     
     console.log("Saving order to database with:", JSON.stringify(orderDataToSave, null, 2));
@@ -64,6 +65,8 @@ export async function createOrder(orderData: OrderData, userId: string, userEmai
       console.error("Error saving order:", saveError);
       throw saveError;
     }
+
+    console.log("Order saved successfully:", orderRecord);
 
     // Fetch necessary configuration for email
     const { data: configData, error: configError } = await supabase
