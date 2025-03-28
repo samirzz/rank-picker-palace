@@ -54,6 +54,7 @@ const Checkout: React.FC = () => {
     }
     
     setOrderData(location.state);
+    console.log("Checkout initialized with data:", JSON.stringify(location.state, null, 2));
   }, [location.state, navigate, toast]);
   
   const handlePaymentSuccess = async () => {
@@ -62,15 +63,19 @@ const Checkout: React.FC = () => {
         throw new Error("Missing required order information");
       }
       
+      // Ensure orderType is correctly set
+      const orderType = orderData.hero ? "mmr" : "rank";
+      console.log(`Creating ${orderType} order`);
+      
       const orderRequest = {
-        orderType: orderData.orderType,
+        orderType: orderType,
         totalAmount: orderData.totalPrice,
         customerName: user?.email?.split("@")[0],
         options: orderData.options.filter(opt => opt.isActive)
       };
       
       // Add rank-specific fields
-      if (orderData.orderType === "rank" && orderData.currentRank && orderData.targetRank) {
+      if (orderType === "rank" && orderData.currentRank && orderData.targetRank) {
         Object.assign(orderRequest, {
           currentRank: orderData.currentRank,
           targetRank: orderData.targetRank,
@@ -80,13 +85,15 @@ const Checkout: React.FC = () => {
       }
       
       // Add MMR-specific fields
-      if (orderData.orderType === "mmr" && orderData.hero) {
+      if (orderType === "mmr" && orderData.hero) {
         Object.assign(orderRequest, {
           hero: orderData.hero,
           currentMMR: orderData.currentMMR,
           targetMMR: orderData.targetMMR
         });
       }
+      
+      console.log("Submitting order request:", JSON.stringify(orderRequest, null, 2));
       
       const result = await createOrder(orderRequest);
       

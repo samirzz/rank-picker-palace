@@ -34,6 +34,13 @@ export async function createOrder(orderData: OrderData, userId: string, userEmai
       userEmail
     }, null, 2));
     
+    // Make sure orderType is set
+    if (!orderData.orderType) {
+      console.error("orderType is missing in orderData");
+      orderData.orderType = orderData.hero ? "mmr" : "rank";
+      console.log("Auto-detected orderType:", orderData.orderType);
+    }
+    
     // Create order data object with the fields that exist in the database
     const orderDataToSave = {
       user_id: userId,
@@ -46,8 +53,9 @@ export async function createOrder(orderData: OrderData, userId: string, userEmai
       total_amount: orderData.totalAmount,
       email: userEmail,
       customer_name: orderData.customerName || userEmail.split("@")[0]
-      // Note: We removed the options field as it doesn't exist in the database
     };
+    
+    console.log("Saving order to database with:", JSON.stringify(orderDataToSave, null, 2));
     
     // Save order to database
     const { data: orderRecord, error: saveError } = await supabase.from("orders").insert(orderDataToSave).select().single();

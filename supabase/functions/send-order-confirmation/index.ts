@@ -109,7 +109,7 @@ serve(async (req) => {
     </html>
     `;
 
-    // Now let's actually send the email using Resend
+    // Now let's send the email using Resend
     try {
       const resendUrl = "https://api.resend.com/emails";
       
