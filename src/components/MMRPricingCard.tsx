@@ -26,7 +26,8 @@ const MMRPricingCard: React.FC<MMRPricingCardProps> = ({
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  const { serviceOptions, activeOptions } = useServiceOptions(price);
+  // We don't need to call useServiceOptions here as we're receiving price from parent
+  // Just use the passed price prop instead
   
   const isComplete = hero && currentMMR < targetMMR;
   
@@ -52,7 +53,7 @@ const MMRPricingCard: React.FC<MMRPricingCardProps> = ({
         targetMMR,
         basePrice: price,
         totalPrice: price,
-        options: serviceOptions
+        options: [] // We don't have serviceOptions here now
       }
     });
   };

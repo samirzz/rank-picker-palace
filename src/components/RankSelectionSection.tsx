@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Rank } from "@/data/ranks/types";
 import { ArrowRight, ArrowDown } from "lucide-react";
 import PricingCard from "@/components/pricing/PricingCard";
@@ -49,7 +48,6 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
     setTargetRank
   });
   
-  // Add handlers for subdivision selection
   const handleCurrentSubdivisionSelect = (subdivisionIndex: number) => {
     if (currentRank) {
       handleCurrentRankSelect(currentRank, subdivisionIndex);
@@ -62,9 +60,8 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
     }
   };
   
-  // Get the base price for the service options
-  const basePrice = currentRank && targetRank ? 100 : null; // This will be replaced by the actual price calculation
-  const { serviceOptions, toggleOption, totalPrice, activeOptions } = useServiceOptions(basePrice);
+  const basePrice = currentRank && targetRank ? 100 : null;
+  const { serviceOptions, toggleOption, totalPrice } = useServiceOptions(basePrice);
   
   const navigate = useNavigate();
   
@@ -77,7 +74,6 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
       id="ranks"
       className="relative py-16 md:py-24 lg:py-32 px-4 overflow-hidden"
     >
-      {/* Background effects */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(139,92,246,0.05)_0%,_transparent_70%)]"></div>
       <div className="absolute top-0 right-0 w-48 md:w-96 h-48 md:h-96 bg-mlbb-purple/10 rounded-full filter blur-[100px] opacity-30"></div>
       <div className="absolute bottom-0 left-0 w-48 md:w-96 h-48 md:h-96 bg-mlbb-gold/10 rounded-full filter blur-[100px] opacity-20"></div>
@@ -99,7 +95,6 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
-          {/* Current Rank Selector - Three Column Layout */}
           <div className="lg:col-span-5">
             <ThreeColumnRankSelector
               label="Current Rank"
@@ -119,7 +114,6 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
             />
           </div>
           
-          {/* Arrow - vertical on mobile, horizontal on desktop */}
           <div className="lg:col-span-2 flex items-center justify-center py-2 lg:py-0">
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 flex items-center justify-center">
               <ArrowDown className="h-5 w-5 lg:hidden text-mlbb-purple" />
@@ -127,7 +121,6 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
             </div>
           </div>
           
-          {/* Target Rank Selector - Three Column Layout */}
           <div className="lg:col-span-5">
             <ThreeColumnRankSelector
               label="Desired Rank"
@@ -148,15 +141,11 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
           </div>
         </div>
         
-        {/* Service Options Section */}
-        <div className="mt-8 md:mt-12">
-          <ServiceOptionsToggle 
-            options={serviceOptions} 
-            onToggle={toggleOption} 
-          />
-        </div>
+        <ServiceOptionsToggle 
+          serviceOptions={serviceOptions}
+          onToggle={toggleOption}
+        />
         
-        {/* Custom Order Button */}
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-400 mb-3">Need a special boosting service not listed here?</p>
           <Button 
@@ -168,7 +157,6 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
           </Button>
         </div>
         
-        {/* Pricing Card - moved to its own row with clear vertical spacing */}
         <div className="mt-12 md:mt-16 mx-auto max-w-full md:max-w-md">
           <PricingCard
             currentRank={currentRank}

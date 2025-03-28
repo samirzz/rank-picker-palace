@@ -11,7 +11,7 @@ interface ServiceOptionsToggleProps {
 }
 
 const ServiceOptionsToggle: React.FC<ServiceOptionsToggleProps> = ({ 
-  serviceOptions, 
+  serviceOptions = [], // Provide default empty array to prevent undefined errors
   onToggle 
 }) => {
   return (
@@ -19,7 +19,7 @@ const ServiceOptionsToggle: React.FC<ServiceOptionsToggleProps> = ({
       <h3 className="text-base md:text-lg font-semibold text-white mb-3">Additional Services</h3>
       
       <div className="space-y-3">
-        {serviceOptions.map((option) => (
+        {serviceOptions && serviceOptions.map((option) => (
           <div key={option.id} className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm md:text-base text-white">{option.name}</span>
