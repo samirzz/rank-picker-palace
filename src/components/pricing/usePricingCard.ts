@@ -1,10 +1,12 @@
+
 import { useState, useEffect } from "react";
-import { calculatePrice } from "@/data/ranks";
-import type { Rank } from "@/data/ranks/types";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { calculatePrice } from "@/data/ranks";
+import { useAuth } from "@/hooks/useAuth";
 import { useOrderService } from "@/hooks/useOrderService";
+import { useToast } from "@/hooks/use-toast";
+import type { Rank } from "@/data/ranks/types";
+import { ServiceOption } from "@/types/service.types";
 
 interface UsePricingCardProps {
   currentRank: Rank | null;
@@ -15,6 +17,7 @@ interface UsePricingCardProps {
   targetStars?: number;
   currentMythicPoints?: number;
   targetMythicPoints?: number;
+  serviceOptions?: ServiceOption[];
 }
 
 export const usePricingCard = ({
@@ -25,54 +28,26 @@ export const usePricingCard = ({
   currentStars = 0,
   targetStars = 0,
   currentMythicPoints = 0,
-  targetMythicPoints = 0
+  targetMythicPoints = 0,
+  serviceOptions = []
 }: UsePricingCardProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [basePrice, setBasePrice] = useState<number | null>(null);
   const [price, setPrice] = useState<number | null>(null);
   const [showPayment, setShowPayment] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
-  const [emailSent, setEmailSent] = useState(true);
-  const { toast } = useToast();
+  const [emailSent, setEmailSent] = useState(false);
   const { user } = useAuth();
-  const navigate = useNavigate();
   const { createOrder, isProcessing } = useOrderService();
-
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, 600); // Default animation delay
-    return () => clearTimeout(timer);
+    setIsVisible(true);
   }, []);
-
-  useEffect(() => {
-    const handleCombinationChange = async () => {
-      if (currentRank && targetRank) {
-        try {
-          const calculatedPrice = await calculatePrice(
-            currentRank, 
-            targetRank, 
-            currentSubdivision, 
-            targetSubdivision, 
-            currentStars, 
-            targetStars, 
-            currentMythicPoints, 
-            targetMythicPoints
-          );
-          setPrice(calculatedPrice);
-        } catch (error) {
-          console.error("Error calculating price:", error);
-        }
-      }
-    };
-    
-    window.addEventListener('adminCombinationsChange', handleCombinationChange);
-    
-    return () => {
-      window.removeEventListener('adminCombinationsChange', handleCombinationChange);
-    };
-  }, [currentRank, targetRank, currentSubdivision, targetSubdivision, currentStars, targetStars, currentMythicPoints, targetMythicPoints]);
-
+  
+  // Calculate base price
   useEffect(() => {
     const updatePrice = async () => {
       if (currentRank && targetRank) {
@@ -87,19 +62,39 @@ export const usePricingCard = ({
             currentMythicPoints, 
             targetMythicPoints
           );
-          setPrice(calculatedPrice);
+          setBasePrice(calculatedPrice);
+          
+          // Apply service options to calculate final price
+          let finalPrice = calculatedPrice;
+          const activeOptions = serviceOptions.filter(opt => opt.isActive);
+          if (activeOptions.length > 0) {
+            const percentageIncrease = activeOptions.reduce((total, option) => {
+              return total + option.percentageIncrease;
+            }, 0);
+            
+            finalPrice = calculatedPrice * (1 + percentageIncrease / 100);
+          }
+          
+          setPrice(Math.round(finalPrice * 100) / 100); // Round to 2 decimal places
         } catch (error) {
           console.error("Error calculating price:", error);
+          setBasePrice(null);
           setPrice(null);
         }
       } else {
+        setBasePrice(null);
         setPrice(null);
       }
     };
     
     updatePrice();
-  }, [currentRank, targetRank, currentSubdivision, targetSubdivision, currentStars, targetStars, currentMythicPoints, targetMythicPoints]);
-
+  }, [currentRank, targetRank, currentSubdivision, targetSubdivision, currentStars, targetStars, 
+      currentMythicPoints, targetMythicPoints, serviceOptions]);
+  
+  // Check if we can calculate a price
+  const canCalculatePrice = currentRank && targetRank && price !== null && price > 0;
+  
+  // Handle proceeding to checkout
   const handleProceedToCheckout = () => {
     if (!user) {
       toast({
@@ -110,16 +105,32 @@ export const usePricingCard = ({
       navigate('/auth');
       return;
     }
-    setShowPayment(true);
+    
+    // Navigate to checkout page with all the necessary data
+    navigate('/checkout', { 
+      state: {
+        currentRank,
+        targetRank,
+        currentSubdivision,
+        targetSubdivision,
+        currentStars,
+        targetStars,
+        currentMythicPoints,
+        targetMythicPoints,
+        basePrice,
+        totalPrice: price,
+        options: serviceOptions
+      }
+    });
   };
-
+  
+  // Handle payment success
   const handlePaymentSuccess = async () => {
     try {
       if (!currentRank || !targetRank || !price) {
         throw new Error("Missing required order information");
       }
       
-      console.log("Creating order...");
       const result = await createOrder({
         orderType: "rank",
         currentRank,
@@ -127,24 +138,21 @@ export const usePricingCard = ({
         currentSubdivision,
         targetSubdivision,
         totalAmount: price,
-        customerName: user?.email?.split("@")[0]
+        customerName: user?.email?.split("@")[0],
+        options: serviceOptions.filter(opt => opt.isActive)
       });
-
-      console.log("Order creation result:", result);
-
+      
       if (!result.success) {
         throw new Error("Failed to process order");
       }
-
-      setEmailSent(result.emailSent || false);
+      
       setShowPayment(false);
       setOrderComplete(true);
+      setEmailSent(Boolean(result.emailSent));
       
       toast({
         title: "Order Confirmed",
-        description: result.emailSent 
-          ? "Thank you for your order! Check your email for confirmation details." 
-          : "Thank you for your order! Your order was created, but we couldn't send a confirmation email.",
+        description: "Thank you for your order! Check your email for confirmation details.",
       });
     } catch (error) {
       console.error("Order processing error:", error);
@@ -155,37 +163,38 @@ export const usePricingCard = ({
       });
     }
   };
-
+  
+  // Handle payment cancellation
   const handlePaymentCancel = () => {
     setShowPayment(false);
   };
-
+  
+  // Format rank name with subdivisions/stars/points
   const formatRankName = (rank: Rank, subdivisionIndex: number = 0, stars: number = 0, mythicPoints: number = 0): string => {
     if (!rank) return '';
-
-    const rankHasPoints = (r: Rank | null): boolean => {
-      if (!r) return false;
-      return Boolean(r.points) || Boolean(r.id === "mythic" && r.subdivisions?.[0]?.points);
-    };
-
+    
     if (rankHasPoints(rank) && mythicPoints > 0) {
       return `${rank.name} (${mythicPoints} points)`;
     }
-
+    
     if (rank.id === "legend" && stars > 0) {
       if (rank.subdivisions && rank.subdivisions[subdivisionIndex]) {
         return `${rank.subdivisions[subdivisionIndex].name} (${stars} stars)`;
       }
     }
+    
     if (rank.subdivisions && rank.subdivisions[subdivisionIndex]) {
       return rank.subdivisions[subdivisionIndex].name;
     }
+    
     if (rank.points) {
       return `${rank.name} (${rank.points.min}-${rank.points.max} points)`;
     }
+    
     return rank.name;
   };
-
+  
+  // Get estimated completion time based on rank difference
   const getEstimatedTime = (): string => {
     if (!currentRank || !targetRank || price === 0) return "N/A";
     const tierDifference = targetRank.tier - currentRank.tier;
@@ -193,14 +202,20 @@ export const usePricingCard = ({
     if (tierDifference <= 3) return "3-5 days";
     return "5-7 days";
   };
-
+  
+  // Check if rank has points system (Mythic and above)
+  const rankHasPoints = (rank: Rank | null): boolean => {
+    if (!rank) return false;
+    return Boolean(rank.points) || Boolean(rank.id === "mythic" && rank.subdivisions?.[0]?.points);
+  };
+  
   return {
     isVisible,
     showDetails,
     setShowDetails,
+    basePrice,
     price,
     showPayment,
-    setShowPayment,
     orderComplete,
     handleProceedToCheckout,
     handlePaymentSuccess,
@@ -209,7 +224,7 @@ export const usePricingCard = ({
     getEstimatedTime,
     user,
     isProcessing,
-    emailSent,
-    canCalculatePrice: currentRank && targetRank && price !== null && price > 0
+    canCalculatePrice,
+    emailSent
   };
 };

@@ -6,6 +6,7 @@ import type { Hero } from "@/types/hero.types";
 import type { Rank } from "@/data/ranks";
 import { useToast } from "@/hooks/use-toast";
 import { createOrder } from "@/services/order.service";
+import { ServiceOption } from "@/types/service.types";
 
 interface OrderData {
   orderType: "rank" | "mmr";
@@ -18,6 +19,7 @@ interface OrderData {
   hero?: Hero;
   totalAmount: number;
   customerName?: string;
+  options?: ServiceOption[];
 }
 
 interface OrderResult {

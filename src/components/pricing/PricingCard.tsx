@@ -8,6 +8,7 @@ import PricingCardDetails from "./PricingCardDetails";
 import DefaultPricingCard from "./DefaultPricingCard";
 import OrderConfirmation from "./OrderConfirmation";
 import PaymentMethods from "@/components/payments/PaymentMethods";
+import { ServiceOption } from "@/types/service.types";
 
 interface PricingCardProps {
   currentRank: Rank | null;
@@ -18,6 +19,7 @@ interface PricingCardProps {
   targetStars?: number;
   currentMythicPoints?: number;
   targetMythicPoints?: number;
+  serviceOptions?: ServiceOption[];
   animationDelay?: number;
 }
 
@@ -30,12 +32,14 @@ const PricingCard: React.FC<PricingCardProps> = ({
   targetStars = 0,
   currentMythicPoints = 0,
   targetMythicPoints = 0,
+  serviceOptions = [],
   animationDelay = 0
 }) => {
   const {
     isVisible,
     showDetails,
     setShowDetails,
+    basePrice,
     price,
     showPayment,
     orderComplete,
@@ -56,8 +60,12 @@ const PricingCard: React.FC<PricingCardProps> = ({
     currentStars,
     targetStars,
     currentMythicPoints,
-    targetMythicPoints
+    targetMythicPoints,
+    serviceOptions
   });
+
+  // Get active service options for display
+  const activeOptions = serviceOptions?.filter(opt => opt.isActive) || [];
 
   return (
     <div className={`transition-all duration-700 transform ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
@@ -72,6 +80,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
                 currentRankName={formatRankName(currentRank, currentSubdivision, currentStars, currentMythicPoints)}
                 targetRankName={formatRankName(targetRank, targetSubdivision, targetStars, targetMythicPoints)}
                 price={price}
+                basePrice={basePrice}
+                activeOptions={activeOptions}
               />
               
               {orderComplete ? (

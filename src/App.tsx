@@ -11,6 +11,8 @@ import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminPriceManagerPage from "./pages/AdminPriceManagerPage";
 import AdminChatPage from "./pages/AdminChatPage";
 import Auth from "./pages/Auth";
+import Checkout from "./pages/Checkout";
+import CustomOrder from "./pages/CustomOrder";
 import { AuthProvider } from "./hooks/useAuth";
 import React from "react";
 
@@ -29,6 +31,8 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/custom-order" element={<CustomOrder />} />
               <Route path="/admin/login" element={<Admin />} />
               <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
               <Route path="/admin/prices" element={<AdminPriceManagerPage />} />

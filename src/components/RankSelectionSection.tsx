@@ -5,6 +5,10 @@ import { ArrowRight, ArrowDown } from "lucide-react";
 import PricingCard from "@/components/pricing/PricingCard";
 import { useRankSelection } from "@/hooks/useRankSelection";
 import ThreeColumnRankSelector from "./rank/ThreeColumnRankSelector";
+import ServiceOptionsToggle from "./ServiceOptionsToggle";
+import { useServiceOptions } from "@/hooks/useServiceOptions";
+import { useNavigate } from "react-router-dom";
+import { Button } from "./ui/button";
 
 interface RankSelectionSectionProps {
   isIntersecting: boolean;
@@ -44,7 +48,7 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
     setCurrentRank,
     setTargetRank
   });
-
+  
   // Add handlers for subdivision selection
   const handleCurrentSubdivisionSelect = (subdivisionIndex: number) => {
     if (currentRank) {
@@ -56,6 +60,16 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
     if (targetRank) {
       handleTargetRankSelect(targetRank, subdivisionIndex);
     }
+  };
+  
+  // Get the base price for the service options
+  const basePrice = currentRank && targetRank ? 100 : null; // This will be replaced by the actual price calculation
+  const { serviceOptions, toggleOption, totalPrice, activeOptions } = useServiceOptions(basePrice);
+  
+  const navigate = useNavigate();
+  
+  const handleCustomOrderClick = () => {
+    navigate('/custom-order');
   };
 
   return (
@@ -84,9 +98,9 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
           {/* Current Rank Selector - Three Column Layout */}
-          <div className="md:col-span-5">
+          <div className="lg:col-span-5">
             <ThreeColumnRankSelector
               label="Current Rank"
               availableRanks={availableRanks}
@@ -106,15 +120,15 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
           </div>
           
           {/* Arrow - vertical on mobile, horizontal on desktop */}
-          <div className="md:col-span-2 flex items-center justify-center py-2 md:py-0">
+          <div className="lg:col-span-2 flex items-center justify-center py-2 lg:py-0">
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 flex items-center justify-center">
-              <ArrowDown className="h-5 w-5 md:hidden text-mlbb-purple" />
-              <ArrowRight className="h-5 w-5 hidden md:block text-mlbb-purple" />
+              <ArrowDown className="h-5 w-5 lg:hidden text-mlbb-purple" />
+              <ArrowRight className="h-5 w-5 hidden lg:block text-mlbb-purple" />
             </div>
           </div>
           
           {/* Target Rank Selector - Three Column Layout */}
-          <div className="md:col-span-5">
+          <div className="lg:col-span-5">
             <ThreeColumnRankSelector
               label="Desired Rank"
               availableRanks={availableRanks}
@@ -134,6 +148,26 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
           </div>
         </div>
         
+        {/* Service Options Section */}
+        <div className="mt-8 md:mt-12">
+          <ServiceOptionsToggle 
+            options={serviceOptions} 
+            onToggle={toggleOption} 
+          />
+        </div>
+        
+        {/* Custom Order Button */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-400 mb-3">Need a special boosting service not listed here?</p>
+          <Button 
+            onClick={handleCustomOrderClick}
+            variant="outline" 
+            className="bg-transparent border border-mlbb-purple text-mlbb-purple hover:bg-mlbb-purple/10"
+          >
+            Request Custom Order
+          </Button>
+        </div>
+        
         {/* Pricing Card - moved to its own row with clear vertical spacing */}
         <div className="mt-12 md:mt-16 mx-auto max-w-full md:max-w-md">
           <PricingCard
@@ -145,6 +179,7 @@ const RankSelectionSection: React.FC<RankSelectionSectionProps> = ({
             targetStars={targetStars}
             currentMythicPoints={currentMythicPoints}
             targetMythicPoints={targetMythicPoints}
+            serviceOptions={serviceOptions}
             animationDelay={600}
           />
         </div>
