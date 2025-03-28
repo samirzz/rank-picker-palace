@@ -14,6 +14,7 @@ const Checkout: React.FC = () => {
     orderData, 
     orderComplete, 
     orderNumber, 
+    emailSent,
     handleBack, 
     handlePaymentSuccess 
   } = useCheckout(location.state);
@@ -43,7 +44,10 @@ const Checkout: React.FC = () => {
             onPaymentSuccess={handlePaymentSuccess}
           />
         ) : (
-          <OrderConfirmation orderNumber={orderNumber} />
+          <OrderConfirmation 
+            orderNumber={orderNumber} 
+            emailSent={emailSent}
+          />
         )}
       </main>
       

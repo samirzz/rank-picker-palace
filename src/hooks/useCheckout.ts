@@ -35,6 +35,7 @@ export const useCheckout = (locationState: any) => {
   const [orderData, setOrderData] = useState<CheckoutData | null>(null);
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState<boolean>(true);
   
   // Initialize order data from location state
   useEffect(() => {
@@ -108,10 +109,13 @@ export const useCheckout = (locationState: any) => {
       
       setOrderComplete(true);
       setOrderNumber(result.orderNumber || null);
+      setEmailSent(result.emailSent || false);
       
       toast({
         title: "Order Confirmed",
-        description: "Thank you for your order! Check your email for confirmation details.",
+        description: result.emailSent 
+          ? "Thank you for your order! Check your email for confirmation details."
+          : "Your order has been confirmed. We couldn't send a confirmation email, but your order has been saved.",
       });
     } catch (error) {
       console.error("Order processing error:", error);
@@ -127,6 +131,7 @@ export const useCheckout = (locationState: any) => {
     orderData,
     orderComplete,
     orderNumber,
+    emailSent,
     isProcessing,
     handleBack,
     handlePaymentSuccess

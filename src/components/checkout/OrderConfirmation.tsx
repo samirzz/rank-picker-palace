@@ -1,14 +1,18 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface OrderConfirmationProps {
   orderNumber: string | null;
+  emailSent?: boolean;
 }
 
-const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ orderNumber }) => {
+const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ 
+  orderNumber,
+  emailSent = true 
+}) => {
   const navigate = useNavigate();
   
   return (
@@ -28,6 +32,15 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ orderNumber }) =>
           Thank you for your order. We've sent a confirmation email with all the details.
           Our team will begin processing your order immediately.
         </p>
+        
+        {!emailSent && (
+          <div className="flex items-center justify-center mb-6 p-3 bg-yellow-500/20 rounded-md">
+            <AlertTriangle className="text-yellow-500 w-5 h-5 mr-2" />
+            <p className="text-gray-300 text-sm">
+              We couldn't send a confirmation email. Please check your account for order details.
+            </p>
+          </div>
+        )}
         
         <Button 
           onClick={() => navigate('/')}

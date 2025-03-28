@@ -26,12 +26,13 @@ export async function createOrder(orderData: OrderData, userId: string, userEmai
     }
 
     // Generate a simple order number based on timestamp and random digits
-    const orderNumber = `${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 1000)}`;
+    const orderNumber = `ORD-${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 1000)}`;
     
     console.log("Creating order with data:", JSON.stringify({
       ...orderData,
       userId,
-      userEmail
+      userEmail,
+      orderNumber
     }, null, 2));
     
     // Validate orderType

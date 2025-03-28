@@ -44,6 +44,10 @@ serve(async (req) => {
       throw new Error("Email service configuration is missing");
     }
 
+    if (req.method !== 'POST') {
+      throw new Error(`Method ${req.method} not allowed, only POST is supported`);
+    }
+
     const details: OrderEmailDetails = await req.json();
     console.log("Received order details:", JSON.stringify(details, null, 2));
 

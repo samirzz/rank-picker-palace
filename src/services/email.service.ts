@@ -28,6 +28,18 @@ export async function sendOrderConfirmationEmail(details: OrderEmailDetails): Pr
       details.orderType = details.heroName ? "mmr" : "rank";
     }
     
+    // Validate order number
+    if (!details.orderNumber) {
+      console.error("Missing order number in email details");
+      details.orderNumber = `ORD-${Date.now().toString().slice(-6)}`;
+      console.log("Generated fallback order number:", details.orderNumber);
+    }
+    
+    // Validate required fields
+    if (!details.email) {
+      throw new Error("Missing required email address");
+    }
+    
     const { data, error } = await supabase.functions.invoke('send-order-confirmation', {
       body: details,
     });

@@ -123,6 +123,7 @@ export type Database = {
           email: string
           hero_id: string | null
           id: string
+          order_number: string | null
           order_type: string
           status: string
           target_mmr: number | null
@@ -138,6 +139,7 @@ export type Database = {
           email: string
           hero_id?: string | null
           id?: string
+          order_number?: string | null
           order_type: string
           status?: string
           target_mmr?: number | null
@@ -153,6 +155,7 @@ export type Database = {
           email?: string
           hero_id?: string | null
           id?: string
+          order_number?: string | null
           order_type?: string
           status?: string
           target_mmr?: number | null
