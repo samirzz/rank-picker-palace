@@ -12,6 +12,7 @@ import PaymentMethods from "@/components/payments/PaymentMethods";
 import { useOrderService } from "@/hooks/useOrderService";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { Hero } from "@/types/hero.types";
 
 const Checkout: React.FC = () => {
   const location = useLocation();
@@ -21,14 +22,18 @@ const Checkout: React.FC = () => {
   const { createOrder, isProcessing } = useOrderService();
   
   const [orderData, setOrderData] = useState<{
-    currentRank: Rank | null;
-    targetRank: Rank | null;
-    currentSubdivision: number;
-    targetSubdivision: number;
-    currentStars: number;
-    targetStars: number;
-    currentMythicPoints: number;
-    targetMythicPoints: number;
+    orderType: "rank" | "mmr";
+    currentRank?: Rank | null;
+    targetRank?: Rank | null;
+    currentSubdivision?: number;
+    targetSubdivision?: number;
+    currentStars?: number;
+    targetStars?: number;
+    currentMythicPoints?: number;
+    targetMythicPoints?: number;
+    hero?: Hero | null;
+    currentMMR?: number;
+    targetMMR?: number;
     basePrice: number | null;
     totalPrice: number | null;
     options: ServiceOption[];
@@ -42,7 +47,7 @@ const Checkout: React.FC = () => {
       navigate('/');
       toast({
         title: "Missing order information",
-        description: "Please select your ranks before proceeding to checkout",
+        description: "Please select your boost details before proceeding to checkout",
         variant: "destructive"
       });
       return;
@@ -53,20 +58,37 @@ const Checkout: React.FC = () => {
   
   const handlePaymentSuccess = async () => {
     try {
-      if (!orderData || !orderData.currentRank || !orderData.targetRank || !orderData.totalPrice) {
+      if (!orderData || !orderData.totalPrice) {
         throw new Error("Missing required order information");
       }
       
-      const result = await createOrder({
-        orderType: "rank",
-        currentRank: orderData.currentRank,
-        targetRank: orderData.targetRank,
-        currentSubdivision: orderData.currentSubdivision,
-        targetSubdivision: orderData.targetSubdivision,
+      const orderRequest = {
+        orderType: orderData.orderType,
         totalAmount: orderData.totalPrice,
         customerName: user?.email?.split("@")[0],
         options: orderData.options.filter(opt => opt.isActive)
-      });
+      };
+      
+      // Add rank-specific fields
+      if (orderData.orderType === "rank" && orderData.currentRank && orderData.targetRank) {
+        Object.assign(orderRequest, {
+          currentRank: orderData.currentRank,
+          targetRank: orderData.targetRank,
+          currentSubdivision: orderData.currentSubdivision,
+          targetSubdivision: orderData.targetSubdivision
+        });
+      }
+      
+      // Add MMR-specific fields
+      if (orderData.orderType === "mmr" && orderData.hero) {
+        Object.assign(orderRequest, {
+          hero: orderData.hero,
+          currentMMR: orderData.currentMMR,
+          targetMMR: orderData.targetMMR
+        });
+      }
+      
+      const result = await createOrder(orderRequest);
       
       if (!result.success) {
         throw new Error("Failed to process order");
@@ -130,12 +152,27 @@ const Checkout: React.FC = () => {
                   <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
                   
                   <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span>Rank Boost:</span>
-                      <span>
-                        {orderData.currentRank?.name} → {orderData.targetRank?.name}
-                      </span>
-                    </div>
+                    {orderData.orderType === "rank" ? (
+                      <div className="flex justify-between">
+                        <span>Rank Boost:</span>
+                        <span>
+                          {orderData.currentRank?.name} → {orderData.targetRank?.name}
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex justify-between">
+                          <span>Hero:</span>
+                          <span>{orderData.hero?.name}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>MMR Boost:</span>
+                          <span>
+                            {orderData.currentMMR} → {orderData.targetMMR}
+                          </span>
+                        </div>
+                      </>
+                    )}
                     
                     {orderData.options.filter(opt => opt.isActive).length > 0 && (
                       <div>

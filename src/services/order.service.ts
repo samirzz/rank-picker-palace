@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Hero } from "@/types/hero.types";
 import { Rank } from "@/data/ranks";
 import { sendOrderConfirmationEmail } from "@/services/email.service";
+import { ServiceOption } from "@/types/service.types";
 
 export interface OrderData {
   orderType: "rank" | "mmr";
@@ -15,6 +16,7 @@ export interface OrderData {
   hero?: Hero;
   totalAmount: number;
   customerName?: string;
+  options?: ServiceOption[];
 }
 
 export async function createOrder(orderData: OrderData, userId: string, userEmail: string) {
@@ -38,6 +40,7 @@ export async function createOrder(orderData: OrderData, userId: string, userEmai
       total_amount: orderData.totalAmount,
       email: userEmail,
       customer_name: orderData.customerName || userEmail.split("@")[0],
+      options: orderData.options?.filter(opt => opt.isActive).map(opt => opt.id) || []
     }).select().single();
 
     if (saveError) {

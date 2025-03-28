@@ -5,6 +5,8 @@ import MMRPricingCard from "./MMRPricingCard";
 import HeroSelectCard from "./mmr-boosting/HeroSelectCard";
 import MMRRangeCard from "./mmr-boosting/MMRRangeCard";
 import { useMMRBoostingForm } from "@/hooks/useMMRBoostingForm";
+import ServiceOptionsToggle from "./ServiceOptionsToggle";
+import { useServiceOptions } from "@/hooks/useServiceOptions";
 
 interface MMRBoostingSectionProps {
   isIntersecting?: boolean;
@@ -23,6 +25,8 @@ const MMRBoostingSection: React.FC<MMRBoostingSectionProps> = ({
     setSearchOpen,
     loading
   } = useMMRBoostingForm();
+  
+  const { serviceOptions, toggleOption } = useServiceOptions(price);
 
   return (
     <section 
@@ -58,6 +62,16 @@ const MMRBoostingSection: React.FC<MMRBoostingSectionProps> = ({
                     watchedValues={watchedValues} 
                   />
                 </div>
+                
+                {selectedHero && watchedValues.currentMMR < watchedValues.targetMMR && (
+                  <div className="mt-8">
+                    <h3 className="text-lg font-medium text-white mb-4">Additional Services</h3>
+                    <ServiceOptionsToggle 
+                      serviceOptions={serviceOptions}
+                      onToggle={toggleOption}
+                    />
+                  </div>
+                )}
               </form>
             </Form>
           </div>
