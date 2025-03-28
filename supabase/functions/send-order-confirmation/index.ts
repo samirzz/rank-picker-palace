@@ -37,8 +37,30 @@ serve(async (req) => {
 
   try {
     console.log("Processing order confirmation request");
+    
+    // Get the API key and check if it exists
+    const apiKey = Deno.env.get("RESEND_API_KEY");
+    if (!apiKey) {
+      console.error("RESEND_API_KEY not configured");
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Email service not properly configured" 
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+    
     const orderDetails: OrderDetails = await req.json();
     console.log("Order details received:", JSON.stringify(orderDetails, null, 2));
+    
+    // Basic validation
+    if (!orderDetails.email) {
+      throw new Error("Missing recipient email address");
+    }
     
     // Generate the email content
     const emailContent = generateOrderConfirmationEmail(orderDetails);

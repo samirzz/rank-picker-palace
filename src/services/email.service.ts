@@ -26,6 +26,15 @@ export async function sendOrderConfirmationEmail(orderDetails: OrderEmailDetails
     console.log("Calling send-order-confirmation edge function with details:", 
       JSON.stringify(orderDetails, null, 2));
     
+    // Validate required fields to prevent common errors
+    if (!orderDetails.email || !orderDetails.orderNumber) {
+      console.error('Missing required email fields:', { 
+        hasEmail: Boolean(orderDetails.email),
+        hasOrderNumber: Boolean(orderDetails.orderNumber)
+      });
+      return false;
+    }
+    
     // Call the Supabase Edge Function directly
     const { data, error } = await supabase.functions.invoke("send-order-confirmation", {
       body: orderDetails,

@@ -67,7 +67,7 @@ export async function createOrder(orderData: OrderData, userId: string, userEmai
 
     try {
       // Send confirmation email with a timeout
-      console.log("Sending order confirmation email...");
+      console.log("Preparing to send order confirmation email...");
       
       const emailDetails = {
         id: orderRecord.id,
@@ -86,33 +86,19 @@ export async function createOrder(orderData: OrderData, userId: string, userEmai
         supportEmail: config.support_email || "support@mlbooster.com",
       };
       
-      console.log("Email details:", JSON.stringify(emailDetails, null, 2));
+      console.log("Email details prepared:", JSON.stringify(emailDetails, null, 2));
       
-      const emailPromise = sendOrderConfirmationEmail(emailDetails);
-
-      // Set a timeout for email sending - increased to 20 seconds
-      const timeoutPromise = new Promise<boolean>((resolve) => 
-        setTimeout(() => {
-          console.log("Email sending timed out");
-          resolve(false);
-        }, 20000) // 20 second timeout
-      );
-
-      const emailSent = await Promise.race([emailPromise, timeoutPromise]);
+      // Send email and wait for result
+      const emailSent = await sendOrderConfirmationEmail(emailDetails);
       
-      console.log("Email sent result:", emailSent);
+      console.log("Email sending result:", emailSent);
 
-      if (!emailSent) {
-        console.warn("Email sending timed out or failed");
-        return { 
-          success: true, 
-          orderId: orderRecord.id, 
-          orderNumber,
-          emailSent: false
-        };
-      }
-
-      return { success: true, orderId: orderRecord.id, orderNumber, emailSent: true };
+      return { 
+        success: true, 
+        orderId: orderRecord.id, 
+        orderNumber,
+        emailSent
+      };
     } catch (emailError) {
       // Log the email error but don't fail the order creation
       console.error("Failed to send confirmation email but order was created:", emailError);
