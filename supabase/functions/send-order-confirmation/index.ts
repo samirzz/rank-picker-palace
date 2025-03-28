@@ -65,64 +65,62 @@ serve(async (req) => {
     // Compose email content
     const subject = `Order Confirmation: #${details.orderNumber}`;
     
-    // Build HTML email template
-    const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #6b21a8; color: white; padding: 15px; text-align: center; }
-        .content { padding: 20px; border: 1px solid #ddd; border-top: none; }
-        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #777; }
-        .button { background-color: #6b21a8; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
-        .detail { margin-bottom: 10px; }
-        .detail span { font-weight: bold; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>${details.companyName} - Order Confirmation</h1>
-        </div>
-        <div class="content">
-          <p>Dear ${details.customerName},</p>
-          <p>Thank you for your order! We're excited to help you achieve your gaming goals.</p>
-          
-          <div class="detail"><span>Order Number:</span> #${details.orderNumber}</div>
-          <div class="detail"><span>Order Type:</span> ${details.orderType === 'rank' ? 'Rank Boost' : 'MMR Boost'}</div>
-          
-          ${details.orderType === 'rank' ? `
-          <div class="detail"><span>Current Rank:</span> ${details.currentRank}</div>
-          <div class="detail"><span>Target Rank:</span> ${details.targetRank}</div>
-          ` : `
-          <div class="detail"><span>Hero:</span> ${details.heroName}</div>
-          <div class="detail"><span>Current MMR:</span> ${details.currentMMR}</div>
-          <div class="detail"><span>Target MMR:</span> ${details.targetMMR}</div>
-          `}
-          
-          <div class="detail"><span>Total Amount:</span> $${details.totalAmount.toFixed(2)}</div>
-          
-          <p>Our team will begin processing your order immediately. Join our Discord community to get real-time updates on your order and chat with our boosters:</p>
-          
-          <p style="text-align: center; margin: 25px 0;">
-            <a href="${details.discordInviteLink}" class="button">Join Discord</a>
-          </p>
-          
-          <p>If you have any questions, please contact our support team at ${details.supportEmail}.</p>
-          
-          <p>Best regards,<br>${details.companyName} Team</p>
-        </div>
-        <div class="footer">
-          <p>This is an automated email, please do not reply directly to this message.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-    `;
+    // Build HTML email template - use CDATA to prevent MIME encoding issues
+    const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background-color: #6b21a8; color: white; padding: 15px; text-align: center; }
+    .content { padding: 20px; border: 1px solid #ddd; border-top: none; }
+    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #777; }
+    .button { background-color: #6b21a8; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; }
+    .detail { margin-bottom: 10px; }
+    .detail span { font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>${details.companyName} - Order Confirmation</h1>
+    </div>
+    <div class="content">
+      <p>Dear ${details.customerName},</p>
+      <p>Thank you for your order! We're excited to help you achieve your gaming goals.</p>
+      
+      <div class="detail"><span>Order Number:</span> #${details.orderNumber}</div>
+      <div class="detail"><span>Order Type:</span> ${details.orderType === 'rank' ? 'Rank Boost' : 'MMR Boost'}</div>
+      
+      ${details.orderType === 'rank' ? `
+      <div class="detail"><span>Current Rank:</span> ${details.currentRank}</div>
+      <div class="detail"><span>Target Rank:</span> ${details.targetRank}</div>
+      ` : `
+      <div class="detail"><span>Hero:</span> ${details.heroName}</div>
+      <div class="detail"><span>Current MMR:</span> ${details.currentMMR}</div>
+      <div class="detail"><span>Target MMR:</span> ${details.targetMMR}</div>
+      `}
+      
+      <div class="detail"><span>Total Amount:</span> $${details.totalAmount.toFixed(2)}</div>
+      
+      <p>Our team will begin processing your order immediately. Join our Discord community to get real-time updates on your order and chat with our boosters:</p>
+      
+      <p style="text-align: center; margin: 25px 0;">
+        <a href="${details.discordInviteLink}" class="button">Join Discord</a>
+      </p>
+      
+      <p>If you have any questions, please contact our support team at ${details.supportEmail}.</p>
+      
+      <p>Best regards,<br>${details.companyName} Team</p>
+    </div>
+    <div class="footer">
+      <p>This is an automated email, please do not reply directly to this message.</p>
+    </div>
+  </div>
+</body>
+</html>`;
 
-    // Send email using SMTP
+    // Send email using SMTP with proper content encoding
     try {
       console.log("Setting up SMTP client with Gmail");
       
@@ -145,6 +143,8 @@ serve(async (req) => {
         to: details.email,
         subject: subject,
         html: htmlContent,
+        contentType: "text/html; charset=utf-8",
+        encoding: "utf-8"
       });
       
       console.log("Email sent successfully:", emailResult);
