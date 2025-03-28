@@ -67,7 +67,7 @@ const MMRBoostingSection: React.FC<MMRBoostingSectionProps> = ({
                   <div className="mt-8">
                     <h3 className="text-lg font-medium text-white mb-4">Additional Services</h3>
                     <ServiceOptionsToggle 
-                      serviceOptions={serviceOptions}
+                      serviceOptions={serviceOptions || []}
                       onToggle={toggleOption}
                     />
                   </div>

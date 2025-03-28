@@ -7,7 +7,6 @@ import { Hero } from "@/data/heroes";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { useServiceOptions } from "@/hooks/useServiceOptions";
 
 interface MMRPricingCardProps {
   hero: Hero | null;
@@ -20,14 +19,11 @@ const MMRPricingCard: React.FC<MMRPricingCardProps> = ({
   hero,
   currentMMR,
   targetMMR,
-  price
+  price = 0 // Default to 0 if not provided
 }) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
-  
-  // We don't need to call useServiceOptions here as we're receiving price from parent
-  // Just use the passed price prop instead
   
   const isComplete = hero && currentMMR < targetMMR;
   

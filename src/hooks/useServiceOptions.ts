@@ -31,7 +31,7 @@ export function useServiceOptions(basePrice: number | null = 0) {
   const [totalPrice, setTotalPrice] = useState<number | null>(basePrice);
   
   useEffect(() => {
-    if (basePrice === null) {
+    if (basePrice === null || basePrice === undefined) {
       setTotalPrice(null);
       return;
     }
