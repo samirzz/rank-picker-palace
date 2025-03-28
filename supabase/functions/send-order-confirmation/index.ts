@@ -28,49 +28,17 @@ interface OrderEmailDetails {
   gmailAppPassword?: string;
 }
 
-serve(async (req) => {
-  console.log("Order confirmation email function called", req.method);
+// Email content generation function
+function generateEmailContent(details: OrderEmailDetails): { subject: string; htmlContent: string } {
+  const subject = `Order Confirmation: #${details.orderNumber}`;
   
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    console.log("Handling OPTIONS preflight request");
-    return new Response(null, {
-      status: 204,
-      headers: corsHeaders
-    });
-  }
-
-  try {
-    if (req.method !== 'POST') {
-      throw new Error(`Method ${req.method} not allowed, only POST is supported`);
-    }
-
-    const details: OrderEmailDetails = await req.json();
-    console.log("Received order details:", JSON.stringify(details, null, 2));
-
-    // Use provided Gmail credentials or fall back to environment variables
-    const gmailUser = details.gmailUser || Deno.env.get("GMAIL_USER");
-    const gmailAppPassword = details.gmailAppPassword || Deno.env.get("GMAIL_APP_PASSWORD");
-    
-    if (!gmailUser || !gmailAppPassword) {
-      console.error("Gmail credentials are not set");
-      throw new Error("Email service configuration is missing");
-    }
-
-    // Validate request data
-    if (!details.email || !details.orderNumber) {
-      throw new Error("Missing required email information");
-    }
-
-    // Compose email content
-    const subject = `Order Confirmation: #${details.orderNumber}`;
-    
-    // Create a simpler, cleaner HTML email to reduce =20 issues and spam triggers
-    const htmlContent = `<!DOCTYPE html>
+  // Create clean, optimized HTML email template
+  const htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <title>Order Confirmation</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0;">
@@ -114,59 +82,126 @@ serve(async (req) => {
 </body>
 </html>`;
 
-    // Send email using SMTP with proper content encoding
-    try {
-      console.log("Setting up SMTP client with Gmail");
-      
-      const client = new SMTPClient({
-        connection: {
-          hostname: "smtp.gmail.com",
-          port: 465,
-          tls: true,
-          auth: {
-            username: gmailUser,
-            password: gmailAppPassword,
-          },
-        },
-      });
+  return { subject, htmlContent };
+}
 
-      console.log("Sending email to:", details.email);
-      
-      // Add spam-reducing email headers
-      const emailResult = await client.send({
-        from: `"${details.companyName}" <${gmailUser}>`,
-        to: details.email,
-        subject: subject,
-        html: htmlContent,
-        headers: {
-          "X-Priority": "1",
-          "Importance": "high",
-          "X-MSMail-Priority": "High"
-        },
-        contentType: "text/html",
-        encoding: "8bit", // Changed from utf-8 to 8bit to avoid encoding issues
-      });
-      
-      console.log("Email sent successfully:", emailResult);
-      await client.close();
-      
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: "Email sent successfully",
-          id: emailResult
-        }),
-        {
-          headers: {
-            "Content-Type": "application/json",
-            ...corsHeaders,
-          },
-        }
-      );
-    } catch (emailError) {
-      console.error("Failed to send email:", emailError);
-      throw new Error(`Email sending failed: ${emailError.message}`);
+// Validate request data
+function validateRequest(details: OrderEmailDetails): void {
+  if (!details.email || !details.orderNumber) {
+    throw new Error("Missing required email information");
+  }
+
+  if (details.orderType !== "rank" && details.orderType !== "mmr") {
+    throw new Error(`Invalid orderType: ${details.orderType}`);
+  }
+}
+
+// Send email using SMTP
+async function sendEmail(
+  client: SMTPClient, 
+  to: string, 
+  from: string, 
+  subject: string, 
+  htmlContent: string
+): Promise<any> {
+  try {
+    console.log("Sending email to:", to);
+    
+    const emailResult = await client.send({
+      from: from,
+      to: to,
+      subject: subject,
+      html: htmlContent,
+      headers: {
+        "X-Priority": "1",
+        "Importance": "high",
+        "X-MSMail-Priority": "High"
+      },
+      contentType: "text/html",
+      encoding: "8bit", // Using 8bit encoding to avoid =20 issues
+    });
+    
+    console.log("Email sent successfully:", emailResult);
+    return emailResult;
+  } catch (emailError) {
+    console.error("Failed to send email:", emailError);
+    throw new Error(`Email sending failed: ${emailError.message}`);
+  }
+}
+
+// Setup SMTP client with credentials
+function setupSMTPClient(gmailUser: string, gmailAppPassword: string): SMTPClient {
+  console.log("Setting up SMTP client with Gmail");
+  
+  return new SMTPClient({
+    connection: {
+      hostname: "smtp.gmail.com",
+      port: 465,
+      tls: true,
+      auth: {
+        username: gmailUser,
+        password: gmailAppPassword,
+      },
+    },
+  });
+}
+
+// Main request handler
+serve(async (req) => {
+  console.log("Order confirmation email function called", req.method);
+  
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    console.log("Handling OPTIONS preflight request");
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders
+    });
+  }
+
+  try {
+    if (req.method !== 'POST') {
+      throw new Error(`Method ${req.method} not allowed, only POST is supported`);
     }
+
+    const details: OrderEmailDetails = await req.json();
+    console.log("Received order details:", JSON.stringify(details, null, 2));
+
+    // Use provided Gmail credentials or fall back to environment variables
+    const gmailUser = details.gmailUser || Deno.env.get("GMAIL_USER");
+    const gmailAppPassword = details.gmailAppPassword || Deno.env.get("GMAIL_APP_PASSWORD");
+    
+    if (!gmailUser || !gmailAppPassword) {
+      console.error("Gmail credentials are not set");
+      throw new Error("Email service configuration is missing");
+    }
+
+    // Validate request data
+    validateRequest(details);
+
+    // Generate email content
+    const { subject, htmlContent } = generateEmailContent(details);
+
+    // Setup SMTP client and send email
+    const client = setupSMTPClient(gmailUser, gmailAppPassword);
+    const emailFrom = `"${details.companyName}" <${gmailUser}>`;
+    const emailResult = await sendEmail(client, details.email, emailFrom, subject, htmlContent);
+    
+    await client.close();
+    
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: "Email sent successfully",
+        id: emailResult
+      }),
+      {
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      }
+    );
     
   } catch (error) {
     console.error("Error sending confirmation email:", error);
