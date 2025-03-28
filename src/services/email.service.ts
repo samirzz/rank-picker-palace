@@ -28,17 +28,21 @@ export async function sendOrderConfirmationEmail(details: OrderEmailDetails): Pr
       details.orderType = details.heroName ? "mmr" : "rank";
     }
     
-    // Validate order number
-    if (!details.orderNumber) {
-      console.error("Missing order number in email details");
-      details.orderNumber = `ORD-${Date.now().toString().slice(-6)}`;
-      console.log("Generated fallback order number:", details.orderNumber);
-    }
-    
     // Validate required fields
     if (!details.email) {
       throw new Error("Missing required email address");
     }
+    
+    if (!details.orderNumber) {
+      console.warn("Missing order number in email details");
+      details.orderNumber = `ORD-${Date.now().toString().slice(-6)}`;
+      console.log("Generated fallback order number:", details.orderNumber);
+    }
+    
+    // Set default values for optional fields
+    details.discordInviteLink = details.discordInviteLink || "https://discord.gg/mlboost";
+    details.companyName = details.companyName || "MLBooster";
+    details.supportEmail = details.supportEmail || "support@mlbooster.com";
     
     const { data, error } = await supabase.functions.invoke('send-order-confirmation', {
       body: details,
