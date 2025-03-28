@@ -21,14 +21,12 @@ smtp_port = 54325
 pop3_port = 54326
 
 [auth]
-port = 54327
-uri = "http://localhost:54321/auth/v1"
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["https://localhost:5173"]
+auto_confirm_email = true
 
 [storage]
-port = 54328
 
 [realtime]
-port = 54329
 
 [functions]
-port = 54330
