@@ -26,7 +26,7 @@ const MMRBoostingSection: React.FC<MMRBoostingSectionProps> = ({
     loading
   } = useMMRBoostingForm();
   
-  const { serviceOptions, toggleOption } = useServiceOptions(price);
+  const { serviceOptions, toggleOption, totalPrice } = useServiceOptions(price);
 
   return (
     <section 
@@ -81,7 +81,7 @@ const MMRBoostingSection: React.FC<MMRBoostingSectionProps> = ({
               hero={selectedHero}
               currentMMR={watchedValues.currentMMR ?? 0}
               targetMMR={watchedValues.targetMMR ?? 0}
-              price={price}
+              price={totalPrice ?? 0}
             />
           </div>
         </div>

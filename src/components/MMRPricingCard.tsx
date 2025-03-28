@@ -26,7 +26,7 @@ const MMRPricingCard: React.FC<MMRPricingCardProps> = ({
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  const { serviceOptions, activeOptions, totalPrice } = useServiceOptions(price);
+  const { serviceOptions, activeOptions } = useServiceOptions(price);
   
   const isComplete = hero && currentMMR < targetMMR;
   
@@ -51,7 +51,7 @@ const MMRPricingCard: React.FC<MMRPricingCardProps> = ({
         currentMMR,
         targetMMR,
         basePrice: price,
-        totalPrice: totalPrice,
+        totalPrice: price,
         options: serviceOptions
       }
     });
@@ -84,7 +84,7 @@ const MMRPricingCard: React.FC<MMRPricingCardProps> = ({
           <div className="pt-4 border-t border-gray-700">
             <div className="flex justify-between items-center">
               <span className="text-gray-400">Total Price</span>
-              <span className="text-mlbb-gold text-xl font-bold">${totalPrice?.toFixed(2)}</span>
+              <span className="text-mlbb-gold text-xl font-bold">${price?.toFixed(2)}</span>
             </div>
           </div>
         </div>

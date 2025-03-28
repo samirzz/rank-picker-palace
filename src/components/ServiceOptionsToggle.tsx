@@ -6,12 +6,12 @@ import { ServiceOption } from "@/types/service.types";
 import { Info } from "lucide-react";
 
 interface ServiceOptionsToggleProps {
-  options: ServiceOption[];
+  serviceOptions: ServiceOption[];
   onToggle: (optionId: string, isActive: boolean) => void;
 }
 
 const ServiceOptionsToggle: React.FC<ServiceOptionsToggleProps> = ({ 
-  options, 
+  serviceOptions, 
   onToggle 
 }) => {
   return (
@@ -19,7 +19,7 @@ const ServiceOptionsToggle: React.FC<ServiceOptionsToggleProps> = ({
       <h3 className="text-base md:text-lg font-semibold text-white mb-3">Additional Services</h3>
       
       <div className="space-y-3">
-        {options.map((option) => (
+        {serviceOptions.map((option) => (
           <div key={option.id} className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm md:text-base text-white">{option.name}</span>
