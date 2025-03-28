@@ -24,6 +24,8 @@ interface OrderEmailDetails {
   discordInviteLink: string;
   companyName: string;
   supportEmail: string;
+  gmailUser?: string;
+  gmailAppPassword?: string;
 }
 
 serve(async (req) => {
@@ -39,20 +41,21 @@ serve(async (req) => {
   }
 
   try {
-    const gmailUser = Deno.env.get("GMAIL_USER");
-    const gmailAppPassword = Deno.env.get("GMAIL_APP_PASSWORD");
-    
-    if (!gmailUser || !gmailAppPassword) {
-      console.error("Gmail credentials are not set");
-      throw new Error("Email service configuration is missing");
-    }
-
     if (req.method !== 'POST') {
       throw new Error(`Method ${req.method} not allowed, only POST is supported`);
     }
 
     const details: OrderEmailDetails = await req.json();
     console.log("Received order details:", JSON.stringify(details, null, 2));
+
+    // Use provided Gmail credentials or fall back to environment variables
+    const gmailUser = details.gmailUser || Deno.env.get("GMAIL_USER");
+    const gmailAppPassword = details.gmailAppPassword || Deno.env.get("GMAIL_APP_PASSWORD");
+    
+    if (!gmailUser || !gmailAppPassword) {
+      console.error("Gmail credentials are not set");
+      throw new Error("Email service configuration is missing");
+    }
 
     // Validate request data
     if (!details.email || !details.orderNumber) {

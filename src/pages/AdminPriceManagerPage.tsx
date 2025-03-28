@@ -6,6 +6,7 @@ import AdminNavigation from "@/components/admin/AdminNavigation";
 import DiscordLinkEditor from "@/components/admin/DiscordLinkEditor";
 import PriceEditor from "@/components/admin/PriceEditor";
 import CombinationPriceEditor from "@/components/admin/CombinationPriceEditor";
+import EmailSettingsEditor from "@/components/admin/EmailSettingsEditor";
 import { getAdminRanks } from "@/data/ranks";
 import { useToast } from "@/hooks/use-toast";
 
@@ -108,6 +109,11 @@ const AdminPriceManagerPage: React.FC = () => {
               <h2 className="text-xl font-semibold text-white mb-4">Discord Community</h2>
               <DiscordLinkEditor />
             </div>
+          </div>
+          
+          <div className="mt-8">
+            <h2 className="text-xl font-semibold text-white mb-4">Email Settings</h2>
+            <EmailSettingsEditor />
           </div>
         </div>
       </div>

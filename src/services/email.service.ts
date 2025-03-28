@@ -44,8 +44,37 @@ export async function sendOrderConfirmationEmail(details: OrderEmailDetails): Pr
     details.companyName = details.companyName || "MLBooster";
     details.supportEmail = details.supportEmail || "support@mlbooster.com";
     
+    // First, let's get the email configuration from the database
+    const { data: configData, error: configError } = await supabase
+      .from("configuration")
+      .select("id, value")
+      .in("id", ["gmail_user", "gmail_app_password"]);
+    
+    if (configError) {
+      console.error("Error fetching email configuration:", configError);
+      throw new Error("Could not fetch email configuration");
+    }
+    
+    // Create configuration object from database values
+    const emailConfig = configData.reduce((acc, item) => {
+      acc[item.id] = item.value;
+      return acc;
+    }, {} as Record<string, string>);
+    
+    // Add email configuration to the request
+    const requestWithConfig = {
+      ...details,
+      gmailUser: emailConfig.gmail_user,
+      gmailAppPassword: emailConfig.gmail_app_password
+    };
+    
+    if (!requestWithConfig.gmailUser || !requestWithConfig.gmailAppPassword) {
+      console.error("Missing Gmail configuration. Please set up email settings in admin panel.");
+      return false;
+    }
+    
     const { data, error } = await supabase.functions.invoke('send-order-confirmation', {
-      body: details,
+      body: requestWithConfig,
     });
     
     if (error) {
