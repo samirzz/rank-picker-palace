@@ -28,8 +28,14 @@ export async function createOrder(orderData: OrderData, userId: string, userEmai
     // Generate a simple order number based on timestamp and random digits
     const orderNumber = `${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 1000)}`;
     
-    // Save order to database
-    const { data: orderRecord, error: saveError } = await supabase.from("orders").insert({
+    console.log("Creating order with data:", JSON.stringify({
+      ...orderData,
+      userId,
+      userEmail
+    }, null, 2));
+    
+    // Create order data object with the fields that exist in the database
+    const orderDataToSave = {
       user_id: userId,
       order_type: orderData.orderType,
       current_rank: orderData.currentRank?.id,
@@ -39,9 +45,12 @@ export async function createOrder(orderData: OrderData, userId: string, userEmai
       hero_id: orderData.hero?.id,
       total_amount: orderData.totalAmount,
       email: userEmail,
-      customer_name: orderData.customerName || userEmail.split("@")[0],
-      options: orderData.options?.filter(opt => opt.isActive).map(opt => opt.id) || []
-    }).select().single();
+      customer_name: orderData.customerName || userEmail.split("@")[0]
+      // Note: We removed the options field as it doesn't exist in the database
+    };
+    
+    // Save order to database
+    const { data: orderRecord, error: saveError } = await supabase.from("orders").insert(orderDataToSave).select().single();
 
     if (saveError) {
       console.error("Error saving order:", saveError);
