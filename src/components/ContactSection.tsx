@@ -1,12 +1,15 @@
 
-import React from "react";
+import React, { useContext } from "react";
 import { Mail, MessageSquare } from "lucide-react";
+import { LiveChatContext } from "@/components/chat/LiveChatContext";
 
 interface ContactSectionProps {
   isIntersecting?: boolean;
 }
 
 const ContactSection: React.FC<ContactSectionProps> = ({ isIntersecting = false }) => {
+  const { toggleChat } = useContext(LiveChatContext);
+  
   return (
     <section id="contact" className="py-16 md:py-20 px-4 bg-gradient-to-b from-black to-mlbb-blue/70 relative">
       <div className="container mx-auto max-w-4xl">
@@ -63,7 +66,10 @@ const ContactSection: React.FC<ContactSectionProps> = ({ isIntersecting = false 
               <p className="text-gray-400 text-xs md:text-sm text-center mb-4 md:mb-6 px-4 md:px-0">
                 Connect instantly with our support team
               </p>
-              <button className="bg-mlbb-purple hover:bg-mlbb-darkpurple text-white px-4 md:px-6 py-2 md:py-3 text-sm md:text-base rounded-lg transition-all duration-300 transform hover:scale-105">
+              <button 
+                onClick={toggleChat}
+                className="bg-mlbb-purple hover:bg-mlbb-darkpurple text-white px-4 md:px-6 py-2 md:py-3 text-sm md:text-base rounded-lg transition-all duration-300 transform hover:scale-105"
+              >
                 Chat Now
               </button>
             </div>

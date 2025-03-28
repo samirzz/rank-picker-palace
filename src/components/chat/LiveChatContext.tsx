@@ -1,10 +1,29 @@
 
-import { useState, useEffect } from "react";
+import React, { createContext, useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Message } from "./types";
 
-export const useChatMessages = (isChatOpen: boolean) => {
+interface LiveChatContextType {
+  isChatOpen: boolean;
+  messages: Message[];
+  isLoading: boolean;
+  hasNewMessages: boolean;
+  toggleChat: () => void;
+  sendMessage: (message: string) => Promise<boolean>;
+}
+
+export const LiveChatContext = createContext<LiveChatContextType>({
+  isChatOpen: false,
+  messages: [],
+  isLoading: false,
+  hasNewMessages: false,
+  toggleChat: () => {},
+  sendMessage: async () => false,
+});
+
+export const LiveChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasNewMessages, setHasNewMessages] = useState(false);
@@ -82,6 +101,10 @@ export const useChatMessages = (isChatOpen: boolean) => {
     };
   }, [user, isChatOpen]);
 
+  const toggleChat = () => {
+    setIsChatOpen(!isChatOpen);
+  };
+
   const sendMessage = async (messageContent: string) => {
     if (!messageContent.trim() || !user) return false;
 
@@ -102,5 +125,18 @@ export const useChatMessages = (isChatOpen: boolean) => {
     }
   };
 
-  return { messages, isLoading, sendMessage, hasNewMessages };
+  return (
+    <LiveChatContext.Provider
+      value={{
+        isChatOpen,
+        messages,
+        isLoading,
+        hasNewMessages,
+        toggleChat,
+        sendMessage,
+      }}
+    >
+      {children}
+    </LiveChatContext.Provider>
+  );
 };

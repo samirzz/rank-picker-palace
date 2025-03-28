@@ -15,6 +15,7 @@ import Checkout from "./pages/Checkout";
 import CustomOrder from "./pages/CustomOrder";
 import { AuthProvider } from "./hooks/useAuth";
 import React from "react";
+import { LiveChatProvider } from "./components/chat/LiveChatContext";
 
 // Instead of creating QueryClient outside the component, we create it inside
 const App = () => {
@@ -24,24 +25,26 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/custom-order" element={<CustomOrder />} />
-              <Route path="/admin/login" element={<Admin />} />
-              <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-              <Route path="/admin/prices" element={<AdminPriceManagerPage />} />
-              <Route path="/admin/chat" element={<AdminChatPage />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <LiveChatProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/custom-order" element={<CustomOrder />} />
+                <Route path="/admin/login" element={<Admin />} />
+                <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+                <Route path="/admin/prices" element={<AdminPriceManagerPage />} />
+                <Route path="/admin/chat" element={<AdminChatPage />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </LiveChatProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

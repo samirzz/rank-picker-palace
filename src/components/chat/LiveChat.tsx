@@ -1,12 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ChatWindow from "./ChatWindow";
 import ChatButton from "./ChatButton";
 import { useChatMessages } from "./useChatMessages";
 
 const LiveChat: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const { messages, isLoading, sendMessage } = useChatMessages(isChatOpen);
+  const { messages, isLoading, sendMessage, hasNewMessages } = useChatMessages(isChatOpen);
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
@@ -22,7 +22,7 @@ const LiveChat: React.FC = () => {
           onSendMessage={sendMessage}
         />
       ) : (
-        <ChatButton onClick={toggleChat} />
+        <ChatButton onClick={toggleChat} hasNotification={hasNewMessages} />
       )}
     </div>
   );
