@@ -55,6 +55,11 @@ export async function sendOrderConfirmationEmail(details: OrderEmailDetails): Pr
       throw new Error("Could not fetch email configuration");
     }
     
+    if (!configData || configData.length < 2) {
+      console.error("Incomplete email configuration found:", configData?.length || 0, "settings");
+      throw new Error("Email settings are not fully configured");
+    }
+    
     // Create configuration object from database values
     const emailConfig = configData.reduce((acc, item) => {
       acc[item.id] = item.value;
@@ -72,6 +77,8 @@ export async function sendOrderConfirmationEmail(details: OrderEmailDetails): Pr
       console.error("Missing Gmail configuration. Please set up email settings in admin panel.");
       return false;
     }
+    
+    console.log("Invoking send-order-confirmation function with configured email settings");
     
     const { data, error } = await supabase.functions.invoke('send-order-confirmation', {
       body: requestWithConfig,

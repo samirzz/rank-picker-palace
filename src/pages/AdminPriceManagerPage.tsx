@@ -111,7 +111,7 @@ const AdminPriceManagerPage: React.FC = () => {
             </div>
           </div>
           
-          <div className="mt-8">
+          <div className="mt-8" id="email-settings">
             <h2 className="text-xl font-semibold text-white mb-4">Email Settings</h2>
             <EmailSettingsEditor />
           </div>

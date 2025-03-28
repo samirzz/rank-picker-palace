@@ -4,17 +4,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const EmailSettingsEditor: React.FC = () => {
   const [gmailUser, setGmailUser] = useState("");
   const [gmailAppPassword, setGmailAppPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     const fetchEmailSettings = async () => {
       try {
+        setIsFetching(true);
+        setError(null);
+        
+        console.log("Fetching email settings from database...");
         const { data, error } = await supabase
           .from("configuration")
           .select("*")
@@ -25,6 +32,8 @@ const EmailSettingsEditor: React.FC = () => {
         }
 
         if (data && data.length > 0) {
+          console.log("Email settings found:", data.length);
+          
           const settings = data.reduce((acc, item) => {
             acc[item.id] = item.value;
             return acc;
@@ -34,14 +43,21 @@ const EmailSettingsEditor: React.FC = () => {
           // We don't actually fetch the real password, just an indication if it's set
           setGmailAppPassword(settings.gmail_app_password_masked ? "••••••••" : "");
           setInitialized(true);
+        } else {
+          console.log("No email settings found in database");
+          setInitialized(true); // Still mark as initialized even if no data
         }
       } catch (error) {
         console.error("Error fetching email settings:", error);
+        setError("Failed to load email settings. Please try again.");
         toast({
           title: "Error",
           description: "Failed to load email settings.",
           variant: "destructive",
         });
+        setInitialized(true); // Mark as initialized even on error to show the form
+      } finally {
+        setIsFetching(false);
       }
     };
 
@@ -84,6 +100,8 @@ const EmailSettingsEditor: React.FC = () => {
         });
       }
 
+      console.log("Saving email settings to database:", updates.map(u => u.id));
+      
       // Upsert the configuration values
       const { error } = await supabase
         .from("configuration")
@@ -109,10 +127,35 @@ const EmailSettingsEditor: React.FC = () => {
     }
   };
 
-  if (!initialized) {
+  if (isFetching) {
     return (
       <div className="glass-panel p-4 md:p-6">
-        <p className="text-white text-center">Loading email settings...</p>
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-full bg-gray-700" />
+          <Skeleton className="h-10 w-full bg-gray-700" />
+          <Skeleton className="h-4 w-3/4 bg-gray-700" />
+          <Skeleton className="h-8 w-full bg-gray-700" />
+          <Skeleton className="h-10 w-full bg-gray-700" />
+          <Skeleton className="h-4 w-3/4 bg-gray-700" />
+          <Skeleton className="h-10 w-1/3 bg-gray-700" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="glass-panel p-4 md:p-6">
+        <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 mb-4">
+          <p className="text-red-300">{error}</p>
+          <Button 
+            onClick={() => window.location.reload()}
+            variant="outline" 
+            className="mt-2 bg-red-900/30 border-red-700 text-red-300 hover:bg-red-800/30"
+          >
+            Retry
+          </Button>
+        </div>
       </div>
     );
   }
