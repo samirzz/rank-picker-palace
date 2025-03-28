@@ -65,19 +65,57 @@ serve(async (req) => {
     // Compose email content
     const subject = `Order Confirmation: #${details.orderNumber}`;
     
-    // Build HTML email template - use CDATA to prevent MIME encoding issues
+    // Build HTML email template without entities that could cause =20 issues
     const htmlContent = `<!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmation</title>
   <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background-color: #6b21a8; color: white; padding: 15px; text-align: center; }
-    .content { padding: 20px; border: 1px solid #ddd; border-top: none; }
-    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #777; }
-    .button { background-color: #6b21a8; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; }
-    .detail { margin-bottom: 10px; }
-    .detail span { font-weight: bold; }
+    body { 
+      font-family: Arial, sans-serif; 
+      line-height: 1.6; 
+      color: #333; 
+      margin: 0;
+      padding: 0;
+    }
+    .container { 
+      max-width: 600px; 
+      margin: 0 auto; 
+      padding: 20px; 
+    }
+    .header { 
+      background-color: #6b21a8; 
+      color: white; 
+      padding: 15px; 
+      text-align: center; 
+    }
+    .content { 
+      padding: 20px; 
+      border: 1px solid #ddd; 
+      border-top: none; 
+    }
+    .footer { 
+      text-align: center; 
+      margin-top: 20px; 
+      font-size: 12px; 
+      color: #777; 
+    }
+    .button { 
+      background-color: #6b21a8; 
+      color: white !important; 
+      padding: 10px 20px; 
+      text-decoration: none; 
+      border-radius: 5px; 
+      display: inline-block; 
+    }
+    .detail { 
+      margin-bottom: 10px; 
+    }
+    .detail span { 
+      font-weight: bold; 
+    }
   </style>
 </head>
 <body>
@@ -106,7 +144,7 @@ serve(async (req) => {
       <p>Our team will begin processing your order immediately. Join our Discord community to get real-time updates on your order and chat with our boosters:</p>
       
       <p style="text-align: center; margin: 25px 0;">
-        <a href="${details.discordInviteLink}" class="button">Join Discord</a>
+        <a href="${details.discordInviteLink}" class="button" style="color: white !important; text-decoration: none;">Join Discord</a>
       </p>
       
       <p>If you have any questions, please contact our support team at ${details.supportEmail}.</p>
@@ -144,7 +182,8 @@ serve(async (req) => {
         subject: subject,
         html: htmlContent,
         contentType: "text/html; charset=utf-8",
-        encoding: "utf-8"
+        encoding: "utf-8",
+        textEncoding: "quoted-printable"
       });
       
       console.log("Email sent successfully:", emailResult);
