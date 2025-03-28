@@ -65,94 +65,50 @@ serve(async (req) => {
     // Compose email content
     const subject = `Order Confirmation: #${details.orderNumber}`;
     
-    // Build HTML email template without entities that could cause =20 issues
+    // Create a simpler, cleaner HTML email to reduce =20 issues and spam triggers
     const htmlContent = `<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Confirmation</title>
-  <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      line-height: 1.6; 
-      color: #333; 
-      margin: 0;
-      padding: 0;
-    }
-    .container { 
-      max-width: 600px; 
-      margin: 0 auto; 
-      padding: 20px; 
-    }
-    .header { 
-      background-color: #6b21a8; 
-      color: white; 
-      padding: 15px; 
-      text-align: center; 
-    }
-    .content { 
-      padding: 20px; 
-      border: 1px solid #ddd; 
-      border-top: none; 
-    }
-    .footer { 
-      text-align: center; 
-      margin-top: 20px; 
-      font-size: 12px; 
-      color: #777; 
-    }
-    .button { 
-      background-color: #6b21a8; 
-      color: white !important; 
-      padding: 10px 20px; 
-      text-decoration: none; 
-      border-radius: 5px; 
-      display: inline-block; 
-    }
-    .detail { 
-      margin-bottom: 10px; 
-    }
-    .detail span { 
-      font-weight: bold; 
-    }
-  </style>
 </head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>${details.companyName} - Order Confirmation</h1>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #6b21a8; color: white; padding: 15px; text-align: center;">
+      <h1 style="margin: 0;">${details.companyName} - Order Confirmation</h1>
     </div>
-    <div class="content">
+    <div style="padding: 20px; border: 1px solid #ddd; border-top: none;">
       <p>Dear ${details.customerName},</p>
       <p>Thank you for your order! We're excited to help you achieve your gaming goals.</p>
       
-      <div class="detail"><span>Order Number:</span> #${details.orderNumber}</div>
-      <div class="detail"><span>Order Type:</span> ${details.orderType === 'rank' ? 'Rank Boost' : 'MMR Boost'}</div>
+      <div style="margin-bottom: 10px;"><strong>Order Number:</strong> #${details.orderNumber}</div>
+      <div style="margin-bottom: 10px;"><strong>Order Type:</strong> ${details.orderType === 'rank' ? 'Rank Boost' : 'MMR Boost'}</div>
       
       ${details.orderType === 'rank' ? `
-      <div class="detail"><span>Current Rank:</span> ${details.currentRank}</div>
-      <div class="detail"><span>Target Rank:</span> ${details.targetRank}</div>
+      <div style="margin-bottom: 10px;"><strong>Current Rank:</strong> ${details.currentRank}</div>
+      <div style="margin-bottom: 10px;"><strong>Target Rank:</strong> ${details.targetRank}</div>
       ` : `
-      <div class="detail"><span>Hero:</span> ${details.heroName}</div>
-      <div class="detail"><span>Current MMR:</span> ${details.currentMMR}</div>
-      <div class="detail"><span>Target MMR:</span> ${details.targetMMR}</div>
+      <div style="margin-bottom: 10px;"><strong>Hero:</strong> ${details.heroName}</div>
+      <div style="margin-bottom: 10px;"><strong>Current MMR:</strong> ${details.currentMMR}</div>
+      <div style="margin-bottom: 10px;"><strong>Target MMR:</strong> ${details.targetMMR}</div>
       `}
       
-      <div class="detail"><span>Total Amount:</span> $${details.totalAmount.toFixed(2)}</div>
+      <div style="margin-bottom: 10px;"><strong>Total Amount:</strong> $${details.totalAmount.toFixed(2)}</div>
       
       <p>Our team will begin processing your order immediately. Join our Discord community to get real-time updates on your order and chat with our boosters:</p>
       
       <p style="text-align: center; margin: 25px 0;">
-        <a href="${details.discordInviteLink}" class="button" style="color: white !important; text-decoration: none;">Join Discord</a>
+        <a href="${details.discordInviteLink}" style="background-color: #6b21a8; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Join Discord</a>
       </p>
       
       <p>If you have any questions, please contact our support team at ${details.supportEmail}.</p>
       
       <p>Best regards,<br>${details.companyName} Team</p>
     </div>
-    <div class="footer">
+    <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #777;">
       <p>This is an automated email, please do not reply directly to this message.</p>
+      <p>${details.companyName} | ${details.supportEmail}</p>
     </div>
   </div>
 </body>
@@ -176,14 +132,19 @@ serve(async (req) => {
 
       console.log("Sending email to:", details.email);
       
+      // Add spam-reducing email headers
       const emailResult = await client.send({
         from: `"${details.companyName}" <${gmailUser}>`,
         to: details.email,
         subject: subject,
         html: htmlContent,
-        contentType: "text/html; charset=utf-8",
-        encoding: "utf-8",
-        textEncoding: "quoted-printable"
+        headers: {
+          "X-Priority": "1",
+          "Importance": "high",
+          "X-MSMail-Priority": "High"
+        },
+        contentType: "text/html",
+        encoding: "8bit", // Changed from utf-8 to 8bit to avoid encoding issues
       });
       
       console.log("Email sent successfully:", emailResult);
