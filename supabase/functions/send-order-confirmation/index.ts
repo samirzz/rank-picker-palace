@@ -109,27 +109,53 @@ serve(async (req) => {
     </html>
     `;
 
-    // Simulate email sending for testing (we'll implement Resend integration)
-    // In a real implementation, you would call an email service like Resend here
-    console.log("Would send email to:", details.email);
-    console.log("Email subject:", subject);
-    console.log("Email content prepared");
-    
-    // If using Resend, you'd implement the actual API call here
-    // For now we're returning success to test the flow
-    
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: "Email would be sent in production",
-      }),
-      {
+    // Now let's actually send the email using Resend
+    try {
+      const resendUrl = "https://api.resend.com/emails";
+      
+      console.log("Sending email to:", details.email);
+      const emailData = {
+        from: `${details.companyName} <onboarding@resend.dev>`,
+        to: details.email,
+        subject: subject,
+        html: htmlContent,
+      };
+      
+      console.log("Email data prepared:", JSON.stringify(emailData, null, 2));
+      
+      const emailResponse = await fetch(resendUrl, {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          ...corsHeaders,
+          'Authorization': `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json'
         },
+        body: JSON.stringify(emailData)
+      });
+      
+      const emailResult = await emailResponse.json();
+      console.log("Email API response:", JSON.stringify(emailResult, null, 2));
+      
+      if (!emailResponse.ok) {
+        throw new Error(`Email service returned an error: ${JSON.stringify(emailResult)}`);
       }
-    );
+      
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "Email sent successfully",
+          id: emailResult.id
+        }),
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+          },
+        }
+      );
+    } catch (emailError) {
+      console.error("Failed to send email:", emailError);
+      throw new Error(`Email sending failed: ${emailError.message}`);
+    }
     
   } catch (error) {
     console.error("Error sending confirmation email:", error);

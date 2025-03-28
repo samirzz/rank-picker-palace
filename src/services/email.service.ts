@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-export interface OrderEmailDetails {
+interface OrderEmailDetails {
   id: string;
   orderNumber: string;
   customerName: string;
@@ -18,37 +18,23 @@ export interface OrderEmailDetails {
   supportEmail: string;
 }
 
-/**
- * Send order confirmation email via Supabase function
- */
-export async function sendOrderConfirmationEmail(orderDetails: OrderEmailDetails): Promise<boolean> {
+export async function sendOrderConfirmationEmail(details: OrderEmailDetails): Promise<boolean> {
   try {
-    console.log("Calling send-order-confirmation edge function with details:", 
-      JSON.stringify(orderDetails, null, 2));
+    console.log("Sending order confirmation email with details:", JSON.stringify(details, null, 2));
     
-    // Validate required fields to prevent common errors
-    if (!orderDetails.email || !orderDetails.orderNumber) {
-      console.error('Missing required email fields:', { 
-        hasEmail: Boolean(orderDetails.email),
-        hasOrderNumber: Boolean(orderDetails.orderNumber)
-      });
-      return false;
-    }
-    
-    // Call the Supabase Edge Function directly
-    const { data, error } = await supabase.functions.invoke("send-order-confirmation", {
-      body: orderDetails,
+    const { data, error } = await supabase.functions.invoke('send-order-confirmation', {
+      body: details
     });
-
+    
     if (error) {
-      console.error('Failed to send order confirmation email:', error);
+      console.error("Error invoking send-order-confirmation function:", error);
       return false;
     }
-
-    console.log("Edge function response:", data);
+    
+    console.log("Email function response:", data);
     return data?.success || false;
   } catch (error) {
-    console.error('Failed to send order confirmation email:', error);
+    console.error("Failed to send order confirmation email:", error);
     return false;
   }
 }
