@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 // CORS headers for browser requests
 const corsHeaders = {
@@ -38,9 +39,11 @@ serve(async (req) => {
   }
 
   try {
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    if (!resendApiKey) {
-      console.error("RESEND_API_KEY is not set");
+    const gmailUser = Deno.env.get("GMAIL_USER");
+    const gmailAppPassword = Deno.env.get("GMAIL_APP_PASSWORD");
+    
+    if (!gmailUser || !gmailAppPassword) {
+      console.error("Gmail credentials are not set");
       throw new Error("Email service configuration is missing");
     }
 
@@ -116,41 +119,39 @@ serve(async (req) => {
     </html>
     `;
 
-    // Now let's send the email using Resend
+    // Now let's send the email using Nodemailer via SMTP
     try {
-      console.log("Sending email to:", details.email);
-      const resendUrl = "https://api.resend.com/emails";
+      console.log("Setting up SMTP client with Gmail");
       
-      const emailData = {
-        from: `${details.companyName} <onboarding@resend.dev>`,
+      const client = new SMTPClient({
+        connection: {
+          hostname: "smtp.gmail.com",
+          port: 465,
+          tls: true,
+          auth: {
+            username: gmailUser,
+            password: gmailAppPassword,
+          },
+        },
+      });
+
+      console.log("Sending email to:", details.email);
+      
+      const emailResult = await client.send({
+        from: `"${details.companyName}" <${gmailUser}>`,
         to: details.email,
         subject: subject,
         html: htmlContent,
-      };
-      
-      console.log("Email data prepared:", JSON.stringify(emailData, null, 2));
-      
-      const emailResponse = await fetch(resendUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${resendApiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(emailData)
       });
       
-      const emailResult = await emailResponse.json();
-      console.log("Email API response:", JSON.stringify(emailResult, null, 2));
-      
-      if (!emailResponse.ok) {
-        throw new Error(`Email service returned an error: ${JSON.stringify(emailResult)}`);
-      }
+      console.log("Email sent successfully:", emailResult);
+      await client.close();
       
       return new Response(
         JSON.stringify({
           success: true,
           message: "Email sent successfully",
-          id: emailResult.id
+          id: emailResult
         }),
         {
           headers: {
