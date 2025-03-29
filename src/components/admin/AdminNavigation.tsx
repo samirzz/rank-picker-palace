@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { BarChart, DollarSign, MessageSquare } from "lucide-react";
+import { BarChart, DollarSign, MessageSquare, Gamepad } from "lucide-react";
 
 const AdminNavigation: React.FC = () => {
   const location = useLocation();
@@ -13,6 +13,18 @@ const AdminNavigation: React.FC = () => {
   return (
     <div className="glass-panel p-2 rounded-lg">
       <nav className="flex flex-wrap gap-2">
+        <Link
+          to="/admin/game-selection"
+          className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+            isActive("/admin/game-selection")
+              ? "bg-mlbb-purple/20 text-white"
+              : "hover:bg-gray-800/50 text-gray-300 hover:text-white"
+          }`}
+        >
+          <Gamepad className="h-4 w-4" />
+          <span>Games</span>
+        </Link>
+        
         <Link
           to="/admin/dashboard"
           className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${

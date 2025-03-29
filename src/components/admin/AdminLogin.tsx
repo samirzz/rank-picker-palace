@@ -1,9 +1,10 @@
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 const AdminLogin: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -12,94 +13,88 @@ const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  useEffect(() => {
+    // Check if already logged in
+    const adminAuth = localStorage.getItem("adminAuth");
+    if (adminAuth) {
+      navigate("/admin/game-selection");
+    }
+  }, [navigate]);
+
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    
     setIsLoading(true);
-
-    try {
-      // Check admin credentials against the database
-      const { data, error } = await supabase
-        .from("admin_users")
-        .select("*")
-        .eq("username", username)
-        .eq("password_hash", password) // In production, use proper password hashing!
-        .single();
-
-      if (error || !data) {
-        toast({
-          title: "Login failed",
-          description: "Invalid username or password",
-          variant: "destructive",
-        });
-        console.error("Admin login error:", error);
-      } else {
-        // Store auth token in localStorage
-        localStorage.setItem("adminAuth", "true");
+    
+    // Simple mock authentication - In production, use a proper auth service
+    setTimeout(() => {
+      if (username === "admin" && password === "password") {
+        localStorage.setItem("adminAuth", JSON.stringify({ username, timestamp: Date.now() }));
         toast({
           title: "Login successful",
-          description: "Welcome to the admin dashboard",
-          variant: "default",
+          description: "Welcome to the admin dashboard.",
         });
-        navigate("/admin/dashboard");
+        navigate("/admin/game-selection");
+      } else {
+        toast({
+          title: "Login failed",
+          description: "Invalid username or password.",
+          variant: "destructive"
+        });
       }
-    } catch (error) {
-      console.error("Admin login error:", error);
-      toast({
-        title: "Login failed",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
-    } finally {
       setIsLoading(false);
-    }
+    }, 1000);
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-black to-mlbb-purple/30">
-      <div className="w-full max-w-md px-4">
-        <div className="glass-panel p-6 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-black to-mlbb-purple/30 flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="glass-panel p-6 md:p-8 rounded-lg shadow-xl border border-mlbb-purple/20">
           <div className="text-center mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-mlbb-purple mb-2">Admin Portal</h1>
-            <p className="text-gray-400 text-sm">Login to manage rank pricing</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-white">Admin Login</h1>
+            <p className="text-gray-400 mt-2">Enter your credentials to access the dashboard</p>
           </div>
-
+          
           <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-1">
-                Username
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
                 id="username"
                 type="text"
+                placeholder="Enter your username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-2 bg-black/60 border border-mlbb-purple/30 rounded-md focus:outline-none focus:ring-2 focus:ring-mlbb-purple text-white"
                 required
+                className="bg-black/50 border-gray-700"
               />
             </div>
             
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
-                Password
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
                 id="password"
                 type="password"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 bg-black/60 border border-mlbb-purple/30 rounded-md focus:outline-none focus:ring-2 focus:ring-mlbb-purple text-white"
                 required
+                className="bg-black/50 border-gray-700"
               />
             </div>
             
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple hover:opacity-90"
+              className="w-full"
+              variant="gradient"
               disabled={isLoading}
             >
               {isLoading ? "Logging in..." : "Login"}
             </Button>
           </form>
+          
+          <div className="mt-6 text-center text-sm text-gray-500">
+            <p>For demo purposes, use: admin / password</p>
+          </div>
         </div>
       </div>
     </div>

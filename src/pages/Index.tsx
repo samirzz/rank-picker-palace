@@ -11,6 +11,7 @@ import MMRBoostingSection from "@/components/MMRBoostingSection";
 import DiscordCommunity from "@/components/DiscordCommunity";
 import LiveChat from "@/components/LiveChat";
 import { Rank, ranks } from "@/data/ranks";
+import GameSelection from "@/components/GameSelection";
 
 const Index: React.FC = () => {
   const { ref: discordRef, inView: discordInView } = useInView({
@@ -46,6 +47,10 @@ const Index: React.FC = () => {
       <main>
         <section id="home">
           <HeroSection />
+        </section>
+        
+        <section id="game-selection" className="py-16 md:py-24 bg-gradient-to-b from-black to-gray-900">
+          <GameSelection />
         </section>
         
         <section id="ranks" className="py-16 md:py-24" ref={rankRef}>

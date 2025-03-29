@@ -2,9 +2,21 @@
 export interface Message {
   id: string;
   content: string;
-  sender_id: string;
-  sender_name: string;
-  recipient_id: string | null;
-  is_admin: boolean;
-  created_at: string;
+  sender: 'user' | 'agent';
+  timestamp: string;
+  status?: 'sent' | 'delivered' | 'read';
+  attachments?: {
+    url: string;
+    type: string;
+    name: string;
+  }[];
+}
+
+export interface ChatContact {
+  id: string;
+  name: string;
+  avatar?: string;
+  status: 'online' | 'offline' | 'away';
+  lastSeen?: string;
+  unreadCount: number;
 }
