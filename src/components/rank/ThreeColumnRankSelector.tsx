@@ -2,8 +2,6 @@
 import React from "react";
 import { Rank } from "@/data/ranks/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import StarsInput from "./StarsInput";
-import PointsInput from "./PointsInput";
 
 interface ThreeColumnRankSelectorProps {
   label: string;
@@ -16,7 +14,7 @@ interface ThreeColumnRankSelectorProps {
   onSubdivisionSelect: (subdivisionIndex: number) => void;
   onStarsChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onPointsChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  disabledRanks: Rank[];
+  disabledRanks: string[];
   rankHasPoints: (rank: Rank | null) => boolean;
   rankHasStars: (rank: Rank | null) => boolean;
   animationDelay?: number;
@@ -56,7 +54,7 @@ const ThreeColumnRankSelector: React.FC<ThreeColumnRankSelectorProps> = ({
 
   // Filter out disabled ranks
   const filteredRanks = availableRanks.filter(
-    rank => !disabledRanks.some(disabledRank => disabledRank.id === rank.id)
+    rank => !disabledRanks.includes(rank.id)
   );
 
   return (

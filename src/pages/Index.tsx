@@ -4,7 +4,7 @@ import { useInView } from "react-intersection-observer";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
-import RankSelectionSection from "@/components/RankSelectionSection";
+import RankSelectionContainer from "@/components/rank-selection/RankSelectionContainer";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import { Rank } from "@/data/ranks";
 import LiveChat from "@/components/chat/LiveChat";
@@ -61,7 +61,7 @@ const Index: React.FC = () => {
         </section>
         
         <section id="ranks" className="py-16 md:py-24" ref={rankRef}>
-          <RankSelectionSection 
+          <RankSelectionContainer 
             isIntersecting={rankInView}
             currentRank={currentRank}
             setCurrentRank={handleCurrentRankSelect}
