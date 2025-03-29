@@ -1,4 +1,3 @@
-
 import React from "react";
 import { usePricingCard } from "./usePricingCard";
 import type { Rank } from "@/data/ranks/types";
@@ -64,7 +63,6 @@ const PricingCard: React.FC<PricingCardProps> = ({
     serviceOptions
   });
 
-  // Get active service options for display
   const activeOptions = serviceOptions?.filter(opt => opt.isActive) || [];
 
   return (

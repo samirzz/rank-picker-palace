@@ -161,18 +161,31 @@ export const useRankSelection = ({
   const getDisabledTargetRanks = () => {
     if (!currentRank) return [];
     
-    // If current rank has subdivisions selected, we need to disable:
-    // 1. All ranks with lower tier than current rank
-    // 2. Current rank's subdivisions that are lower than or equal to selected subdivision
     return availableRanks.filter(rank => {
-      // Filter out lower tier ranks
-      if (rank.tier < currentRank.tier) return true;
+      // Allow selecting the same rank for Immortal (to allow boosting to higher points)
+      if (currentRank.id === 'immortal' && rank.id === 'immortal') {
+        return false;
+      }
       
-      // If same rank, filter out same or lower subdivisions
-      if (rank.id === currentRank.id) {
-        if (!rank.subdivisions) return true;
-        // This rank would be completely disabled if not using subdivisions
+      // Filter out ranks with lower tier than current rank
+      if (rank.tier < currentRank.tier) {
         return true;
+      }
+      
+      // If same rank tier but different rank ID, allow it
+      if (rank.tier === currentRank.tier && rank.id !== currentRank.id) {
+        return false;
+      }
+      
+      // If same rank, only filter out same or lower subdivisions
+      if (rank.id === currentRank.id) {
+        if (!rank.subdivisions || currentRank.subdivisions?.length <= 1) {
+          return true; // Disable if there are no subdivisions to select
+        }
+        
+        // Only disable the rank if we want to prevent same rank selection completely
+        // For now, we'll allow it and handle subdivision selection logic separately
+        return false;
       }
       
       return false;
