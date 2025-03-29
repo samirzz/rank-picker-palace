@@ -25,25 +25,11 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
     <div className="md:hidden absolute top-full left-0 right-0 bg-black/95 backdrop-blur-xl border-b border-gray-800 animate-slide-down">
       <div className="container mx-auto py-4 px-4 flex flex-col space-y-2">
         <a
-          href="#home"
+          href="/"
           className="text-gray-300 hover:text-white py-3 px-4 rounded-md hover:bg-mlbb-purple/10 transition-colors"
           onClick={onClose}
         >
           Home
-        </a>
-        <a
-          href="#ranks"
-          className="text-gray-300 hover:text-white py-3 px-4 rounded-md hover:bg-mlbb-purple/10 transition-colors"
-          onClick={onClose}
-        >
-          Rank Boost
-        </a>
-        <a
-          href="#mmrboost"
-          className="text-gray-300 hover:text-white py-3 px-4 rounded-md hover:bg-mlbb-purple/10 transition-colors"
-          onClick={onClose}
-        >
-          MMR Boost
         </a>
         <a
           href="#about"

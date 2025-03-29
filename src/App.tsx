@@ -18,6 +18,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import React from "react";
 import { LiveChatProvider } from "./components/chat/LiveChatContext";
 import GameSelectionPage from "./pages/GameSelectionPage";
+import MobileLegends from "./pages/games/MobileLegends";
 
 // Instead of creating QueryClient outside the component, we create it inside
 const App = () => {
@@ -33,7 +34,8 @@ const App = () => {
             <Sonner />
             <BrowserRouter>
               <Routes>
-                <Route path="/" element={<Index />} />
+                <Route path="/" element={<GameSelectionPage />} />
+                <Route path="/mobile-legends" element={<MobileLegends />} />
                 <Route path="/game-selection" element={<GameSelectionPage />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/checkout" element={<Checkout />} />

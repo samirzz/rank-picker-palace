@@ -32,7 +32,12 @@ const GameSelectionPage: React.FC = () => {
   }, []);
 
   const handleGameSelect = (gameSlug: string) => {
-    navigate(`/${gameSlug}`);
+    if (gameSlug === "mobile-legends") {
+      navigate(`/${gameSlug}`);
+    } else {
+      // For now, redirect to the mobile-legends page for all other games
+      navigate("/mobile-legends");
+    }
   };
 
   return (
@@ -58,47 +63,66 @@ const GameSelectionPage: React.FC = () => {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                {games.map((game) => (
-                  <Card 
-                    key={game.id}
-                    className="glass-panel border border-mlbb-purple/30 overflow-hidden hover:shadow-lg hover:shadow-mlbb-purple/20 transition-all duration-300"
-                  >
-                    <div className="relative">
-                      <div className="h-48 bg-gradient-to-br from-mlbb-purple/30 to-black flex items-center justify-center">
-                        <Gamepad className="h-24 w-24 text-mlbb-purple opacity-60" />
+                {games.length > 0 ? (
+                  games.map((game) => (
+                    <Card 
+                      key={game.id}
+                      className="glass-panel border border-mlbb-purple/30 overflow-hidden hover:shadow-lg hover:shadow-mlbb-purple/20 transition-all duration-300"
+                    >
+                      <div className="relative">
+                        <div className="h-48 bg-gradient-to-br from-mlbb-purple/30 to-black flex items-center justify-center">
+                          <Gamepad className="h-24 w-24 text-mlbb-purple opacity-60" />
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black to-transparent"></div>
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black to-transparent"></div>
-                    </div>
-                    
-                    <div className="p-6">
-                      <h3 className="text-2xl font-bold mb-3">{game.name}</h3>
-                      <p className="text-gray-400 mb-6">{game.description || `Professional ${game.name} boosting services for all ranks and game modes.`}</p>
                       
-                      <div className="space-y-3 mb-6">
-                        <div className="flex items-center text-gray-300">
-                          <Trophy className="h-5 w-5 text-mlbb-gold mr-3" />
-                          <span>Rank & MMR Boosting</span>
+                      <div className="p-6">
+                        <h3 className="text-2xl font-bold mb-3">{game.name}</h3>
+                        <p className="text-gray-400 mb-6">{game.description || `Professional ${game.name} boosting services for all ranks and game modes.`}</p>
+                        
+                        <div className="space-y-3 mb-6">
+                          <div className="flex items-center text-gray-300">
+                            <Trophy className="h-5 w-5 text-mlbb-gold mr-3" />
+                            <span>Rank & MMR Boosting</span>
+                          </div>
+                          <div className="flex items-center text-gray-300">
+                            <Star className="h-5 w-5 text-mlbb-gold mr-3" />
+                            <span>Professional Boosters</span>
+                          </div>
+                          <div className="flex items-center text-gray-300">
+                            <Shield className="h-5 w-5 text-mlbb-gold mr-3" />
+                            <span>Secure & Fast Delivery</span>
+                          </div>
                         </div>
-                        <div className="flex items-center text-gray-300">
-                          <Star className="h-5 w-5 text-mlbb-gold mr-3" />
-                          <span>Professional Boosters</span>
-                        </div>
-                        <div className="flex items-center text-gray-300">
-                          <Shield className="h-5 w-5 text-mlbb-gold mr-3" />
-                          <span>Secure & Fast Delivery</span>
-                        </div>
+                        
+                        <Button 
+                          className="w-full bg-gradient-to-r from-mlbb-purple to-mlbb-gold text-white"
+                          onClick={() => handleGameSelect(game.slug)}
+                        >
+                          Select {game.name}
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
                       </div>
+                    </Card>
+                  ))
+                ) : (
+                  // Fallback content when no games are found
+                  <Card className="glass-panel border border-mlbb-purple/30 overflow-hidden col-span-full max-w-xl mx-auto">
+                    <div className="p-6 text-center">
+                      <Gamepad className="h-16 w-16 text-mlbb-purple opacity-60 mx-auto mb-4" />
+                      <h3 className="text-2xl font-bold mb-3">Mobile Legends: Bang Bang</h3>
+                      <p className="text-gray-400 mb-6">Professional Mobile Legends boosting services for all ranks and game modes.</p>
                       
                       <Button 
-                        className="w-full bg-gradient-to-r from-mlbb-purple to-mlbb-gold text-white"
-                        onClick={() => handleGameSelect(game.slug)}
+                        className="bg-gradient-to-r from-mlbb-purple to-mlbb-gold text-white"
+                        onClick={() => navigate("/mobile-legends")}
                       >
-                        Select {game.name}
+                        Select Mobile Legends
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </div>
                   </Card>
-                ))}
+                )}
               </div>
               
               <div className="mt-16 max-w-4xl mx-auto bg-mlbb-purple/10 border border-mlbb-purple/30 rounded-xl p-6 md:p-8">

@@ -20,22 +20,10 @@ const DesktopMenu: React.FC<DesktopMenuProps> = ({ user, onLogout, onLogin }) =>
   return (
     <div className="hidden md:flex items-center space-x-2 lg:space-x-6">
       <a
-        href="#home"
+        href="/"
         className="px-3 py-2 text-gray-300 hover:text-white transition-colors text-sm lg:text-base"
       >
         Home
-      </a>
-      <a
-        href="#ranks"
-        className="px-3 py-2 text-gray-300 hover:text-white transition-colors text-sm lg:text-base"
-      >
-        Rank Boost
-      </a>
-      <a
-        href="#mmrboost"
-        className="px-3 py-2 text-gray-300 hover:text-white transition-colors text-sm lg:text-base"
-      >
-        MMR Boost
       </a>
       <a
         href="#about"
