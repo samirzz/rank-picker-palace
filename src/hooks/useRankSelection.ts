@@ -1,8 +1,8 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Rank, initializeRanks } from "@/data/ranks";
 
-interface UseRankSelectionProps {
+interface RankSelectionProps {
   currentRank: Rank | null;
   targetRank: Rank | null;
   setCurrentRank: (rank: Rank, subdivisionIndex?: number) => void;
@@ -14,170 +14,104 @@ export const useRankSelection = ({
   targetRank,
   setCurrentRank,
   setTargetRank
-}: UseRankSelectionProps) => {
-  const [currentSubdivision, setCurrentSubdivision] = useState(0);
-  const [targetSubdivision, setTargetSubdivision] = useState(0);
+}: RankSelectionProps) => {
   const [availableRanks, setAvailableRanks] = useState<Rank[]>([]);
-  const [currentStars, setCurrentStars] = useState(0);
-  const [targetStars, setTargetStars] = useState(0);
-  const [currentMythicPoints, setCurrentMythicPoints] = useState(0);
-  const [targetMythicPoints, setTargetMythicPoints] = useState(0);
+  const [currentSubdivision, setCurrentSubdivision] = useState<number>(0);
+  const [targetSubdivision, setTargetSubdivision] = useState<number>(0);
+  const [currentStars, setCurrentStars] = useState<number>(0);
+  const [targetStars, setTargetStars] = useState<number>(0);
+  const [currentMythicPoints, setCurrentMythicPoints] = useState<number>(0);
+  const [targetMythicPoints, setTargetMythicPoints] = useState<number>(0);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Load ranks on initial render
   useEffect(() => {
+    // Check localStorage for cached ranks data
+    const cachedRanks = localStorage.getItem('cachedRanks');
+    const lastCacheTime = localStorage.getItem('ranksCacheTime');
+    const cacheExpiryTime = 1000 * 60 * 60; // 1 hour cache
+    
     const loadRanks = async () => {
       try {
-        console.log('Loading ranks in useRankSelection');
-        const loadedRanks = await initializeRanks();
-        console.log(`Loaded ${loadedRanks.length} ranks`);
-        setAvailableRanks([...loadedRanks]);
-        
-        // Update current and target ranks if they exist
-        if (currentRank) {
-          const updatedCurrentRank = loadedRanks.find(rank => rank.id === currentRank.id);
-          if (updatedCurrentRank) {
-            setCurrentRank(updatedCurrentRank, currentSubdivision);
-          }
+        // Use cached data if valid and not expired
+        if (cachedRanks && lastCacheTime && 
+            (Date.now() - parseInt(lastCacheTime)) < cacheExpiryTime) {
+          console.log('Using cached ranks data');
+          setAvailableRanks(JSON.parse(cachedRanks));
+        } else {
+          console.log('Fetching fresh ranks data');
+          const ranks = await initializeRanks();
+          setAvailableRanks(ranks);
+          
+          // Cache the ranks data
+          localStorage.setItem('cachedRanks', JSON.stringify(ranks));
+          localStorage.setItem('ranksCacheTime', Date.now().toString());
         }
-        
-        if (targetRank) {
-          const updatedTargetRank = loadedRanks.find(rank => rank.id === targetRank.id);
-          if (updatedTargetRank) {
-            setTargetRank(updatedTargetRank, targetSubdivision);
-          }
-        }
+        setIsInitialized(true);
       } catch (error) {
-        console.error("Error loading ranks:", error);
+        console.error("Failed to initialize ranks:", error);
       }
     };
 
     loadRanks();
+  }, []);
 
-    // Listen for admin price changes
-    const handleAdminPriceChange = () => {
-      loadRanks();
-    };
-    
-    window.addEventListener('adminPriceChange', handleAdminPriceChange);
-    
-    return () => {
-      window.removeEventListener('adminPriceChange', handleAdminPriceChange);
-    };
-  }, [currentRank, targetRank, currentSubdivision, targetSubdivision, setCurrentRank, setTargetRank]);
-
-  const handleCurrentRankSelect = (rank: Rank, subdivisionIndex: number = 0) => {
-    setCurrentRank(rank);
+  const handleCurrentRankSelect = useCallback((rank: Rank, subdivisionIndex = 0) => {
+    setCurrentRank(rank, subdivisionIndex);
     setCurrentSubdivision(subdivisionIndex);
     
-    // Instead of resetting stars, update them to the maximum for this rank if needed
-    const maxStars = getMaxStarsForRank(rank);
-    if (currentStars > maxStars) {
-      setCurrentStars(maxStars);
-    } else if (currentStars === 0) {
-      // Only set default stars if it was previously 0
+    if (rankHasStars(rank)) {
       setCurrentStars(0);
     }
     
     if (rankHasPoints(rank)) {
       setCurrentMythicPoints(rank.points?.min || 0);
-    } else {
-      setCurrentMythicPoints(0);
     }
-  };
+  }, [setCurrentRank]);
 
-  const handleTargetRankSelect = (rank: Rank, subdivisionIndex: number = 0) => {
-    setTargetRank(rank);
+  const handleTargetRankSelect = useCallback((rank: Rank, subdivisionIndex = 0) => {
+    setTargetRank(rank, subdivisionIndex);
     setTargetSubdivision(subdivisionIndex);
     
-    // Instead of resetting stars, update them to the maximum for this rank if needed
-    const maxStars = getMaxStarsForRank(rank);
-    if (targetStars > maxStars) {
-      setTargetStars(maxStars);
-    } else if (targetStars === 0) {
-      // For target rank, set to max stars by default
-      setTargetStars(maxStars);
+    if (rankHasStars(rank)) {
+      setTargetStars(0);
     }
     
     if (rankHasPoints(rank)) {
       setTargetMythicPoints(rank.points?.min || 0);
-    } else {
-      setTargetMythicPoints(0);
     }
-  };
+  }, [setTargetRank]);
 
-  // Handle current stars input change
-  const handleCurrentStarsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value) || 0;
-    const maxStars = getMaxStarsForRank(currentRank);
-    setCurrentStars(Math.min(Math.max(value, 0), maxStars)); // Limit between 0-maxStars
-  };
+  const handleCurrentStarsChange = useCallback((stars: number) => {
+    setCurrentStars(stars);
+  }, []);
 
-  // Handle target stars input change
-  const handleTargetStarsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value) || 0;
-    const maxStars = getMaxStarsForRank(targetRank);
-    setTargetStars(Math.min(Math.max(value, 0), maxStars)); // Limit between 0-maxStars
-  };
+  const handleTargetStarsChange = useCallback((stars: number) => {
+    setTargetStars(stars);
+  }, []);
 
-  // Get the maximum stars for a given rank
-  const getMaxStarsForRank = (rank: Rank | null): number => {
-    if (!rank || !rank.subdivisions || rank.subdivisions.length === 0) return 5;
-    const subdivision = rank.subdivisions[0]; // Using first subdivision as reference
-    return subdivision.stars || 5;
-  };
+  const handleCurrentMythicPointsChange = useCallback((points: number) => {
+    setCurrentMythicPoints(points);
+  }, []);
 
-  // Handle current mythic points input change
-  const handleCurrentMythicPointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value) || 0;
-    // Get min and max values from the rank's points property
-    const minPoints = currentRank?.points?.min || 0;
-    const maxPoints = currentRank?.points?.max || 999;
-    setCurrentMythicPoints(Math.min(Math.max(value, minPoints), maxPoints));
-  };
+  const handleTargetMythicPointsChange = useCallback((points: number) => {
+    setTargetMythicPoints(points);
+  }, []);
 
-  // Handle target mythic points input change
-  const handleTargetMythicPointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value) || 0;
-    // Get min and max values from the rank's points property
-    const minPoints = targetRank?.points?.min || 0;
-    const maxPoints = targetRank?.points?.max || 999;
-    setTargetMythicPoints(Math.min(Math.max(value, minPoints), maxPoints));
-  };
-
-  // Check if rank has points system (Mythic and above)
-  const rankHasPoints = (rank: Rank | null): boolean => {
+  const rankHasPoints = useCallback((rank: Rank | null): boolean => {
     if (!rank) return false;
     return Boolean(rank.points) || Boolean(rank.id === "mythic" && rank.subdivisions?.[0]?.points);
-  };
+  }, []);
 
-  // Check if rank has stars system (all ranks except those with points)
-  const rankHasStars = (rank: Rank | null): boolean => {
+  const rankHasStars = useCallback((rank: Rank | null): boolean => {
     if (!rank) return false;
-    // Ranks with points don't use the star system
-    return !rankHasPoints(rank);
-  };
+    return Boolean(rank.id === "legend");
+  }, []);
 
-  // Determine which ranks should be disabled for target selection
-  const getDisabledTargetRanks = () => {
+  const getDisabledTargetRanks = useCallback(() => {
     if (!currentRank) return [];
     
-    // If current rank has subdivisions selected, we need to disable:
-    // 1. All ranks with lower tier than current rank
-    // 2. Current rank's subdivisions that are lower than or equal to selected subdivision
-    return availableRanks.filter(rank => {
-      // Filter out lower tier ranks
-      if (rank.tier < currentRank.tier) return true;
-      
-      // If same rank, filter out same or lower subdivisions
-      if (rank.id === currentRank.id) {
-        if (!rank.subdivisions) return true;
-        // This rank would be completely disabled if not using subdivisions
-        return true;
-      }
-      
-      return false;
-    });
-  };
+    return availableRanks.filter(rank => rank.tier <= currentRank.tier).map(rank => rank.id);
+  }, [availableRanks, currentRank]);
 
   return {
     availableRanks,
@@ -195,6 +129,7 @@ export const useRankSelection = ({
     handleTargetMythicPointsChange,
     rankHasPoints,
     rankHasStars,
-    getDisabledTargetRanks
+    getDisabledTargetRanks,
+    isInitialized
   };
 };
