@@ -2,13 +2,12 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
-import { UserInfo } from "@/hooks/useAuth";
-import { Link } from "react-router-dom";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  user: UserInfo | null;
+  user: SupabaseUser | null;
   onLogout: () => Promise<void>;
   onLogin: () => void;
 }

@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { User, LogOut } from "lucide-react";
-import { UserInfo } from "@/hooks/useAuth";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface DesktopMenuProps {
-  user: UserInfo | null;
+  user: SupabaseUser | null;
   onLogout: () => Promise<void>;
   onLogin: () => void;
 }
