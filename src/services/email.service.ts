@@ -48,7 +48,7 @@ export async function sendOrderConfirmationEmail(details: OrderEmailDetails): Pr
     const { data: configData, error: configError } = await supabase
       .from("configuration")
       .select("id, value")
-      .in("id", ["gmail_user", "gmail_app_password"]);
+      .in("id", ["gmail_user", "gmail_app_password", "allow_email_sending"]);
     
     if (configError) {
       console.error("Error fetching email configuration:", configError);
@@ -65,6 +65,12 @@ export async function sendOrderConfirmationEmail(details: OrderEmailDetails): Pr
       acc[item.id] = item.value;
       return acc;
     }, {} as Record<string, string>);
+    
+    // Check if email sending is disabled
+    if (emailConfig.allow_email_sending === "false") {
+      console.log("Email sending is disabled in configuration");
+      return false;
+    }
     
     // Add email configuration to the request
     const requestWithConfig = {

@@ -26,11 +26,14 @@ interface OrderEmailDetails {
   supportEmail: string;
   gmailUser?: string;
   gmailAppPassword?: string;
+  isTest?: boolean;
 }
 
 // Email content generation function
 function generateEmailContent(details: OrderEmailDetails): { subject: string; htmlContent: string } {
-  const subject = `Order Confirmation: #${details.orderNumber}`;
+  const subject = details.isTest 
+    ? `Test Email - Order Confirmation System` 
+    : `Order Confirmation: #${details.orderNumber}`;
   
   // Create clean, optimized HTML email template
   const htmlContent = `<!DOCTYPE html>
@@ -39,16 +42,21 @@ function generateEmailContent(details: OrderEmailDetails): { subject: string; ht
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <title>Order Confirmation</title>
+  <title>${details.isTest ? 'Test Email' : 'Order Confirmation'}</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0;">
   <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
     <div style="background-color: #6b21a8; color: white; padding: 15px; text-align: center;">
-      <h1 style="margin: 0;">${details.companyName} - Order Confirmation</h1>
+      <h1 style="margin: 0;">${details.companyName}${details.isTest ? ' - Test Email' : ' - Order Confirmation'}</h1>
     </div>
     <div style="padding: 20px; border: 1px solid #ddd; border-top: none;">
-      <p>Dear ${details.customerName},</p>
-      <p>Thank you for your order! We're excited to help you achieve your gaming goals.</p>
+      ${details.isTest ? 
+        `<p><strong>This is a test email to verify your email configuration.</strong></p>
+         <p>If you're receiving this, your email settings are working correctly!</p>` 
+        : 
+        `<p>Dear ${details.customerName},</p>
+         <p>Thank you for your order! We're excited to help you achieve your gaming goals.</p>`
+      }
       
       <div style="margin-bottom: 10px;"><strong>Order Number:</strong> #${details.orderNumber}</div>
       <div style="margin-bottom: 10px;"><strong>Order Type:</strong> ${details.orderType === 'rank' ? 'Rank Boost' : 'MMR Boost'}</div>
@@ -165,7 +173,13 @@ serve(async (req) => {
     }
 
     const details: OrderEmailDetails = await req.json();
-    console.log("Received order details:", JSON.stringify(details, null, 2));
+    
+    // Remove password from logs for security
+    const logSafeDetails = { ...details };
+    if (logSafeDetails.gmailAppPassword) {
+      logSafeDetails.gmailAppPassword = "********";
+    }
+    console.log("Received order details:", JSON.stringify(logSafeDetails, null, 2));
 
     // Use provided Gmail credentials or fall back to environment variables
     const gmailUser = details.gmailUser || Deno.env.get("GMAIL_USER");

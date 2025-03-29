@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,10 +10,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 const EmailSettingsEditor: React.FC = () => {
   const [gmailUser, setGmailUser] = useState("");
   const [gmailAppPassword, setGmailAppPassword] = useState("");
+  const [allowEmailSending, setAllowEmailSending] = useState(true);
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [testEmailStatus, setTestEmailStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -25,7 +28,7 @@ const EmailSettingsEditor: React.FC = () => {
         const { data, error } = await supabase
           .from("configuration")
           .select("*")
-          .in("id", ["gmail_user", "gmail_app_password_masked"]);
+          .in("id", ["gmail_user", "gmail_app_password_masked", "allow_email_sending"]);
 
         if (error) {
           throw error;
@@ -42,6 +45,7 @@ const EmailSettingsEditor: React.FC = () => {
           setGmailUser(settings.gmail_user || "");
           // We don't actually fetch the real password, just an indication if it's set
           setGmailAppPassword(settings.gmail_app_password_masked ? "••••••••" : "");
+          setAllowEmailSending(settings.allow_email_sending !== "false");
           setInitialized(true);
         } else {
           console.log("No email settings found in database");
@@ -84,6 +88,10 @@ const EmailSettingsEditor: React.FC = () => {
           id: "gmail_user",
           value: gmailUser,
         },
+        {
+          id: "allow_email_sending",
+          value: allowEmailSending ? "true" : "false",
+        }
       ];
 
       // Only update the password if it's changed (not the masked value)
@@ -124,6 +132,57 @@ const EmailSettingsEditor: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleTestEmail = async () => {
+    try {
+      setTestEmailStatus("sending");
+
+      // Call the edge function to test email
+      const { data, error } = await supabase.functions.invoke('send-order-confirmation', {
+        body: {
+          id: "test-email",
+          orderNumber: `TEST-${Date.now().toString().slice(-6)}`,
+          customerName: "Test User",
+          email: gmailUser, // Send to the configured Gmail address
+          orderType: "rank",
+          currentRank: "Epic",
+          targetRank: "Mythic",
+          totalAmount: 99.99,
+          discordInviteLink: "https://discord.gg/mlboost",
+          companyName: "MLBooster",
+          supportEmail: "support@mlbooster.com",
+          isTest: true
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || "Email test failed");
+      }
+
+      setTestEmailStatus("success");
+      toast({
+        title: "Test Email Sent",
+        description: `A test email was sent to ${gmailUser}`,
+      });
+    } catch (error) {
+      console.error("Test email error:", error);
+      setTestEmailStatus("error");
+      toast({
+        title: "Test Email Failed",
+        description: "Could not send test email. Please check your settings.",
+        variant: "destructive",
+      });
+    } finally {
+      // Reset status after 3 seconds
+      setTimeout(() => {
+        setTestEmailStatus("idle");
+      }, 3000);
     }
   };
 
@@ -205,13 +264,48 @@ const EmailSettingsEditor: React.FC = () => {
           </a>
         </div>
 
-        <Button
-          onClick={handleSave}
-          disabled={loading}
-          className="bg-purple-600 hover:bg-purple-700 text-white"
-        >
-          {loading ? "Saving..." : "Save Email Settings"}
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Switch 
+            id="allowEmailSending" 
+            checked={allowEmailSending}
+            onCheckedChange={setAllowEmailSending}
+          />
+          <label 
+            htmlFor="allowEmailSending" 
+            className="text-white cursor-pointer"
+          >
+            Enable Email Sending
+          </label>
+        </div>
+        {!allowEmailSending && (
+          <div className="bg-yellow-900/30 border border-yellow-700 rounded-lg p-3">
+            <p className="text-yellow-300 text-sm">
+              Email sending is currently disabled. Orders will still be created but confirmation emails will not be sent.
+            </p>
+          </div>
+        )}
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button
+            onClick={handleSave}
+            disabled={loading}
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            {loading ? "Saving..." : "Save Email Settings"}
+          </Button>
+          
+          <Button
+            onClick={handleTestEmail}
+            disabled={testEmailStatus === "sending" || !gmailUser || !gmailAppPassword || !allowEmailSending}
+            variant="outline"
+            className="border-purple-600 text-purple-300 hover:bg-purple-900/30"
+          >
+            {testEmailStatus === "sending" ? "Sending..." : 
+             testEmailStatus === "success" ? "Test Sent!" : 
+             testEmailStatus === "error" ? "Test Failed" : 
+             "Send Test Email"}
+          </Button>
+        </div>
       </div>
     </div>
   );
