@@ -1,19 +1,16 @@
 
-import React, { useState, lazy, Suspense } from "react";
+import React, { useState } from "react";
 import { useInView } from "react-intersection-observer";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
-import RankSelectionContainer from "@/components/rank-selection/RankSelectionContainer";
+import RankSelectionSection from "@/components/RankSelectionSection";
 import WhyChooseUs from "@/components/WhyChooseUs";
-import { Rank } from "@/data/ranks";
-import LiveChat from "@/components/chat/LiveChat";
-import { Skeleton } from "@/components/ui/skeleton";
-
-// Lazy load non-critical components
-const ContactSection = lazy(() => import("@/components/ContactSection"));
-const MMRBoostingSection = lazy(() => import("@/components/MMRBoostingSection"));
-const DiscordCommunity = lazy(() => import("@/components/DiscordCommunity"));
+import ContactSection from "@/components/ContactSection";
+import MMRBoostingSection from "@/components/MMRBoostingSection";
+import DiscordCommunity from "@/components/DiscordCommunity";
+import LiveChat from "@/components/LiveChat";
+import { Rank, ranks } from "@/data/ranks";
 
 const Index: React.FC = () => {
   const { ref: discordRef, inView: discordInView } = useInView({
@@ -42,15 +39,6 @@ const Index: React.FC = () => {
     setTargetRank(rank);
   };
   
-  // Render fallback component for lazy-loaded sections
-  const renderSkeleton = () => (
-    <div className="w-full">
-      <Skeleton className="w-full h-12 mb-4 bg-gray-700/40" />
-      <Skeleton className="w-3/4 h-6 mb-3 bg-gray-700/40" />
-      <Skeleton className="w-full h-48 bg-gray-700/40" />
-    </div>
-  );
-  
   return (
     <div className="min-h-screen bg-black text-white">
       <NavBar />
@@ -61,7 +49,8 @@ const Index: React.FC = () => {
         </section>
         
         <section id="ranks" className="py-16 md:py-24" ref={rankRef}>
-          <RankSelectionContainer 
+          <RankSelectionSection 
+            isIntersecting={rankInView}
             currentRank={currentRank}
             setCurrentRank={handleCurrentRankSelect}
             targetRank={targetRank}
@@ -70,9 +59,7 @@ const Index: React.FC = () => {
         </section>
         
         <section id="mmrboost" className="py-16 md:py-24 bg-gradient-to-b from-black to-gray-900" ref={mmrRef}>
-          <Suspense fallback={renderSkeleton()}>
-            {mmrInView && <MMRBoostingSection isIntersecting={mmrInView} />}
-          </Suspense>
+          <MMRBoostingSection isIntersecting={mmrInView} />
         </section>
         
         <section id="about" className="py-16 md:py-24">
@@ -88,16 +75,12 @@ const Index: React.FC = () => {
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-12">
               Join Our Community
             </h2>
-            <Suspense fallback={renderSkeleton()}>
-              {discordInView && <DiscordCommunity isIntersecting={discordInView} />}
-            </Suspense>
+            <DiscordCommunity isIntersecting={discordInView} />
           </div>
         </section>
         
         <section id="contact" className="py-16 md:py-24">
-          <Suspense fallback={renderSkeleton()}>
-            <ContactSection />
-          </Suspense>
+          <ContactSection />
         </section>
       </main>
       
