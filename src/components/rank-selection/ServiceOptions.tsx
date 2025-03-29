@@ -1,13 +1,13 @@
 
 import React from "react";
 import ServiceOptionsToggle from "@/components/ServiceOptionsToggle";
-import { ServiceOption } from "@/hooks/useServiceOptions";
+import { ServiceOption } from "@/types/service.types";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
 interface ServiceOptionsProps {
   serviceOptions: ServiceOption[];
-  onToggle: (id: string) => void;
+  onToggle: (id: string, isActive: boolean) => void;
 }
 
 const ServiceOptions: React.FC<ServiceOptionsProps> = ({ serviceOptions, onToggle }) => {

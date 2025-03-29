@@ -7,7 +7,7 @@ import CheckoutButton from "./CheckoutButton";
 import PricingCardDetails from "./PricingCardDetails";
 import DefaultPricingCard from "./DefaultPricingCard";
 import OrderConfirmation from "./OrderConfirmation";
-import PaymentMethods from "@/components/payments/PaymentMethods";
+import PaymentModal from "./PaymentModal";
 import { ServiceOption } from "@/types/service.types";
 
 interface PricingCardProps {
@@ -106,15 +106,11 @@ const PricingCard: React.FC<PricingCardProps> = ({
         )}
         
         {showPayment && (
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="w-full max-w-md">
-              <PaymentMethods 
-                amount={price || 0} 
-                onSuccess={handlePaymentSuccess}
-                onCancel={handlePaymentCancel}
-              />
-            </div>
-          </div>
+          <PaymentModal
+            price={price || 0}
+            onSuccess={handlePaymentSuccess}
+            onCancel={handlePaymentCancel}
+          />
         )}
       </div>
     </div>

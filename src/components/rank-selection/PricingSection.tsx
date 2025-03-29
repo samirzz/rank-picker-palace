@@ -2,7 +2,7 @@
 import React from "react";
 import { Rank } from "@/data/ranks/types";
 import PricingCard from "@/components/pricing/PricingCard";
-import { ServiceOption } from "@/hooks/useServiceOptions";
+import { ServiceOption } from "@/types/service.types";
 import { useRankSelection } from "@/hooks/useRankSelection";
 
 interface PricingSectionProps {
