@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Gamepad } from "lucide-react";
+import { Gamepad, ArrowRight } from "lucide-react";
 import { fetchGames } from "@/services/game.service";
 import { Game } from "@/types/game.types";
 
@@ -56,16 +56,16 @@ const GameSelection: React.FC<GameSelectionProps> = ({ className }) => {
 
   return (
     <div className={`w-full max-w-6xl mx-auto px-4 py-8 ${className || ""}`}>
-      <div className="text-center mb-8">
-        <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-4">
-          Select Your Game
+      <div className="text-center mb-12">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+          Choose Your <span className="text-mlbb-purple">Game</span>
         </h2>
-        <p className="text-gray-400 max-w-2xl mx-auto">
-          Choose your game to get started with our professional boosting services
+        <p className="text-gray-400 max-w-2xl mx-auto mb-8">
+          Select your game to get started with our professional boosting services
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6">
         {games.map((game) => (
           <Card 
             key={game.id}
@@ -76,33 +76,39 @@ const GameSelection: React.FC<GameSelectionProps> = ({ className }) => {
             }`}
             onClick={() => handleGameSelect(game)}
           >
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <Gamepad className="h-6 w-6 text-mlbb-purple" />
-                <div className={`h-3 w-3 rounded-full ${selectedGame?.id === game.id ? "bg-mlbb-purple" : "bg-gray-700"}`}></div>
+            <div className="p-4 text-center">
+              <div className="w-16 h-16 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 flex items-center justify-center mx-auto mb-4">
+                <Gamepad className="h-8 w-8 text-mlbb-purple" />
               </div>
-              <CardTitle className="text-lg md:text-xl mt-2">{game.name}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-gray-400">{game.description}</CardDescription>
-            </CardContent>
-            <CardFooter>
+              <h3 className="text-lg font-semibold mb-2">{game.name}</h3>
               <Button 
                 variant={selectedGame?.id === game.id ? "gradient" : "outline"} 
-                className="w-full"
+                className="w-full mt-4"
+                size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleGameSelect(game);
                 }}
               >
-                {selectedGame?.id === game.id ? "Selected" : "Select"}
+                Select
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-            </CardFooter>
+            </div>
           </Card>
         ))}
       </div>
+      
+      <div className="mt-12 text-center">
+        <Button 
+          className="bg-gradient-to-r from-mlbb-purple to-mlbb-gold text-white hover:opacity-90 px-8"
+          size="lg"
+          asChild
+        >
+          <a href="/game-selection">View All Games</a>
+        </Button>
+      </div>
     </div>
   );
-};
+}
 
 export default GameSelection;
