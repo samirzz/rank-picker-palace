@@ -92,19 +92,6 @@
     animation: shimmer 2s infinite linear;
   }
   
-  /* Fancy gradient text */
-  .text-gradient {
-    @apply bg-gradient-to-r from-mlbb-purple to-mlbb-gold bg-clip-text text-transparent;
-  }
-  
-  /* Grid pattern background */
-  .bg-grid-mlbb-pattern {
-    background-image: 
-      linear-gradient(to right, theme('colors.mlbb.purple/10') 1px, transparent 1px),
-      linear-gradient(to bottom, theme('colors.mlbb.purple/10') 1px, transparent 1px);
-    background-size: 40px 40px;
-  }
-  
   /* Animation for dropdown scaling up */
   .animate-scale-up {
     animation: scaleUp 0.2s ease-out forwards;

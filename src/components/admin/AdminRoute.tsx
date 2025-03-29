@@ -1,58 +1,69 @@
 
 import React, { useEffect, useState } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface AdminRouteProps {
   children: React.ReactNode;
 }
 
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const location = useLocation();
-
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+  
   useEffect(() => {
-    const checkAuth = () => {
-      const adminAuth = localStorage.getItem("adminAuth");
-      
-      if (!adminAuth) {
-        setIsAdmin(false);
-        return;
-      }
-      
+    const checkAdminAuth = async () => {
       try {
-        const authData = JSON.parse(adminAuth);
-        const tokenExpiry = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-        
-        if (Date.now() - authData.timestamp > tokenExpiry) {
-          // Token expired
+        // Check admin session from localStorage first for quick check
+        const isAdminLoggedIn = localStorage.getItem("adminAuth") === "true";
+
+        if (!isAdminLoggedIn) {
+          // If not logged in, redirect to admin login
+          navigate("/admin/login");
+          return;
+        }
+
+        // If we have the localStorage flag set, let's also verify in the database
+        const { data, error } = await supabase
+          .from("admin_users")
+          .select("username")
+          .single();
+
+        if (error || !data) {
+          // If there's an issue with the database check, log out and redirect
+          console.error("Admin authentication error:", error);
           localStorage.removeItem("adminAuth");
-          setIsAdmin(false);
-        } else {
-          setIsAdmin(true);
+          toast({
+            title: "Authentication error",
+            description: "Please login again.",
+            variant: "destructive",
+          });
+          navigate("/admin/login");
         }
       } catch (error) {
-        console.error("Error parsing admin auth data:", error);
-        localStorage.removeItem("adminAuth");
-        setIsAdmin(false);
+        console.error("Admin auth check failed:", error);
+        toast({
+          title: "Authentication error",
+          description: "Please login again.",
+          variant: "destructive",
+        });
+        navigate("/admin/login");
+      } finally {
+        setIsLoading(false);
       }
     };
-    
-    checkAuth();
-  }, []);
 
-  if (isAdmin === null) {
-    // Still checking authentication
+    checkAdminAuth();
+  }, [navigate, toast]);
+
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-black flex justify-center items-center">
-        <div className="glass-panel p-8 rounded-lg animate-pulse">
-          <p className="text-mlbb-purple">Loading admin panel...</p>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-black">
+        <div className="text-white">Verifying admin access...</div>
       </div>
     );
-  }
-
-  if (isAdmin === false) {
-    return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;

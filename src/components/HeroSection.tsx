@@ -1,74 +1,103 @@
 
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Gamepad2 } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 
-export default function HeroSection() {
+const HeroSection: React.FC = () => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
+  const scrollToRanks = () => {
+    const ranksSection = document.getElementById("ranks");
+    if (ranksSection) {
+      ranksSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
-    <div className="container mx-auto px-4 py-12 md:py-24">
-      <div className="max-w-5xl mx-auto text-center">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-mlbb-purple to-mlbb-gold bg-clip-text text-transparent">
-          Professional Game Boosting Service
+    <section
+      id="home"
+      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden py-16 md:py-20 px-4"
+    >
+      {/* Background with overlay */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-black/90 to-black"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(139,92,246,0.15)_0%,_transparent_70%)]"></div>
+      </div>
+
+      {/* Animated background lines (subtle) */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute h-[1px] w-full top-1/4 left-0 bg-gradient-to-r from-transparent via-mlbb-purple/20 to-transparent animate-pulse-subtle"></div>
+        <div className="absolute h-[1px] w-full top-2/4 left-0 bg-gradient-to-r from-transparent via-mlbb-purple/10 to-transparent animate-pulse-subtle" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute h-[1px] w-full top-3/4 left-0 bg-gradient-to-r from-transparent via-mlbb-purple/20 to-transparent animate-pulse-subtle" style={{ animationDelay: '2s' }}></div>
+      </div>
+
+      <div className="container mx-auto z-10 text-center">
+        <div 
+          className={`transition-all duration-1000 delay-100 transform ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          }`}
+        >
+          <span className="inline-block text-xs md:text-sm px-3 py-2 rounded-full bg-mlbb-purple/10 border border-mlbb-purple/30 text-mlbb-lightpurple mb-4">
+            #1 Mobile Legends Boosting Service
+          </span>
+        </div>
+
+        <h1 
+          className={`text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-white leading-tight transition-all duration-1000 delay-300 transform ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          }`}
+        >
+          Boost Your <span className="text-glow text-mlbb-purple">Rank</span>
+          <br />
+          Enhance Your <span className="text-mlbb-gold">Legacy</span>
         </h1>
-        <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-          Reach your desired rank with our elite team of professional boosters. Fast, reliable, and secure.
+
+        <p 
+          className={`text-base sm:text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8 md:mb-10 px-2 transition-all duration-1000 delay-500 transform ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          }`}
+        >
+          Professional Mobile Legends boosting service with guaranteed results.
+          Our elite boosters will help you achieve your desired rank quickly and securely.
         </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Button size="lg" className="bg-gradient-to-r from-mlbb-purple to-mlbb-gold text-white hover:opacity-90" asChild>
-            <Link to="/game-selection">
-              Choose Your Game
-              <Gamepad2 className="ml-2 h-5 w-5" />
-            </Link>
+
+        <div 
+          className={`flex flex-col sm:flex-row items-center justify-center gap-4 transition-all duration-1000 delay-700 transform ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          }`}
+        >
+          <Button 
+            onClick={scrollToRanks}
+            className="bg-gradient-to-r from-mlbb-purple to-mlbb-darkpurple text-white w-full sm:w-auto px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-lg hover:shadow-lg hover:shadow-mlbb-purple/50 transition-all duration-300 button-glow"
+          >
+            Boost Now
           </Button>
-          <Button size="lg" variant="outline" className="border-mlbb-purple text-mlbb-purple hover:bg-mlbb-purple/10" asChild>
-            <Link to="/#ranks">
-              Get Started
-              <ChevronRight className="ml-2 h-5 w-5" />
-            </Link>
+          <Button 
+            variant="outline" 
+            className="border-mlbb-purple/50 text-mlbb-lightpurple hover:bg-mlbb-purple/10 w-full sm:w-auto px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-lg transition-all duration-300 mt-3 sm:mt-0"
+          >
+            View Pricing
           </Button>
-        </div>
-        
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="glass-panel p-6 rounded-xl border border-mlbb-purple/20 hover:border-mlbb-purple/50 transition-all">
-            <div className="w-12 h-12 bg-mlbb-purple/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-mlbb-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Fast Delivery</h3>
-            <p className="text-gray-400 text-sm">Our professional boosters work 24/7 to ensure your order is completed quickly.</p>
-          </div>
-          
-          <div className="glass-panel p-6 rounded-xl border border-mlbb-purple/20 hover:border-mlbb-purple/50 transition-all">
-            <div className="w-12 h-12 bg-mlbb-purple/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-mlbb-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Secure Process</h3>
-            <p className="text-gray-400 text-sm">Your account information is encrypted and handled with utmost security.</p>
-          </div>
-          
-          <div className="glass-panel p-6 rounded-xl border border-mlbb-purple/20 hover:border-mlbb-purple/50 transition-all">
-            <div className="w-12 h-12 bg-mlbb-purple/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-mlbb-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Guaranteed Results</h3>
-            <p className="text-gray-400 text-sm">We guarantee the results you pay for or your money back.</p>
-          </div>
-        </div>
-        
-        <div className="mt-12">
-          <img
-            src="/mlbb-hero-banner.png"
-            alt="Mobile Legends Hero Banner"
-            className="rounded-2xl shadow-lg mx-auto"
-          />
         </div>
       </div>
-    </div>
+
+      {/* Scroll down indicator */}
+      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={scrollToRanks}
+          className="text-mlbb-purple hover:text-mlbb-lightpurple hover:bg-transparent rounded-full h-10 w-10 md:h-12 md:w-12 flex items-center justify-center border border-mlbb-purple/30"
+        >
+          <ArrowDown className="h-5 w-5 md:h-6 md:w-6" />
+        </Button>
+      </div>
+    </section>
   );
-}
+};
+
+export default HeroSection;

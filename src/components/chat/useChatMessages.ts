@@ -32,21 +32,7 @@ export const useChatMessages = (isChatOpen: boolean) => {
           .limit(50);
 
         if (error) throw error;
-        if (data) {
-          // Map Supabase data to our Message type
-          const formattedMessages: Message[] = data.map(msg => ({
-            id: msg.id,
-            content: msg.content,
-            sender: msg.is_admin ? 'agent' : 'user',
-            timestamp: msg.created_at,
-            sender_name: msg.sender_name,
-            is_admin: msg.is_admin,
-            sender_id: msg.sender_id,
-            recipient_id: msg.recipient_id,
-            created_at: msg.created_at
-          }));
-          setMessages(formattedMessages);
-        }
+        if (data) setMessages(data as Message[]);
       } catch (error) {
         console.error("Error loading messages:", error);
       } finally {
@@ -68,19 +54,7 @@ export const useChatMessages = (isChatOpen: boolean) => {
           filter: `sender_id=eq.${user.id}`,
         },
         (payload) => {
-          const newMsg = payload.new as any;
-          const formattedMsg: Message = {
-            id: newMsg.id,
-            content: newMsg.content,
-            sender: newMsg.is_admin ? 'agent' : 'user',
-            timestamp: newMsg.created_at,
-            sender_name: newMsg.sender_name,
-            is_admin: newMsg.is_admin,
-            sender_id: newMsg.sender_id,
-            recipient_id: newMsg.recipient_id,
-            created_at: newMsg.created_at
-          };
-          setMessages((prev) => [...prev, formattedMsg]);
+          setMessages((prev) => [...prev, payload.new as Message]);
         }
       )
       .on(
@@ -93,19 +67,7 @@ export const useChatMessages = (isChatOpen: boolean) => {
         },
         (payload) => {
           // Only add admin messages for this user
-          const newMsg = payload.new as any;
-          const formattedMsg: Message = {
-            id: newMsg.id,
-            content: newMsg.content,
-            sender: newMsg.is_admin ? 'agent' : 'user',
-            timestamp: newMsg.created_at,
-            sender_name: newMsg.sender_name,
-            is_admin: newMsg.is_admin,
-            sender_id: newMsg.sender_id,
-            recipient_id: newMsg.recipient_id,
-            created_at: newMsg.created_at
-          };
-          setMessages((prev) => [...prev, formattedMsg]);
+          setMessages((prev) => [...prev, payload.new as Message]);
           
           // If chat is not open, show notification
           if (!isChatOpen) {
@@ -120,7 +82,7 @@ export const useChatMessages = (isChatOpen: boolean) => {
     };
   }, [user, isChatOpen]);
 
-  const sendMessage = async (messageContent: string): Promise<boolean> => {
+  const sendMessage = async (messageContent: string) => {
     if (!messageContent.trim() || !user) return false;
 
     try {

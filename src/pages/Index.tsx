@@ -10,8 +10,7 @@ import ContactSection from "@/components/ContactSection";
 import MMRBoostingSection from "@/components/MMRBoostingSection";
 import DiscordCommunity from "@/components/DiscordCommunity";
 import LiveChat from "@/components/LiveChat";
-import { Rank } from "@/data/ranks";
-import GameSelection from "@/components/GameSelection";
+import { Rank, ranks } from "@/data/ranks";
 
 const Index: React.FC = () => {
   const { ref: discordRef, inView: discordInView } = useInView({
@@ -45,18 +44,11 @@ const Index: React.FC = () => {
       <NavBar />
       
       <main>
-        <section id="home" className="relative">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-mlbb-purple/20 via-transparent to-transparent opacity-30"></div>
+        <section id="home">
           <HeroSection />
         </section>
         
-        <section id="game-selection" className="py-16 md:py-24 bg-gradient-to-b from-black to-gray-900 relative">
-          <div className="absolute inset-0 bg-grid-mlbb-pattern opacity-5"></div>
-          <GameSelection />
-        </section>
-        
-        <section id="ranks" className="py-16 md:py-24 relative" ref={rankRef}>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(139,92,246,0.08)_0%,_transparent_70%)]"></div>
+        <section id="ranks" className="py-16 md:py-24" ref={rankRef}>
           <RankSelectionSection 
             isIntersecting={rankInView}
             currentRank={currentRank}
@@ -66,22 +58,19 @@ const Index: React.FC = () => {
           />
         </section>
         
-        <section id="mmrboost" className="py-16 md:py-24 bg-gradient-to-b from-black to-gray-900 relative" ref={mmrRef}>
-          <div className="absolute inset-0 bg-grid-mlbb-pattern opacity-5"></div>
+        <section id="mmrboost" className="py-16 md:py-24 bg-gradient-to-b from-black to-gray-900" ref={mmrRef}>
           <MMRBoostingSection isIntersecting={mmrInView} />
         </section>
         
-        <section id="about" className="py-16 md:py-24 relative">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-mlbb-purple/10 via-transparent to-transparent opacity-40"></div>
+        <section id="about" className="py-16 md:py-24">
           <WhyChooseUs />
         </section>
         
         <section 
           id="community" 
-          className="py-16 md:py-24 bg-gradient-to-b from-gray-900 to-black relative"
+          className="py-16 md:py-24 bg-gradient-to-b from-gray-900 to-black"
           ref={discordRef}
         >
-          <div className="absolute inset-0 bg-grid-mlbb-pattern opacity-5"></div>
           <div className="container mx-auto px-4">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-12">
               Join Our Community
@@ -90,8 +79,7 @@ const Index: React.FC = () => {
           </div>
         </section>
         
-        <section id="contact" className="py-16 md:py-24 relative">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(139,92,246,0.08)_0%,_transparent_70%)]"></div>
+        <section id="contact" className="py-16 md:py-24">
           <ContactSection />
         </section>
       </main>
