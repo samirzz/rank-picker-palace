@@ -10,6 +10,12 @@ export interface Message {
     type: string;
     name: string;
   }[];
+  // Additional fields needed for Supabase integration
+  is_admin?: boolean;
+  sender_name?: string;
+  sender_id?: string;
+  recipient_id?: string;
+  created_at?: string;
 }
 
 export interface ChatContact {

@@ -7,7 +7,7 @@ interface LiveChatContextType {
   toggleChat: () => void;
   messages: Message[];
   isLoading: boolean;
-  sendMessage: (content: string) => void;
+  sendMessage: (content: string) => Promise<boolean>;
   hasNewMessages: boolean;
 }
 
@@ -16,7 +16,7 @@ export const LiveChatContext = createContext<LiveChatContextType>({
   toggleChat: () => {},
   messages: [],
   isLoading: false,
-  sendMessage: () => {},
+  sendMessage: async () => false,
   hasNewMessages: false,
 });
 
@@ -77,8 +77,8 @@ export const LiveChatProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [isChatOpen]);
 
-  const sendMessage = useCallback((content: string) => {
-    if (!content.trim()) return;
+  const sendMessage = useCallback(async (content: string): Promise<boolean> => {
+    if (!content.trim()) return false;
 
     // Add user message
     const userMessage: Message = {
@@ -91,8 +91,10 @@ export const LiveChatProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
-    // Simulate response after a delay
-    setTimeout(() => {
+    try {
+      // Simulate response after a delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const botMessage: Message = {
         id: `agent-${Date.now()}`,
         content: "Thank you for your message! Our team will get back to you soon.",
@@ -101,12 +103,18 @@ export const LiveChatProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       };
       
       setMessages((prev) => [...prev, botMessage]);
-      setIsLoading(false);
       
       if (!isChatOpen) {
         setHasNewMessages(true);
       }
-    }, 1000);
+      
+      return true;
+    } catch (error) {
+      console.error("Error sending message:", error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   }, [isChatOpen]);
 
   return (

@@ -63,20 +63,26 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             <div
               key={msg.id}
               className={`${
-                msg.is_admin
+                msg.is_admin || msg.sender === 'agent'
                   ? "bg-mlbb-purple/20 border-l-2 border-mlbb-purple ml-4"
                   : "bg-gray-800 border-l-2 border-gray-700 mr-4"
               } p-2 rounded shadow`}
             >
               <div className="flex justify-between items-center mb-1">
                 <span className="text-xs font-medium text-gray-400">
-                  {msg.is_admin ? "Support Agent" : msg.sender_name}
+                  {msg.is_admin ? "Support Agent" : (msg.sender_name || (msg.sender === 'agent' ? "Support Agent" : "You"))}
                 </span>
                 <span className="text-xs text-gray-500">
-                  {new Date(msg.created_at).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit'
-                  })}
+                  {msg.created_at 
+                    ? new Date(msg.created_at).toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute:'2-digit'
+                      })
+                    : new Date(msg.timestamp).toLocaleTimeString([], {
+                        hour: '2-digit', 
+                        minute:'2-digit'
+                      })
+                  }
                 </span>
               </div>
               <p className="text-sm text-gray-200">{msg.content}</p>
