@@ -1,69 +1,58 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Gamepad } from "lucide-react";
-
-export interface Game {
-  id: string;
-  name: string;
-  description: string;
-  icon?: React.ReactNode;
-  route: string;
-}
+import { fetchGames } from "@/services/game.service";
+import { Game } from "@/types/game.types";
 
 interface GameSelectionProps {
   className?: string;
 }
 
-const games: Game[] = [
-  {
-    id: "mobile-legends",
-    name: "Mobile Legends",
-    description: "Boost your rank in Mobile Legends: Bang Bang",
-    icon: <Gamepad className="h-6 w-6 text-mlbb-purple" />,
-    route: "/",
-  },
-  {
-    id: "pubg",
-    name: "PUBG Mobile",
-    description: "Professional PUBG Mobile boosting services",
-    icon: <Gamepad className="h-6 w-6 text-amber-500" />,
-    route: "/pubg", // These routes would need to be created
-  },
-  {
-    id: "honor-of-kings",
-    name: "Honor of Kings",
-    description: "Rank up in Honor of Kings with pro boosters",
-    icon: <Gamepad className="h-6 w-6 text-blue-500" />,
-    route: "/honor-of-kings",
-  },
-  {
-    id: "clash-of-clans",
-    name: "Clash of Clans",
-    description: "Level up your Clash of Clans account faster",
-    icon: <Gamepad className="h-6 w-6 text-yellow-500" />,
-    route: "/clash-of-clans",
-  },
-  {
-    id: "clash-royale",
-    name: "Clash Royale",
-    description: "Reach higher arenas with our boosting service",
-    icon: <Gamepad className="h-6 w-6 text-red-500" />,
-    route: "/clash-royale",
-  }
-];
-
 const GameSelection: React.FC<GameSelectionProps> = ({ className }) => {
-  const [selectedGame, setSelectedGame] = useState<Game | null>(games[0]);
+  const [games, setGames] = useState<Game[]>([]);
+  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadGames = async () => {
+      try {
+        setLoading(true);
+        const gamesData = await fetchGames();
+        setGames(gamesData);
+        
+        // Set the first game as selected by default
+        if (gamesData.length > 0) {
+          setSelectedGame(gamesData[0]);
+        }
+      } catch (error) {
+        console.error("Error loading games:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadGames();
+  }, []);
 
   const handleGameSelect = (game: Game) => {
     setSelectedGame(game);
     // Navigate to the game-specific page
-    navigate(game.route);
+    navigate(`/${game.slug}`);
   };
+
+  if (loading) {
+    return (
+      <div className={`w-full max-w-6xl mx-auto px-4 py-8 ${className || ""}`}>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin h-8 w-8 border-4 border-mlbb-purple border-t-transparent rounded-full"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`w-full max-w-6xl mx-auto px-4 py-8 ${className || ""}`}>
@@ -89,7 +78,7 @@ const GameSelection: React.FC<GameSelectionProps> = ({ className }) => {
           >
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                {game.icon}
+                <Gamepad className="h-6 w-6 text-mlbb-purple" />
                 <div className={`h-3 w-3 rounded-full ${selectedGame?.id === game.id ? "bg-mlbb-purple" : "bg-gray-700"}`}></div>
               </div>
               <CardTitle className="text-lg md:text-xl mt-2">{game.name}</CardTitle>
