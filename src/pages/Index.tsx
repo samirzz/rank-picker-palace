@@ -62,7 +62,6 @@ const Index: React.FC = () => {
         
         <section id="ranks" className="py-16 md:py-24" ref={rankRef}>
           <RankSelectionContainer 
-            isIntersecting={rankInView}
             currentRank={currentRank}
             setCurrentRank={handleCurrentRankSelect}
             targetRank={targetRank}

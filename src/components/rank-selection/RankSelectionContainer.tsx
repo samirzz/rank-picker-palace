@@ -7,10 +7,21 @@ import { useRankSelection } from "@/hooks/useRankSelection";
 import { useServiceOptions } from "@/hooks/useServiceOptions";
 import { Rank } from "@/data/ranks/types";
 
-const RankSelectionContainer: React.FC = () => {
-  const [currentRank, setCurrentRank] = useState<Rank | null>(null);
-  const [targetRank, setTargetRank] = useState<Rank | null>(null);
-  
+interface RankSelectionContainerProps {
+  isIntersecting?: boolean;
+  currentRank: Rank | null;
+  setCurrentRank: (rank: Rank, subdivisionIndex?: number) => void;
+  targetRank: Rank | null;
+  setTargetRank: (rank: Rank, subdivisionIndex?: number) => void;
+}
+
+const RankSelectionContainer: React.FC<RankSelectionContainerProps> = ({ 
+  isIntersecting, 
+  currentRank,
+  setCurrentRank,
+  targetRank,
+  setTargetRank
+}) => {
   const {
     availableRanks,
     currentSubdivision,
@@ -31,8 +42,8 @@ const RankSelectionContainer: React.FC = () => {
   } = useRankSelection({
     currentRank, 
     targetRank,
-    setCurrentRank: (rank: Rank) => setCurrentRank(rank),
-    setTargetRank: (rank: Rank) => setTargetRank(rank)
+    setCurrentRank,
+    setTargetRank
   });
   
   // Calculate price based on selected ranks

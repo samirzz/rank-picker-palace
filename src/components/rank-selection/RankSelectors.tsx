@@ -6,74 +6,77 @@ import { useRankSelection } from "@/hooks/useRankSelection";
 import RankSelector from "./RankSelector";
 
 interface RankSelectorsProps {
+  availableRanks: Rank[];
   currentRank: Rank | null;
   targetRank: Rank | null;
-  setCurrentRank: (rank: Rank, subdivisionIndex?: number) => void;
-  setTargetRank: (rank: Rank, subdivisionIndex?: number) => void;
+  currentSubdivision: number;
+  targetSubdivision: number;
+  currentStars: number;
+  targetStars: number;
+  currentMythicPoints: number;
+  targetMythicPoints: number;
+  onCurrentRankSelect: (rank: Rank, subdivisionIndex?: number) => void;
+  onTargetRankSelect: (rank: Rank, subdivisionIndex?: number) => void;
+  onCurrentStarsChange: (stars: number) => void;
+  onTargetStarsChange: (stars: number) => void;
+  onCurrentMythicPointsChange: (points: number) => void;
+  onTargetMythicPointsChange: (points: number) => void;
+  rankHasPoints: (rank: Rank | null) => boolean;
+  rankHasStars: (rank: Rank | null) => boolean;
+  disabledTargetRanks: string[];
 }
 
 const RankSelectors: React.FC<RankSelectorsProps> = ({
+  availableRanks,
   currentRank,
   targetRank,
-  setCurrentRank,
-  setTargetRank
+  currentSubdivision,
+  targetSubdivision,
+  currentStars,
+  targetStars,
+  currentMythicPoints,
+  targetMythicPoints,
+  onCurrentRankSelect,
+  onTargetRankSelect,
+  onCurrentStarsChange,
+  onTargetStarsChange,
+  onCurrentMythicPointsChange,
+  onTargetMythicPointsChange,
+  rankHasPoints,
+  rankHasStars,
+  disabledTargetRanks
 }) => {
-  const {
-    availableRanks,
-    currentSubdivision,
-    targetSubdivision,
-    currentStars,
-    targetStars,
-    currentMythicPoints,
-    targetMythicPoints,
-    handleCurrentRankSelect,
-    handleTargetRankSelect,
-    handleCurrentStarsChange,
-    handleTargetStarsChange,
-    handleCurrentMythicPointsChange,
-    handleTargetMythicPointsChange,
-    rankHasPoints,
-    rankHasStars,
-    getDisabledTargetRanks,
-    isInitialized
-  } = useRankSelection({
-    currentRank,
-    targetRank,
-    setCurrentRank,
-    setTargetRank
-  });
-  
   // Handle subdivision selection
   const handleCurrentSubdivisionSelect = (subdivisionIndex: number) => {
     if (currentRank) {
-      handleCurrentRankSelect(currentRank, subdivisionIndex);
+      onCurrentRankSelect(currentRank, subdivisionIndex);
     }
   };
 
   const handleTargetSubdivisionSelect = (subdivisionIndex: number) => {
     if (targetRank) {
-      handleTargetRankSelect(targetRank, subdivisionIndex);
+      onTargetRankSelect(targetRank, subdivisionIndex);
     }
   };
   
   // Event handler adapters to convert input events to number values
   const handleCurrentStarsInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleCurrentStarsChange(Number(e.target.value));
+    onCurrentStarsChange(Number(e.target.value));
   };
   
   const handleTargetStarsInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleTargetStarsChange(Number(e.target.value));
+    onTargetStarsChange(Number(e.target.value));
   };
   
   const handleCurrentPointsInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleCurrentMythicPointsChange(Number(e.target.value));
+    onCurrentMythicPointsChange(Number(e.target.value));
   };
   
   const handleTargetPointsInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleTargetMythicPointsChange(Number(e.target.value));
+    onTargetMythicPointsChange(Number(e.target.value));
   };
 
-  if (!isInitialized) {
+  if (!availableRanks.length) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 opacity-50">
         <div className="lg:col-span-5 h-40 bg-black/20 animate-pulse rounded-lg"></div>
@@ -93,7 +96,7 @@ const RankSelectors: React.FC<RankSelectorsProps> = ({
           selectedSubdivision={currentSubdivision}
           stars={currentStars}
           points={currentMythicPoints}
-          onRankSelect={handleCurrentRankSelect}
+          onRankSelect={onCurrentRankSelect}
           onSubdivisionSelect={handleCurrentSubdivisionSelect}
           onStarsChange={handleCurrentStarsInputChange}
           onPointsChange={handleCurrentPointsInputChange}
@@ -119,11 +122,11 @@ const RankSelectors: React.FC<RankSelectorsProps> = ({
           selectedSubdivision={targetSubdivision}
           stars={targetStars}
           points={targetMythicPoints}
-          onRankSelect={handleTargetRankSelect}
+          onRankSelect={onTargetRankSelect}
           onSubdivisionSelect={handleTargetSubdivisionSelect}
           onStarsChange={handleTargetStarsInputChange}
           onPointsChange={handleTargetPointsInputChange}
-          disabledRanks={getDisabledTargetRanks()}
+          disabledRanks={disabledTargetRanks}
           rankHasPoints={rankHasPoints}
           rankHasStars={rankHasStars}
           animationDelay={400}
